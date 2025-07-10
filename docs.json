@@ -21,19 +21,34 @@
             "group": "Documentation",
             "pages": [
               "get-started/introduction",
-              "get-started/pointercloud"
+              "get-started/pointerplatform"
             ]
           },
           {
-            "group": "Agentic API",
+            "group": "Agents API",
             "pages": [
               "api-reference/quickstart",
-              "api-reference/what-is-the-agentic-api",
+              "api-reference/what-is-the-agents-api",
               "api-reference/agent-capabilities",
               "api-reference/api-call-example",
               "api-reference/send-message",
               "api-reference/streaming-message-types"
               
+            ]
+          },
+          {
+            "group": "Agents IDE",
+            "pages": [
+              "agent-development-environment/quickstart",
+              "agent-development-environment/ade-builder"
+
+            ]
+          },
+          {
+            "group": "Ambient Agents",
+            "pages": [
+              "ambient-agents/quickstart",
+              "ambient-agents/overview"
             ]
           }
         ]
@@ -42,8 +57,7 @@
     "global": {
       "anchors": [
         { "anchor": "Website", "href": "https://trypointer.com", "icon": "globe" },
-        { "anchor": "Discord", "href": "https://discord.gg/KFtqf7j9fs", "icon": "discord" },
-        { "anchor": "Changelog", "href": "https://www.pointerhq.com/changelog", "icon": "newspaper" }
+        { "anchor": "Discord", "href": "https://discord.gg/KFtqf7j9fs", "icon": "discord" }
       ]
     }
   },
