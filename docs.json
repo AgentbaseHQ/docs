@@ -35,6 +35,35 @@
               "api-reference/streaming-message-types"
               
             ]
+          },
+          {
+            "group": "Agent Development Environment",
+            "pages": [
+              "agent-development-environment/quickstart",
+              "agent-development-environment/ade-builder",
+              "agent-development-environment/ade-menu",
+              "agent-development-environment/ade-editor",
+              "agent-development-environment/ade-copilot",
+              "agent-development-environment/agent-intelligence",
+              "agent-development-environment/environment-control",
+              "agent-development-environment/data-and-integration",
+              "agent-development-environment/connectivity-and-security",
+              "agent-development-environment/enterprise-features"
+            ]
+          },
+          {
+            "group": "GUI",
+            "pages": [
+              "agent-development-environment/quickstart",
+              "agent-development-environment/enterprise-features"
+            ]
+          },
+          {
+            "group": "CLI",
+            "pages": [
+              "agent-development-environment/quickstart",
+              "agent-development-environment/enterprise-features"
+            ]
           }
         ]
       }
@@ -42,8 +71,7 @@
     "global": {
       "anchors": [
         { "anchor": "Website", "href": "https://trypointer.com", "icon": "globe" },
-        { "anchor": "Discord", "href": "https://discord.gg/KFtqf7j9fs", "icon": "discord" },
-        { "anchor": "Changelog", "href": "https://www.pointerhq.com/changelog", "icon": "newspaper" }
+        { "anchor": "Discord", "href": "https://discord.gg/KFtqf7j9fs", "icon": "discord" }
       ]
     }
   },
