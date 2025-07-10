@@ -47,7 +47,8 @@
           {
             "group": "Ambient Agents",
             "pages": [
-              "agent-development-environment/quickstart"
+              "ambient-agents/quickstart",
+              "ambient-agents/overview"
             ]
           }
         ]
