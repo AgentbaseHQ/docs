@@ -1,0 +1,13 @@
+---
+title: 'POST Send Message'
+api: 'POST https://pointerapi.com'
+description: 'Send a message to the agent and receive a streaming response.'
+---
+
+### Query Parameters
+<ParamField query="session" type="string">The session ID to continue.</ParamField>
+
+### Request Body
+<ParamField body="message" type="string" required>The task/message.</ParamField>
+
+See [Streaming Message Types](/api-reference/streaming-message-types) for event details. 

@@ -1,0 +1,26 @@
+---
+title: 'Quickstart'
+description: 'Get started with Pointer in under 5 minutes using your preferred interface.'
+---
+
+Choose your preferred way to interact with Pointer's general-purpose AI agent and get started instantly.
+
+### Option 1: Agent API (For Developers)
+Integrate Pointer's agent directly into your applications.
+
+<AccordionGroup>
+  <Accordion title="1. Get Your API Key" icon="key">
+    Navigate to your [API keys page](https://trypointer.com) on the Pointer dashboard, sign in, and generate a new key. Your key will start with `sk-ptr-`.
+  </Accordion>
+  <Accordion title="2. Make Your First API Call" icon="code-branch">
+    Use this cURL command in your terminal to send your first message to the agent.
+    ```bash
+    curl -X POST "https://pointerapi.com" \
+      -H "Content-Type: application/json" \
+      -H "Accept: text/event-stream" \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -d '{"message": "What can you do?"}'
+    ```
+    You'll receive a real-time stream of the agent's response.
+  </Accordion>
+</AccordionGroup> 
