@@ -21,14 +21,14 @@
             "group": "Documentation",
             "pages": [
               "get-started/introduction",
-              "get-started/pointercloud"
+              "get-started/pointerplatform"
             ]
           },
           {
-            "group": "Agentic API",
+            "group": "Agents API",
             "pages": [
               "api-reference/quickstart",
-              "api-reference/what-is-the-agentic-api",
+              "api-reference/what-is-the-agents-api",
               "api-reference/agent-capabilities",
               "api-reference/api-call-example",
               "api-reference/send-message",
@@ -37,32 +37,17 @@
             ]
           },
           {
-            "group": "Agent Development Environment",
+            "group": "Agents IDE",
             "pages": [
               "agent-development-environment/quickstart",
-              "agent-development-environment/ade-builder",
-              "agent-development-environment/ade-menu",
-              "agent-development-environment/ade-editor",
-              "agent-development-environment/ade-copilot",
-              "agent-development-environment/agent-intelligence",
-              "agent-development-environment/environment-control",
-              "agent-development-environment/data-and-integration",
-              "agent-development-environment/connectivity-and-security",
-              "agent-development-environment/enterprise-features"
+              "agent-development-environment/ade-builder"
+
             ]
           },
           {
-            "group": "GUI",
+            "group": "Ambient Agents",
             "pages": [
-              "agent-development-environment/quickstart",
-              "agent-development-environment/enterprise-features"
-            ]
-          },
-          {
-            "group": "CLI",
-            "pages": [
-              "agent-development-environment/quickstart",
-              "agent-development-environment/enterprise-features"
+              "agent-development-environment/quickstart"
             ]
           }
         ]
