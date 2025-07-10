@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Pointer Docs",
-  "theme": "mint",
+  "theme": "willow",
   "logo": {
     "light": "/pointer.jpg",
     "dark": "/pointer.jpg"
@@ -24,7 +24,7 @@
       {
         "tab": "Agentic API",
         "pages": [
-          "api-reference",
+          "api-reference/",
           "api-reference/what-is-the-agentic-api",
           "api-reference/api-call-example",
           "api-reference/send-message",
