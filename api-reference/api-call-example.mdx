@@ -17,11 +17,18 @@ curl -X POST \
   "https://pointerapi.com"
 ```
 
-### Streaming Response
+### Streaming Response (abridged)
 ```text
 data: {"type":"agent_started","session":"8lh87hwhju0xoxy"}
-... (truncated)
+data: {"type":"agent_thinking_start","session":"8lh87hwhju0xoxy"}
+data: {"type":"agent_thinking","session":"8lh87hwhju0xoxy","content":"The user is asking me to introduce myself."}
+data: {"type":"agent_response_start","session":"8lh87hwhju0xoxy"}
+data: {"type":"agent_response","session":"8lh87hwhju0xoxy","content":"Hello! I'm Pointer, a general-purpose AI agent designed to help you…"}
+data: {"type":"agent_cost","session":"8lh87hwhju0xoxy","cost":"0.0934"}
+data: {"type":"agent_completed","session":"8lh87hwhju0xoxy"}
 ```
+
+For an explanation of every `type` value, see [Streaming Message Types](/api-reference/streaming-message-types).
 
 ## Session Handling
 - **Auto-Creation**: If you do not specify a session ID, a new one is automatically created.
