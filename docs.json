@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Pointer Docs",
-  "theme": "willow",
+  "theme": "almond",
   "logo": {
     "light": "/pointer.jpg",
     "dark": "/pointer.jpg"
@@ -16,19 +16,26 @@
     "tabs": [
       {
         "tab": "Get Started",
-        "pages": [
-          "get-started/what-is-pointer",
-          "get-started/quickstart"
-        ]
-      },
-      {
-        "tab": "Agentic API",
-        "pages": [
-          "api-reference/",
-          "api-reference/what-is-the-agentic-api",
-          "api-reference/api-call-example",
-          "api-reference/send-message",
-          "api-reference/streaming-message-types"
+        "groups": [
+          {
+            "group": "Documentation",
+            "pages": [
+              "get-started/introduction",
+              "get-started/pointercloud"
+            ]
+          },
+          {
+            "group": "Agentic API",
+            "pages": [
+              "api-reference/quickstart",
+              "api-reference/what-is-the-agentic-api",
+              "api-reference/agent-capabilities",
+              "api-reference/api-call-example",
+              "api-reference/send-message",
+              "api-reference/streaming-message-types"
+              
+            ]
+          }
         ]
       }
     ],
