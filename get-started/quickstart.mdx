@@ -1,0 +1,62 @@
+---
+title: 'Quickstart'
+description: 'Get started with Pointer in under 5 minutes using your preferred interface.'
+---
+
+Choose your preferred way to interact with Pointer's general-purpose AI agent and get started instantly.
+
+### Option 1: Agent API (For Developers)
+Integrate Pointer's agent directly into your applications.
+
+<AccordionGroup>
+  <Accordion title="1. Get Your API Key" icon="key">
+    Navigate to your [API keys page](https://trypointer.com) on the Pointer dashboard, sign in, and generate a new key. Your key will start with `sk-ptr-`.
+  </Accordion>
+  <Accordion title="2. Make Your First API Call" icon="code-branch">
+    Use this cURL command in your terminal to send your first message to the agent.
+    ```bash
+    curl -X POST "https://pointerapi.com" \
+      -H "Content-Type: application/json" \
+      -H "Accept: text/event-stream" \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -d '{"message": "What can you do?"}'
+    ```
+    You'll receive a real-time stream of the agent's response.
+  </Accordion>
+</AccordionGroup>
+
+### Option 2: Web App (ADE)
+The easiest way to experiment, no installation required.
+
+1.  **Launch the ADE:** Go to [trypointer.com](https://trypointer.com).
+2.  **Sign In:** Log in to your Pointer account.
+3.  **Start Chatting:** Begin interacting with the agent immediately in the web-based Agent Development Environment.
+
+### Option 3: Desktop App (GUI)
+A native desktop application for a low-code experience on macOS and Windows.
+
+1.  **Download:** Get the app from [trypointer.com/download](https://trypointer.com/download).
+2.  **Install & Launch:** Open the app and sign in.
+3.  **Automate:** Describe tasks you want to automate and let the agent perform them for you.
+
+### Option 4: CLI Tool
+For developers who live in the terminal.
+
+<AccordionGroup>
+  <Accordion title="1. Install the CLI" icon="terminal">
+    Install the Pointer CLI globally using npm.
+    ```bash
+    npm install -g @pointerhq/project-pointer
+    ```
+  </Accordion>
+  <Accordion title="2. Configure and Use" icon="gear">
+    Set up your API key and start a chat session.
+    ```bash
+    # Configure your API key
+    pointer config set api-key YOUR_API_KEY
+    
+    # Start a conversation with the agent
+    pointer chat "What can you help me with?"
+    ```
+  </Accordion>
+</AccordionGroup> 
