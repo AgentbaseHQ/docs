@@ -14,7 +14,7 @@ curl -X POST \
   -H "Accept: text/event-stream" \
   -H "Authorization: Bearer sk-ptr-..." \
   -d '{"message": "Can you introduce yourself?"}' \
-  "https://pointerapi.com"
+  "https://agentbase.sh"
 ```
 
 ### Streaming Response (abridged)
@@ -23,7 +23,7 @@ data: {"type":"agent_started","session":"8lh87hwhju0xoxy"}
 data: {"type":"agent_thinking_start","session":"8lh87hwhju0xoxy"}
 data: {"type":"agent_thinking","session":"8lh87hwhju0xoxy","content":"The user is asking me to introduce myself."}
 data: {"type":"agent_response_start","session":"8lh87hwhju0xoxy"}
-data: {"type":"agent_response","session":"8lh87hwhju0xoxy","content":"Hello! I'm Pointer, a general-purpose AI agent designed to help you…"}
+data: {"type":"agent_response","session":"8lh87hwhju0xoxy","content":"Hello! I'm agentbase, a general-purpose AI agent designed to help you…"}
 data: {"type":"agent_cost","session":"8lh87hwhju0xoxy","cost":"0.0934"}
 data: {"type":"agent_completed","session":"8lh87hwhju0xoxy"}
 ```
