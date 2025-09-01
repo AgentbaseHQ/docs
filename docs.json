@@ -50,7 +50,7 @@
     "links": [
       { "label": "Support", "href": "https://discord.gg/X2pgBY6g" }
     ],
-    "primary": { "type": "button", "label": "Try Agentbase", "href": "https://agentbase.sh" }
+    "primary": { "type": "button", "label": "Try Agentbase", "href": "http://base.agentbase.sh/sign-up" }
   },
   "footer": {
     "socials": {
