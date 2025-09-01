@@ -1,12 +1,12 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Agentbase Docs",
-  "theme": "almond",
+  "theme": "linden",
   "logo": {
-    "light": "/agentbase-blk.svg",
-    "dark": "/agentbase-blk.svg"
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
   },
-  "favicon": "/agentbase-blk.svg",
+  "favicon": "/logo/dark.svg",
   "colors": {
     "primary": "#1A1A1A",
     "light": "#FBFBFB",
@@ -21,7 +21,7 @@
             "group": "Documentation",
             "pages": [
               "get-started/introduction",
-              "get-started/pointerplatform"
+              "get-started/agent-platform"
             ]
           },
           {
@@ -35,21 +35,6 @@
               "api-reference/streaming-message-types"
               
             ]
-          },
-          {
-            "group": "Agents IDE",
-            "pages": [
-              "agent-development-environment/quickstart",
-              "agent-development-environment/ade-builder"
-
-            ]
-          },
-          {
-            "group": "Ambient Agents",
-            "pages": [
-              "ambient-agents/quickstart",
-              "ambient-agents/overview"
-            ]
           }
         ]
       }
@@ -57,20 +42,19 @@
     "global": {
       "anchors": [
         { "anchor": "Website", "href": "https://agentbase.sh", "icon": "globe" },
-        { "anchor": "Discord", "href": "https://discord.gg/KFtqf7j9fs", "icon": "discord" }
+        { "anchor": "Discord", "href": "https://discord.gg/X2pgBY6g", "icon": "discord" }
       ]
     }
   },
   "navbar": {
     "links": [
-      { "label": "Support", "href": "https://discord.gg/KFtqf7j9fs" }
+      { "label": "Support", "href": "https://discord.gg/X2pgBY6g" }
     ],
     "primary": { "type": "button", "label": "Try Agentbase", "href": "https://agentbase.sh" }
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/pointerinc",
-      "discord": "https://discord.gg/KFtqf7j9fs",
+      "discord": "https://discord.gg/X2pgBY6g",
       "website": "https://agentbase.sh"
     }
   }
