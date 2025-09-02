@@ -3,10 +3,10 @@
   "name": "Agentbase Docs",
   "theme": "linden",
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/logo/blacklogo.svg",
+    "dark": "/logo/whitelogo.svg"
   },
-  "favicon": "/logo/dark.svg",
+  "favicon": "/logo/blacklogo.svg",
   "colors": {
     "primary": "#1A1A1A",
     "light": "#FBFBFB",
