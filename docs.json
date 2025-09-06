@@ -19,10 +19,7 @@
         "groups": [
           {
             "group": "Documentation",
-            "pages": [
-              "get-started/introduction",
-              "get-started/agent-platform"
-            ]
+            "pages": ["get-started/introduction", "get-started/agent-platform"]
           },
           {
             "group": "Agents API",
@@ -32,8 +29,9 @@
               "api-reference/agent-capabilities",
               "api-reference/api-call-example",
               "api-reference/send-message",
+              "api-reference/get-messages",
+              "api-reference/clear-messages",
               "api-reference/streaming-message-types"
-              
             ]
           }
         ]
@@ -41,16 +39,26 @@
     ],
     "global": {
       "anchors": [
-        { "anchor": "Website", "href": "https://agentbase.sh", "icon": "globe" },
-        { "anchor": "Discord", "href": "https://discord.gg/X2pgBY6g", "icon": "discord" }
+        {
+          "anchor": "Website",
+          "href": "https://agentbase.sh",
+          "icon": "globe"
+        },
+        {
+          "anchor": "Discord",
+          "href": "https://discord.gg/X2pgBY6g",
+          "icon": "discord"
+        }
       ]
     }
   },
   "navbar": {
-    "links": [
-      { "label": "Support", "href": "https://discord.gg/X2pgBY6g" }
-    ],
-    "primary": { "type": "button", "label": "Try Agentbase", "href": "http://base.agentbase.sh/sign-up" }
+    "links": [{ "label": "Support", "href": "https://discord.gg/X2pgBY6g" }],
+    "primary": {
+      "type": "button",
+      "label": "Try Agentbase",
+      "href": "http://base.agentbase.sh/sign-up"
+    }
   },
   "footer": {
     "socials": {

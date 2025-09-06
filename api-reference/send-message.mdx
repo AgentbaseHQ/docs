@@ -1,14 +1,21 @@
 ---
-title: 'Run Agent'
-api: 'POST https://api.agentbase.sh
+title: "Run Agent"
+api: "POST https://api.agentbase.sh"
 authMethod: "bearer"
-description: 'Send a message to the agent and receive a streaming response.'
+description: "Run an agent with a message and receive a streaming agent response."
 ---
 
 ### Query Parameters
-<ParamField query="session" type="string">The session ID to continue.</ParamField>
+
+<ParamField query="session" type="string" optional>
+  The session ID to continue the agent session conversation. If not provided, a
+  new agent session will be created.
+</ParamField>
 
 ### Request Body
-<ParamField body="message" type="string" required>The task/message.</ParamField>
 
-See [Streaming Message Types](/api-reference/streaming-message-types) for event details. 
+<ParamField body="message" type="string" required>
+  The task or message to run the agent with.
+</ParamField>
+
+See [Streaming Message Types](/api-reference/streaming-message-types) for event details.
