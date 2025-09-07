@@ -1,6 +1,6 @@
 ---
-title: 'Example'
-description: 'See a real Agentbase API call and its streaming response.'
+title: "Example"
+description: "See a real Agentbase API call and its streaming response."
 ---
 
 ## Example: Streaming API Call
@@ -8,28 +8,35 @@ description: 'See a real Agentbase API call and its streaming response.'
 The Agents API streams responses by default using Server-Sent Events (SSE). This allows you to receive real-time updates as the agent thinks and acts.
 
 ### Request
+
 ```bash
 curl -X POST \
   -H "Content-Type: application/json" \
   -H "Accept: text/event-stream" \
   -H "Authorization: Bearer sk-ptr-..." \
   -d '{"message": "Can you introduce yourself?"}' \
-  "https://agentbase.sh"
+  "https://api.agentbase.sh"
 ```
 
-### Streaming Response (abridged)
+### Streaming Response
+
 ```text
-data: {"type":"agent_started","session":"8lh87hwhju0xoxy"}
-data: {"type":"agent_thinking_start","session":"8lh87hwhju0xoxy"}
-data: {"type":"agent_thinking","session":"8lh87hwhju0xoxy","content":"The user is asking me to introduce myself."}
-data: {"type":"agent_response_start","session":"8lh87hwhju0xoxy"}
-data: {"type":"agent_response","session":"8lh87hwhju0xoxy","content":"Hello! I'm agentbase, a general-purpose AI agent designed to help you…"}
-data: {"type":"agent_cost","session":"8lh87hwhju0xoxy","cost":"0.0934"}
-data: {"type":"agent_completed","session":"8lh87hwhju0xoxy"}
+data: {"type":"agent_started","session":"[SESSION_ID]"}
+data: {"type":"agent_thinking_start","session":"[SESSION_ID]"}
+data: {"type":"agent_thinking","session":"[SESSION_ID]","content":"The user is asking me to introduce myself."}
+data: {"type":"agent_response_start","session":"[SESSION_ID]"}
+data: {"type":"agent_response","session":"[SESSION_ID]","content":"Hello! I'm agentbase, a general-purpose AI agent designed to help you…"}
+data: {"type":"agent_tool_use_start","session":"[SESSION_ID]"}
+data: {"type":"agent_tool_use","session":"[SESSION_ID]","content":"{\"tool\":\"computer\",\"input\":\"\"}"}
+data: {"type":"agent_tool_response","session":"[SESSION_ID]","content":"{\"tool\":\"computer\",\"content\":\"success\"}"}
+data: {"type":"agent_step","session":"[SESSION_ID]","step":"1"}
+data: {"type":"agent_cost","session":"[SESSION_ID]","cost":"0.0934"}
+data: {"type":"agent_completed","session":"[SESSION_ID]"}
 ```
 
 For an explanation of every `type` value, see [Streaming Message Types](/api-reference/streaming-message-types).
 
 ## Session Handling
+
 - **Auto-Creation**: If you do not specify a session ID, a new one is automatically created.
-- **Continue a Session**: Append `?session=[SESSION_ID]` to the URL. 
+- **Continue a Session**: Append `?session=[SESSION_ID]` to the URL.
