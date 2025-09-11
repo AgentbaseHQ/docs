@@ -46,14 +46,14 @@
         },
         {
           "anchor": "Discord",
-          "href": "https://discord.gg/X2pgBY6g",
+          "href": "https://discord.com/invite/KFtqf7j9fs",
           "icon": "discord"
         }
       ]
     }
   },
   "navbar": {
-    "links": [{ "label": "Support", "href": "https://discord.gg/X2pgBY6g" }],
+    "links": [{ "label": "Support", "href": "https://discord.com/invite/KFtqf7j9fs" }],
     "primary": {
       "type": "button",
       "label": "Try Agentbase",
@@ -62,7 +62,7 @@
   },
   "footer": {
     "socials": {
-      "discord": "https://discord.gg/X2pgBY6g",
+      "discord": "https://discord.com/invite/KFtqf7j9fs",
       "website": "https://agentbase.sh"
     }
   }
