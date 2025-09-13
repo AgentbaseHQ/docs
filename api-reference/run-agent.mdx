@@ -1,0 +1,39 @@
+---
+title: "Run Agent"
+api: "POST https://api.agentbase.sh"
+authMethod: "bearer"
+description: "Run an agent with a message and receive a streaming agent response."
+---
+
+### Query Parameters
+
+<ParamField query="session" type="string" optional>
+  The session ID to continue the agent session conversation. If not provided, a
+  new agent session will be created.
+</ParamField>
+
+### Request Body
+
+<ParamField
+  body="message"
+  type="string"
+  required
+  default="Hi! What can you do?"
+>
+  The task or message to run the agent with.
+</ParamField>
+<ParamField body="mode" type="string" optional default="fast">
+  The mode of the agent. Can be `flash`, `fast` or `max`. Flash mode is great
+  for simple, one-off tasks. Fast mode is much faster and cheaper, with
+  comparable performance to `max` mode. The Agents API defaults to `fast`.
+</ParamField>
+<ParamField body="system" type="string" optional>
+  A system prompt to provide system information to the agent. The Agents API
+  defaults to the Agentbase default system prompt.
+</ParamField>
+<ParamField body="rules" type="string[]" optional>
+  A set of rules to provide to the agent. Rules are a set of constraints that
+  the agent must follow. Defaults to no rules.
+</ParamField>
+
+See [Streaming Message Types](/api-reference/streaming-message-types) for event details.

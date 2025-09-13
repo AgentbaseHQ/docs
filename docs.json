@@ -28,7 +28,7 @@
               "api-reference/what-is-the-agents-api",
               "api-reference/agent-capabilities",
               "api-reference/api-call-example",
-              "api-reference/send-message",
+              "api-reference/run-agent",
               "api-reference/get-messages",
               "api-reference/clear-messages",
               "api-reference/streaming-message-types"
@@ -53,7 +53,9 @@
     }
   },
   "navbar": {
-    "links": [{ "label": "Support", "href": "https://discord.com/invite/KFtqf7j9fs" }],
+    "links": [
+      { "label": "Support", "href": "https://discord.com/invite/KFtqf7j9fs" }
+    ],
     "primary": {
       "type": "button",
       "label": "Try Agentbase",
