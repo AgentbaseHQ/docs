@@ -39,12 +39,12 @@ description: "Run an agent with a message and receive a streaming agent response
   A set of MCP servers to provide to the agent. MCP servers configs are not
   stored within the agent, so each request must include the MCP servers configs,
   and you can modify them each time. You need to provide both `serverName` and
-  `serverUrl`, the `serverUrl` is the `/sse` endpoint of the MCP server.
+  `serverUrl`. We have backward compatibility with the old `/sse` endpoint.
   ```json
   {
     "mcpServers": [
-      { "serverName": "mcp-server-1", "serverUrl": "https://mcp-server-1.com/sse" },
-      { "serverName": "mcp-server-2", "serverUrl": "https://mcp-server-2.com/sse" }
+      { "serverName": "mcp-server-1", "serverUrl": "https://mcp-server-1.com/mcp" },
+      { "serverName": "mcp-server-2", "serverUrl": "https://mcp-server-2.com/mcp" }
     ]
   }
   ```
