@@ -53,5 +53,8 @@ description: "Run an agent with a message and receive a streaming agent response
   A set of rules to provide to the agent. Rules are a set of constraints that
   the agent must follow. Defaults to no rules.
 </ParamField>
+<ParamField body="streaming" type="boolean" optional default="false">
+  Whether to stream the agent messages token by token. Defaults to false.
+</ParamField>
 
 See [Streaming Message Types](/api-reference/streaming-message-types) for event details.
