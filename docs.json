@@ -28,10 +28,10 @@
               "api-reference/what-is-the-agents-api",
               "api-reference/agent-capabilities",
               "api-reference/api-call-example",
+              "api-reference/streaming-message-types",
               "api-reference/run-agent",
               "api-reference/get-messages",
-              "api-reference/clear-messages",
-              "api-reference/streaming-message-types"
+              "api-reference/clear-messages"
             ]
           }
         ]
