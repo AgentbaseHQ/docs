@@ -41,7 +41,7 @@
       "anchors": [
         {
           "anchor": "Website",
-          "href": "https://agentbase.sh",
+          "href": "https://www.agentbase.sh",
           "icon": "globe"
         },
         {
@@ -59,13 +59,13 @@
     "primary": {
       "type": "button",
       "label": "Try Agentbase",
-      "href": "http://base.agentbase.sh/sign-up"
+      "href": "https://base.agentbase.sh/sign-up"
     }
   },
   "footer": {
     "socials": {
       "discord": "https://discord.com/invite/KFtqf7j9fs",
-      "website": "https://agentbase.sh"
+      "website": "https://www.agentbase.sh"
     }
   }
 }
