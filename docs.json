@@ -15,23 +15,23 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Get Started",
+        "tab": "Introduction",
         "groups": [
           {
-            "group": "Documentation",
-            "pages": ["get-started/introduction", "get-started/agent-platform"]
+            "group": "Introduction",
+            "pages": ["intro/introduction", "intro/agent-platform"]
           },
           {
             "group": "Agents API",
             "pages": [
-              "api-reference/quickstart",
-              "api-reference/what-is-the-agents-api",
-              "api-reference/agent-capabilities",
-              "api-reference/api-call-example",
-              "api-reference/streaming-message-types",
-              "api-reference/run-agent",
-              "api-reference/get-messages",
-              "api-reference/clear-messages"
+              "api/quickstart",
+              "api/what-is-the-agents-api",
+              "api/agent-capabilities",
+              "api/api-call-example",
+              "api/streaming-message-types",
+              "api/run-agent",
+              "api/get-messages",
+              "api/clear-messages"
             ]
           }
         ]
