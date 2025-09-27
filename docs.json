@@ -19,6 +19,7 @@
         "groups": [
           {
             "group": "Getting Started",
+            "tag": "NEW",
             "pages": ["getting-started/overview", "getting-started/quickstart", "getting-started/common-use-cases"]
           },
           {
@@ -54,6 +55,12 @@
               "sdk/typescript-sdk",
               "sdk/python-sdk"
             ]
+          },
+          {
+            "group": "Resources",
+            "pages": [
+              "resources/what-you-can-do-with-agentbase"
+            ]
           }
         ]
       }
@@ -61,6 +68,15 @@
     "global": {
       "anchors": []
     }
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity"
+    ]
   },
   "navbar": {
     "links": [
