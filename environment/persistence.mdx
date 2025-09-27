@@ -12,7 +12,7 @@ Understanding persistence is crucial for building reliable applications with Age
 
 Agentbase separates persistence into two distinct tiers, each optimized for different use cases and cost structures.
 
-### Chat & Message History
+### 1. Chat & Message History
 
 **Automatic & Free**: Message history and chat history are persisted by default with no cost. See [pricing details](/pricing/overview).
 
@@ -27,18 +27,13 @@ const session1 = await agentbase.runAgent({
   message: "Help me plan a marketing campaign"
 });
 
-// Later - context is preserved
-const session2 = await agentbase.runAgent({
-  message: "Now create social media content for that campaign",
-  session: session1.sessionId
-});
 ```
 
-### Computer Environment
+### 2. Computer Environment
 
 **On-Demand Creation**: Computers are only created when agents need them for tasks like code execution, file operations, or web browsing.
 
-**Persistence**: Once created, computers persist with no current expiry date.
+**Persistence**: Once created, computers persist.
 
 - Auto-pause after 5 minutes of inactivity
 - All files and installations remain
@@ -51,17 +46,13 @@ const session2 = await agentbase.runAgent({
 
 ## What's Next?
 
-<CardGroup cols={3}>
+<CardGroup cols={2}>
   <Card title="Computer Details" icon="desktop" href="/environment/computer">
     Learn about the technical capabilities and tools available in computer environments
   </Card>
   
   <Card title="API Reference" icon="code" href="/api/run-agent">
     See all session and persistence parameters
-  </Card>
-  
-  <Card title="Use Cases" icon="lightbulb" href="/getting-started/common-use-cases">
-    Real-world examples leveraging persistence
   </Card>
 </CardGroup>
 

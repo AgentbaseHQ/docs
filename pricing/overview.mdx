@@ -1,24 +1,87 @@
 ---
 title: "Pricing"
-description: "Understanding Agentbase's step-based pricing model"
+description: "Simple, predictable step-based pricing for agentic workflows"
 icon: "dollar-sign"
 ---
 
-> Agentbase uses step-based pricing designed for multi-step agentic workflows, charging per action rather than per token.
+> Pay per action, not per token. Simple pricing that scales with value delivered.
 
-## Agent Modes
+## Why Step-Based Pricing?
 
-Choose from three optimized modes:
+Instead of confusing token-based billing, Agentbase charges per **step** - each discrete action your agent takes.
 
-| Mode | Cost Range | Best For |
-|------|-----------|----------|
-| **Fast** | ~$0.02 per step | Simple tasks, high-volume operations |
-| **Flash** | $0.05 - $0.12 per step | General-purpose workflows (recommended default) |
-| **Max** | $0.12 - $0.20 per step | Complex reasoning, multi-step analysis |
+**What counts as a step:**
+- Planning and reasoning
+- Tool usage (web search, file operations, etc.)
+- Analysis and decision making
+- Response generation
 
-## Key Features
+**Total Cost of Ownership Benefits:**
+- **Fewer total steps** - Our optimized agents complete tasks more efficiently
+- **Predictable costs** - No surprise bills from token overruns  
+- **Value-aligned pricing** - Pay for results, not just compute time
+- **No token counting** - Focus on building, not optimization
 
-### Automatic Cost Tracking
+## Pricing Table
+
+| Mode | Context Size | Cost per Step | Cached Step | Best For |
+|------|-------------|---------------|-------------|----------|
+| **Fast** | < 30k tokens | **$0.005** | **$0.0005** | Simple tasks, high-volume operations |
+| | 30k - 128k tokens | **$0.012** | **$0.0012** | Larger simple tasks |
+| **Flash** | < 30k tokens | **$0.05** | **$0.005** | Balanced workflows (recommended) |
+| | 30k - 128k tokens | **$0.12** | **$0.012** | Complex tasks with larger context |
+| **Max** | < 30k tokens | **$0.15** | **$0.015** | Advanced reasoning and analysis |
+| | 30k - 128k tokens | **$0.40** | **$0.04** | Complex large-context tasks |
+
+### Get Started
+- **Free credits** with work email signup
+- **Start small**: Fast mode for experimentation and simple tasks
+- **Scale up**: Flash mode for most production workflows
+- **Production budget**: $15-$30 recommended for extensive testing
+
+## Context Window Tiers
+
+Our pricing reflects the computational cost of processing different context sizes:
+
+### Small Context (< 30k tokens)
+- **Most cost-effective** for standard workflows
+- Handles typical conversations, documents, and code files
+- Best for: API calls, data analysis, simple automation
+
+### Large Context (30k - 128k tokens)
+- **Higher pricing** reflects increased computational requirements
+- Supports large documents, extensive conversations, complex codebases
+- Best for: Document analysis, long conversations, comprehensive research
+
+## Prompt Caching
+
+**Cached rates** apply when context is reused across steps - **up to 90% savings** on repeated context processing. Perfect for conversational agents and recurring workflows.
+
+**Example Savings:**
+```
+Standard workflow: 5 steps × $0.05 = $0.25
+With caching: 1 step × $0.05 + 4 steps × $0.005 = $0.07
+Savings: 72% reduction in total cost
+```
+
+## How We Optimize Your Costs
+
+### Intelligent Model Routing
+Agentbase uses a **mixture of models** optimized for different task types, automatically routing to the most cost-effective option:
+
+**Step Reduction Strategy:**
+- **Smart planning** reduces redundant operations
+- **Efficient context management** across multi-step workflows
+- **Optimized tool usage** minimizes unnecessary steps
+
+**Value Alignment:**
+- We make money when we solve your problems efficiently
+- Our incentive is to reduce total steps, which saves you money
+- Focus on **Total Cost of Ownership**, not per-API-call pricing
+
+## Cost Tracking & Features
+
+### Real-Time Cost Monitoring
 ```javascript
 // Included in every API response
 {
@@ -31,7 +94,7 @@ Choose from three optimized modes:
 }
 ```
 
-### How Costs Scale
+### How Costs Scale by Task Type
 
 | Task Type | Computer Needed? | Cost Level | Examples |
 |-----------|------------------|------------|----------|
@@ -42,18 +105,6 @@ Choose from three optimized modes:
 <Note>
   Costs increase when agents use computer environments and multiple tools. Simple text-based tasks keep costs minimal.
 </Note>
-
-### Free Credits to Start
-Sign up with your work email to automatically receive free credits and begin building immediately.
-
-### Recommended Setup
-- **Development mode**: Start with **Fast** mode for the best cost-performance balance
-- **Production scale**: Purchase \$15-\$30 in credits for extensive testing and complex workflows
-- **Cost monitoring**: Every API response includes real-time cost breakdown and balance tracking
-
-<Tip>
-  Costs scale with feature complexity and context size - start simple and expand as needed.
-</Tip>
 
 ## What's Next?
 

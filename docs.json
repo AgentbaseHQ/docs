@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Agentbase Docs",
-  "theme": "almond",
+  "theme": "mint",
   "logo": {
     "light": "/logo/blacklogo.svg",
     "dark": "/logo/whitelogo.svg"
@@ -27,7 +27,8 @@
               "intro/introduction", 
               "pricing/overview",
               "build/cost-tracking",
-              "environment/persistence", 
+              "environment/persistence",
+              "build/modes",
               "environment/computer", 
               "build/system-prompts",
               "build/rules", 
