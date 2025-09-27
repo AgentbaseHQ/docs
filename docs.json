@@ -18,38 +18,47 @@
         "tab": "Introduction",
         "groups": [
           {
-            "group": "Introduction",
-            "pages": ["intro/introduction", "intro/agent-platform"]
+            "group": "Getting Started",
+            "pages": ["getting-started/overview", "getting-started/quickstart", "getting-started/common-use-cases"]
+          },
+          {
+            "group": "Build with Agentbase",
+            "pages": [
+              "intro/introduction", 
+              "pricing/overview",
+              "build/cost-tracking",
+              "environment/persistence", 
+              "environment/computer", 
+              "build/system-prompts",
+              "build/rules", 
+              "build/tools",
+              "build/web-search",
+              "build/mcp"
+            ]
           },
           {
             "group": "Agents API",
             "pages": [
-              "api/quickstart",
-              "api/what-is-the-agents-api",
-              "api/agent-capabilities",
-              "api/api-call-example",
               "api/streaming-message-types",
+              "api/api-call-example",
               "api/run-agent",
               "api/get-messages",
-              "api/clear-messages"
+              "api/clear-messages",
+              "api/agent-capabilities"
+            ]
+          },
+          {
+            "group": "Agentbase SDK",
+            "pages": [
+              "sdk/typescript-sdk",
+              "sdk/python-sdk"
             ]
           }
         ]
       }
     ],
     "global": {
-      "anchors": [
-        {
-          "anchor": "Website",
-          "href": "https://www.agentbase.sh",
-          "icon": "globe"
-        },
-        {
-          "anchor": "Discord",
-          "href": "https://discord.com/invite/KFtqf7j9fs",
-          "icon": "discord"
-        }
-      ]
+      "anchors": []
     }
   },
   "navbar": {

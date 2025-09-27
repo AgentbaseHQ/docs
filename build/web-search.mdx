@@ -1,0 +1,78 @@
+---
+title: "Web Search & Crawl"
+description: "Search the web and extract content from websites using Agentbase's web tools"
+icon: "globe"
+---
+
+> Agents automatically use web search and crawling tools to find information and extract content from websites.
+
+## How It Works
+
+Agents use the `web` tool with two commands: `search` to find relevant URLs and `crawl` to extract content from specific pages.
+
+```javascript
+// Basic usage - agent chooses the right web tool automatically
+const response = await agentbase.runAgent({
+  message: "Find the latest AI news and summarize the key developments"
+});
+```
+
+## Web Tool Commands
+
+### Search
+Finds relevant URLs and metadata from search engines:
+
+```json
+// Tool call
+{"tool": "web", "input": {"command": "search", "query": "AI developments 2025"}}
+
+// Returns
+{
+  "url": "https://techcrunch.com/2025/09/25/openai-says-gpt-5-stacks-up-to-humans/",
+  "title": "OpenAI says GPT-5 stacks up to humans in a wide range of jobs", 
+  "publishedDate": "2025-09-25T00:00:00.000Z"
+}
+```
+
+### Crawl
+Extracts full content from specific URLs:
+
+```json
+// Tool call
+{"tool": "web", "input": {"command": "crawl", "urls": ["https://example.com/article"]}}
+
+// Returns
+{
+  "url": "https://example.com/article",
+  "content": "Full article text and content extracted from the webpage..."
+}
+```
+
+## Common Patterns
+
+```javascript
+// Research workflow
+"Search for competitor pricing and analyze their strategies"
+
+// Content extraction
+"Crawl these 3 product pages and compare their features"
+
+// News monitoring  
+"Find recent news about quantum computing and summarize key breakthroughs"
+```
+
+## What's Next?
+
+<CardGroup cols={3}>
+  <Card title="Tools Overview" icon="wrench" href="/build/tools">
+    See all available tools and capabilities
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Complete API documentation and parameters
+  </Card>
+  
+  <Card title="Streaming Events" icon="activity" href="/api/streaming-message-types">
+    Monitor tool execution in real-time
+  </Card>
+</CardGroup>

@@ -1,0 +1,97 @@
+---
+title: "Agent Computer"
+description: "Technical capabilities and tools available in Agentbase computer environments"
+icon: "desktop"
+---
+
+> Explore the full Linux environment that agents can access for code execution, file operations, web browsing, and complex workflows.
+
+When agents need to perform tasks requiring persistent state or system access, Agentbase automatically creates a full Linux computer environment with comprehensive tools and capabilities.
+
+## When Computer Environments Are Created
+
+Computer environments are created automatically when agents need to perform tasks that require:
+
+<CardGroup cols={2}>
+  <Card title="Code & Development" icon="code">
+    Python, Node.js, or other language execution, package installation, testing, and debugging
+  </Card>
+  
+  <Card title="File Operations" icon="file">
+    Creating, reading, writing, or processing files, data transformation, and file system management
+  </Card>
+  
+  <Card title="Web Interaction" icon="globe">
+    Web scraping, browser automation, form submission, and website testing
+  </Card>
+  
+  <Card title="System Operations" icon="terminal">
+    Shell commands, system configuration, process management, and tool installation
+  </Card>
+</CardGroup>
+
+<Note>
+  **Automatic Creation**: You don't need to explicitly request a computer - agents create them automatically when tasks require persistent state or system access.
+</Note>
+
+## Core Capabilities & Tools
+
+The computer environment provides a complete Linux system with these built-in capabilities:
+
+<AccordionGroup>
+  <Accordion title="Shell & Command Execution">
+    **Bash access**: Full shell command execution for system operations, package installation, and process management.
+    
+    **Use cases**: Installing dependencies, running scripts, system configuration, file operations
+  </Accordion>
+
+  <Accordion title="File System Operations">
+    **Complete file access**: Read, write, create, and manage files across the entire Linux filesystem.
+    
+    **Use cases**: Code development, data processing, configuration management, artifact storage
+  </Accordion>
+
+  <Accordion title="Web Browser Automation">
+    **Full browser capabilities**: Navigate websites, interact with web applications, and extract data from web pages.
+    
+    **Use cases**: Web scraping, testing web applications, research, form automation
+  </Accordion>
+
+  <Accordion title="Screenshot & Visual Tools">
+    **Screen capture**: Take screenshots of the desktop, applications, or specific regions for visual debugging.
+    
+    **Use cases**: UI testing, visual verification, debugging graphical applications
+  </Accordion>
+</AccordionGroup>
+
+## Environment Specifications
+
+### System Details
+- **Operating System**: Debian GNU/Linux 12 (bookworm), Kernel 6.1.134 x86_64
+- **Browser**: Google Chrome 140.0.7339.127 (Official Build) (64-bit)
+- **Working Directory**: `/home/pointer`
+- **Architecture**: x86_64
+- **File System**: Full read/write access
+- **Network**: Internet access for downloads and API calls
+- **Resources**: Allocated automatically based on task requirements
+
+
+## What's Next?
+
+<CardGroup cols={3}>
+  <Card title="Persistence Overview" icon="database" href="/environment/persistence">
+    Learn about chat and computer persistence models
+  </Card>
+  
+  <Card title="Use Cases" icon="lightbulb" href="/getting-started/common-use-cases">
+    Real-world examples using computer environments
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    See all parameters and session options
+  </Card>
+</CardGroup>
+
+<Tip>
+  **Remember**: Computer environments are created automatically when tasks require them. Simply describe your goal - agents will handle provisioning, tool selection, and environment management.
+</Tip>

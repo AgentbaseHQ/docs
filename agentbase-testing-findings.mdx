@@ -1,0 +1,334 @@
+---
+title: "Agentbase Browser and Computer Usage - Testing Findings"
+description: "Detailed findings from hands-on testing of Agentbase's browser automation and computer usage capabilities"
+---
+
+# Agentbase Browser and Computer Usage - Testing Findings
+
+This document contains detailed findings from hands-on testing of Agentbase's browser automation and computer usage capabilities, discovered through direct API testing.
+
+## Computer Usage Capabilities
+
+### Computer Instance Creation
+
+**How it works:**
+- Agents automatically create Linux computer instances when tasks require code execution or file manipulation
+- Computer creation is triggered by the agent's assessment of the task requirements
+- No manual setup required - fully automatic provisioning
+
+**API Tool Call:**
+```json
+{"tool":"computer","input":"{\"action\":\"create\"}"}
+```
+
+**Response:**
+```json
+{
+  "tool": "computer",
+  "response": {
+    "success": true,
+    "message": "Computer created successfully. Now you can access the computer using the bash, editor, browser, glob, grep, and browser related tools."
+  }
+}
+```
+
+### File System Operations
+
+**File Creation with str_replace_editor:**
+- Tool: `str_replace_editor`
+- Can create files in the `/home/pointer` directory (default working directory)
+- Permission restrictions exist for root-level directories (e.g., `/fibonacci.py` fails, `/home/pointer/fibonacci.py` succeeds)
+
+**Example file creation:**
+```json
+{
+  "tool": "str_replace_editor",
+  "input": {
+    "command": "create",
+    "file_text": "#!/usr/bin/env python3\n\n# Simple Hello World Python script\nprint(\"Hello, World!\")",
+    "path": "/home/pointer/hello_world.py"
+  }
+}
+```
+
+**Success response:**
+```json
+{
+  "tool": "str_replace_editor", 
+  "response": {
+    "success": "File created successfully at: /home/pointer/hello_world.py"
+  }
+}
+```
+
+### Code Execution
+
+**Bash Command Execution:**
+- Tool: `bash`
+- Full Linux environment with Python 3 pre-installed
+- Persistent working directory state
+- Commands execute in `/home/pointer` by default
+
+**Example execution:**
+```json
+{
+  "tool": "bash",
+  "input": {
+    "command": "cd /home/pointer && python3 hello_world.py"
+  }
+}
+```
+
+**Response format:**
+```json
+{
+  "tool": "bash",
+  "response": [
+    {
+      "stdout": "Hello, World!",
+      "working_directory": "/home/pointer"
+    }
+  ]
+}
+```
+
+### Tool Chain Integration
+
+**Automatic tool chaining observed:**
+1. Computer instance creation
+2. File creation with editor
+3. Code execution with bash
+4. Result capture and formatting
+
+**Cost implications:**
+- Computer creation: ~$0.01-0.02 per instance
+- File operations: ~$0.02-0.03 per operation
+- Code execution: ~$0.01-0.02 per command
+
+## Browser Automation Capabilities
+
+### Browser Navigation
+
+**Tool:** `browser_navigate`
+**Purpose:** Visit websites and extract structured information
+
+**Example API call:**
+```json
+{"tool":"browser_navigate","input":"{\"url\":\"https://google.com\"}"}
+```
+
+### Browser Response Format
+
+**Playwright Integration:**
+- Uses Playwright for browser automation
+- Provides both code execution details and page state
+- Returns structured page snapshots in YAML format
+
+**Sample response structure:**
+```json
+{
+  "tool": "browser_navigate",
+  "response": [
+    {
+      "type": "text",
+      "text": "### Ran Playwright code\n```js\nawait page.goto('https://google.com');\n```\n\n### Page state\n- Page URL: https://www.google.com/\n- Page Title: Google\n- Page Snapshot:\n```yaml\n- generic [ref=e2]:\n  - navigation [ref=e3]:\n    - link \"About\" [ref=e4] [cursor=pointer]:\n      - /url: https://about.google/?fg=1&utm_source=google-US&utm_medium=referral&utm_campaign=hp-header\n```"
+    }
+  ]
+}
+```
+
+### Page Element Detection
+
+**Capabilities observed:**
+- Detects clickable elements with cursor indicators
+- Identifies form elements (search boxes, buttons)
+- Extracts link URLs and navigation structure
+- Captures page titles and metadata
+- Maps interactive elements with reference IDs
+
+**Element types detected:**
+- Links with URLs
+- Buttons with click handlers
+- Search boxes and input fields
+- Navigation menus
+- Images and media elements
+- Form controls
+
+### Structured Data Extraction
+
+**Page snapshot format:**
+- YAML structure with hierarchical element mapping
+- Reference IDs for each interactive element
+- URL extraction for all links
+- Accessibility information (cursor types, button roles)
+- Content text extraction
+
+**Example element structure:**
+```yaml
+- link "Gmail" [ref=e10] [cursor=pointer]:
+  - /url: https://mail.google.com/mail/&ogbl
+- button "Google Search" [ref=e66] [cursor=pointer]
+- combobox "Search" [active] [ref=e42]
+```
+
+## Web Search Capabilities
+
+### Search Tool Integration
+
+**Tool:** `web`
+**Command:** `search`
+**Purpose:** Real-time web search with current information
+
+**Example usage:**
+```json
+{
+  "tool": "web",
+  "input": {
+    "command": "search",
+    "query": "latest AI news 2025",
+    "urls": []
+  }
+}
+```
+
+### Search Response Format
+
+**Results structure:**
+- Array of search results with metadata
+- Published dates in ISO format
+- Source URLs from various domains
+- Titles extracted from search results
+
+**Sample response:**
+```json
+{
+  "tool": "web",
+  "response": [
+    {
+      "url": "https://www.cnbc.com/2025/09/26/anthropic-global-ai-hiring-spree.html",
+      "title": "Anthropic to triple international workforce in global AI push",
+      "publishedDate": "2025-09-26T15:04:56.562Z"
+    }
+  ]
+}
+```
+
+**Search capabilities:**
+- Real-time information retrieval
+- Date-filtered results
+- Multi-source aggregation
+- Reputable news outlet prioritization
+
+## Agent Modes and Thinking Process
+
+### Flash Mode Insights
+
+**Unique feature:** `agent_thinking` events
+**Purpose:** Reveals agent's reasoning and planning process
+
+**Example thinking event:**
+```json
+{
+  "type": "agent_thinking",
+  "session": "session_id",
+  "content": "**Planning to summarize AI news**\n\nI'm thinking we should start by using the web tool. I need to create a plan following the Tools Principles, maybe outlining 3 to 7 bullets..."
+}
+```
+
+**Thinking process structure:**
+- Task decomposition
+- Tool selection reasoning
+- Multi-step planning
+- Strategy explanation
+
+### Response Event Types
+
+**Complete event sequence observed:**
+1. `agent_started` - Session initiation
+2. `agent_thinking` - Planning phase (flash mode only)
+3. `agent_response` - User-facing communication
+4. `agent_tool_use` - Tool execution
+5. `agent_tool_response` - Tool results
+6. `agent_cost` - Usage tracking
+7. `agent_step` - Progress markers
+8. `agent_completed` - Session end
+
+## Cost and Performance Insights
+
+### Cost Breakdown by Operation
+
+**Computer operations:**
+- Instance creation: $0.009-0.017
+- File operations: $0.015-0.027
+- Code execution: $0.011-0.017
+
+**Web operations:**
+- Search queries: $0.0009
+- Result processing: $0.0014
+
+**Browser operations:**
+- Navigation: $0.016-0.017
+- Page analysis: Additional processing costs
+
+### Performance Characteristics
+
+**Response times observed:**
+- Simple API calls: 2-5 seconds
+- Computer + code execution: 10-30 seconds
+- Web search + analysis: 5-15 seconds
+- Browser navigation: 8-12 seconds
+
+**Reliability:**
+- Automatic error handling and retries
+- Graceful fallbacks for permission issues
+- Consistent tool chaining
+
+## Technical Architecture Insights
+
+### Tool Ecosystem
+
+**Available tools confirmed:**
+- `computer` - Linux instance management
+- `str_replace_editor` - File creation and editing
+- `bash` - Command execution
+- `browser_navigate` - Web page interaction
+- `web` - Search and information retrieval
+
+### Session Management
+
+**Persistent state:**
+- Computer instances maintain state across tool calls
+- Working directory persistence
+- File system changes retained within session
+
+**Session isolation:**
+- Each session gets independent computer instance
+- Clean environment for each new session
+- No cross-session data leakage
+
+## Recommendations for Documentation
+
+### Browser Documentation Should Include:
+
+1. **Page interaction capabilities** - clicking, form filling, navigation
+2. **Data extraction patterns** - structured data, content scraping
+3. **Element targeting** - reference ID system, selector strategies
+4. **Multi-page workflows** - session continuity, complex automation
+
+### Computer Documentation Should Include:
+
+1. **Environment specifications** - available software, Python version
+2. **File system layout** - permissions, directory structure
+3. **Execution contexts** - environment variables, PATH
+4. **Tool integration patterns** - editor + bash workflows
+
+### Cost Optimization Guidance:
+
+1. **Tool selection strategies** - when to use which tools
+2. **Efficient request patterns** - batching operations
+3. **Mode selection** - flash vs fast vs max for different use cases
+4. **Resource management** - computer instance lifecycle
+
+---
+
+*Generated from hands-on API testing on September 26, 2025*

@@ -1,0 +1,72 @@
+---
+title: "Pricing"
+description: "Understanding Agentbase's step-based pricing model"
+icon: "dollar-sign"
+---
+
+> Agentbase uses step-based pricing designed for multi-step agentic workflows, charging per action rather than per token.
+
+## Agent Modes
+
+Choose from three optimized modes:
+
+| Mode | Cost Range | Best For |
+|------|-----------|----------|
+| **Fast** | ~$0.02 per step | Simple tasks, high-volume operations |
+| **Flash** | $0.05 - $0.12 per step | General-purpose workflows (recommended default) |
+| **Max** | $0.12 - $0.20 per step | Complex reasoning, multi-step analysis |
+
+## Key Features
+
+### Automatic Cost Tracking
+```javascript
+// Included in every API response
+{
+  "type": "agent_cost",
+  "session": "e3jbak7k4xnvct3",
+  "cost": "0.0146",
+  "balance": 47.4557,
+  "deductionSuccess": true,
+  "lowBalance": false
+}
+```
+
+### How Costs Scale
+
+| Task Type | Computer Needed? | Cost Level | Examples |
+|-----------|------------------|------------|----------|
+| **Text & Analysis** | No | Lower | Writing, research, planning |
+| **Code & Files** | Yes | Medium | Programming, file operations |
+| **Multi-tool Workflows** | Yes | Higher | Web scraping + analysis + reports |
+
+<Note>
+  Costs increase when agents use computer environments and multiple tools. Simple text-based tasks keep costs minimal.
+</Note>
+
+### Free Credits to Start
+Sign up with your work email to automatically receive free credits and begin building immediately.
+
+### Recommended Setup
+- **Development mode**: Start with **Fast** mode for the best cost-performance balance
+- **Production scale**: Purchase \$15-\$30 in credits for extensive testing and complex workflows
+- **Cost monitoring**: Every API response includes real-time cost breakdown and balance tracking
+
+<Tip>
+  Costs scale with feature complexity and context size - start simple and expand as needed.
+</Tip>
+
+## What's Next?
+
+<CardGroup cols={3}>
+  <Card title="Cost Tracking" icon="chart-line" href="/build/cost-tracking">
+    Implement real-time cost monitoring
+  </Card>
+  
+  <Card title="Quick Start" icon="rocket" href="/getting-started/quickstart">
+    Try the platform with live pricing
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    See all parameters and options
+  </Card>
+</CardGroup>

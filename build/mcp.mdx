@@ -1,0 +1,75 @@
+---
+title: "MCP Integration"
+description: "Connect external tools and services using Model Context Protocol"
+icon: "plug"
+---
+
+> MCP (Model Context Protocol) allows agents to access your external tools, APIs, and databases seamlessly.
+
+## Basic Usage
+
+```javascript
+const response = await agentbase.runAgent({
+  message: "Get customer data for user ID 12345",
+  mcpServers: [
+    {
+      serverName: "customer-api",
+      serverUrl: "https://api.yourcompany.com/mcp"
+    }
+  ]
+});
+```
+
+## Common Use Cases
+
+**Database Integration:**
+```javascript
+mcpServers: [{ 
+  serverName: "company-db", 
+  serverUrl: "https://db-mcp.yourcompany.com" 
+}]
+```
+
+**API Integration:**
+```javascript
+mcpServers: [{ 
+  serverName: "inventory-api", 
+  serverUrl: "https://inventory-mcp.yourcompany.com" 
+}]
+```
+
+**Multiple MCP Servers:**
+```javascript
+mcpServers: [
+  { serverName: "crm-tools", serverUrl: "https://crm-mcp.yourcompany.com" },
+  { serverName: "payment-gateway", serverUrl: "https://payments-mcp.yourcompany.com" }
+]
+```
+
+## MCP Server Requirements
+
+Your MCP server needs:
+- HTTP endpoint accepting MCP-formatted requests
+- Tool definitions with parameters
+- Authentication handling
+- Standard response format
+
+## What's Next?
+
+<CardGroup cols={3}>
+  <Card title="Tools Overview" icon="hammer" href="/build/tools">
+    Learn about built-in agent capabilities
+  </Card>
+  
+  <Card title="System Prompts" icon="user" href="/build/system-prompts">
+    Guide agents on when to use MCP tools
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Complete MCP parameter documentation
+  </Card>
+</CardGroup>
+
+<Tip>
+  **Pro tip**: Start with simple MCP integrations and gradually add complexity. Test MCP server connectivity and tool availability before deploying to production.
+</Tip>
