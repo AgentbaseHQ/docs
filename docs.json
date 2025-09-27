@@ -1,6 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Agentbase Docs",
+  "siteUrl": "https://docs.agentbase.sh",
   "theme": "mint",
   "logo": {
     "light": "/logo/blacklogo.svg",
@@ -11,6 +12,17 @@
     "primary": "#1A1A1A",
     "light": "#FBFBFB",
     "dark": "#1A1A1A"
+  },
+  "modeToggle": {
+    "default": "light",
+    "isHidden": false
+  },
+  "seo": {
+    "indexHiddenPages": false
+  },
+  "metadata": {
+    "og:site_name": "Agentbase Documentation",
+    "twitter:site": "@agentbase_"
   },
   "navigation": {
     "tabs": [
@@ -91,7 +103,9 @@
   "footer": {
     "socials": {
       "discord": "https://discord.com/invite/KFtqf7j9fs",
-      "website": "https://www.agentbase.sh"
+      "website": "https://www.agentbase.sh",
+      "x": "https://x.com/agentbase_",
+      "linkedin": "https://www.linkedin.com/company/agentbasehq/"
     }
   }
 }
