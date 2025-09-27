@@ -26,12 +26,12 @@ Instead of confusing token-based billing, Agentbase charges per **step** - each 
 
 | Mode | Context Size | Cost per Step | Cached Step | Best For |
 |------|-------------|---------------|-------------|----------|
-| **Fast** | < 30k tokens | **$0.005** | **$0.0005** | Simple tasks, high-volume operations |
-| | 30k - 128k tokens | **$0.012** | **$0.0012** | Larger simple tasks |
-| **Flash** | < 30k tokens | **$0.05** | **$0.005** | Balanced workflows (recommended) |
-| | 30k - 128k tokens | **$0.12** | **$0.012** | Complex tasks with larger context |
-| **Max** | < 30k tokens | **$0.15** | **$0.015** | Advanced reasoning and analysis |
-| | 30k - 128k tokens | **$0.40** | **$0.04** | Complex large-context tasks |
+| **Fast** | < 30k tokens | **$0.01** | **$0.003** | Simple tasks, high-volume operations |
+| | 30k - 128k tokens | **$0.04** | **$0.012** | Larger simple tasks |
+| **Flash** | < 30k tokens | **$0.05** | **$0.015** | Balanced workflows (recommended) |
+| | 30k - 128k tokens | **$0.15** | **$0.045** | Complex tasks with larger context |
+| **Max** | < 30k tokens | **$0.15** | **$0.045** | Advanced reasoning and analysis |
+| | 30k - 128k tokens | **$0.40** | **$0.12** | Complex large-context tasks |
 
 ### Get Started
 - **Free credits** with work email signup
@@ -55,14 +55,7 @@ Our pricing reflects the computational cost of processing different context size
 
 ## Prompt Caching
 
-**Cached rates** apply when context is reused across steps - **up to 90% savings** on repeated context processing. Perfect for conversational agents and recurring workflows.
-
-**Example Savings:**
-```
-Standard workflow: 5 steps × $0.05 = $0.25
-With caching: 1 step × $0.05 + 4 steps × $0.005 = $0.07
-Savings: 72% reduction in total cost
-```
+**Cached rates** apply when context is reused across steps - **70% savings** on repeated context processing. Perfect for conversational agents and recurring workflows.
 
 ## How We Optimize Your Costs
 
