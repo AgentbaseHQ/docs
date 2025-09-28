@@ -71,7 +71,8 @@
           {
             "group": "Resources",
             "pages": [
-              "resources/use-cases"
+              "resources/use-cases",
+              "contact-support"
             ]
           }
         ]
