@@ -37,8 +37,8 @@
           {
             "group": "Build with Agentbase",
             "pages": [
-              "intro/introduction", 
-              "pricing/overview",
+              "introduction", 
+              "pricing",
               "build/cost-tracking",
               "environment/persistence",
               "build/modes",
@@ -71,7 +71,7 @@
           {
             "group": "Resources",
             "pages": [
-              "resources/what-you-can-do-with-agentbase"
+              "resources/use-cases"
             ]
           }
         ]

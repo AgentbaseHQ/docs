@@ -6,6 +6,20 @@ icon: "dollar-sign"
 
 > Pay per action, not per token. Simple pricing that scales with value delivered.
 
+## Cost-per-Step Pricing
+
+*All prices in US dollars*
+
+| Mode | Cost per Step | Cached Step | Best For |
+|------|---------------|-------------|----------|
+| **Fast** | **$0.01 - $0.04** | $0.003 - $0.012 | Simple tasks, high-volume operations |
+| **Flash** | **$0.05 - $0.15** | $0.015 - $0.045 | **Recommended** - Balanced workflows |
+| **Max** | **$0.15 - $0.40** | $0.045 - $0.12 | Advanced reasoning and analysis |
+
+<Note>
+**Variable Pricing**: Not every task requires a computer or large context. Prices vary based on context size and whether your agent needs computer capabilities - simple text-based tasks stay at the lower end of each range.
+</Note>
+
 ## Why Step-Based Pricing?
 
 Instead of confusing token-based billing, Agentbase charges per **step** - each discrete action your agent takes.
@@ -22,40 +36,30 @@ Instead of confusing token-based billing, Agentbase charges per **step** - each 
 - **Value-aligned pricing** - Pay for results, not just compute time
 - **No token counting** - Focus on building, not optimization
 
-## Pricing Table
-
-| Mode | Context Size | Cost per Step | Cached Step | Best For |
-|------|-------------|---------------|-------------|----------|
-| **Fast** | < 30k tokens | **$0.01** | **$0.003** | Simple tasks, high-volume operations |
-| | 30k - 128k tokens | **$0.04** | **$0.012** | Larger simple tasks |
-| **Flash** | < 30k tokens | **$0.05** | **$0.015** | Balanced workflows (recommended) |
-| | 30k - 128k tokens | **$0.15** | **$0.045** | Complex tasks with larger context |
-| **Max** | < 30k tokens | **$0.15** | **$0.045** | Advanced reasoning and analysis |
-| | 30k - 128k tokens | **$0.40** | **$0.12** | Complex large-context tasks |
-
 ### Get Started
 - **Free credits** with work email signup
 - **Start small**: Fast mode for experimentation and simple tasks
 - **Scale up**: Flash mode for most production workflows
-- **Production budget**: $15-$30 recommended for extensive testing
+- **Testing budget**: $15-$30 recommended for extensive testing
+
+### Enterprise & Production Planning
+For large corporate deployments or detailed production project cost planning, contact our team for a customized breakdown and calculation. Reach out through our [Discord community](https://discord.com/invite/KFtqf7j9fs) or [website](https://www.agentbase.sh).
 
 ## Context Window Tiers
 
 Our pricing reflects the computational cost of processing different context sizes:
 
-### Small Context (< 30k tokens)
-- **Most cost-effective** for standard workflows
-- Handles typical conversations, documents, and code files
-- Best for: API calls, data analysis, simple automation
-
-### Large Context (30k - 128k tokens)
-- **Higher pricing** reflects increased computational requirements
-- Supports large documents, extensive conversations, complex codebases
-- Best for: Document analysis, long conversations, comprehensive research
+| Small Context (< 30k tokens) | Large Context (30k - 128k tokens) |
+|-------------------------------|-----------------------------------|
+| **Most cost-effective** for standard workflows | **Higher pricing** reflects increased computational requirements |
+| Handles typical conversations, documents, and code files | Supports large documents, extensive conversations, complex codebases |
+| Best for: API calls, data analysis, simple automation | Best for: Document analysis, long conversations, comprehensive research |
 
 ## Prompt Caching
 
-**Cached rates** apply when context is reused across steps - **70% savings** on repeated context processing. Perfect for conversational agents and recurring workflows.
+<Tip>
+**70% savings** on cached rates when context is reused across steps. Perfect for conversational agents and recurring workflows where the same context is processed multiple times.
+</Tip>
 
 ## How We Optimize Your Costs
 

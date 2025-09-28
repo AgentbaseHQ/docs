@@ -21,57 +21,57 @@ Make sure you have:
   Sign up with your work email to automatically receive credits!
 </Tip>
 
-## Step 1: Install Agentbase CLI
+<Steps>
+  <Step title="Install Agentbase CLI">
+    Install the CLI to explore Agentbase capabilities:
 
-Install the CLI to explore Agentbase capabilities:
+    ```bash
+    # Create your first agent project
+    npm create agentbase@latest
 
-```bash
-# Create your first agent project
-npm create agentbase@latest
+    # Navigate to your project
+    cd my-agent
 
-# Navigate to your project
-cd my-agent
+    # Start the interactive CLI
+    npm run dev
+    # You'll be prompted to add your API key on first use
+    ```
 
-# Start the interactive CLI
-npm run dev
-# You'll be prompted to add your API key on first use
-```
+    <Tip>
+      Sign up with your work email to automatically receive credits!
+    </Tip>
+  </Step>
 
-<Tip>
-  Sign up with your work email to automatically receive credits!
-</Tip>
+  <Step title="Test CLI chat to understand Agentbase">
+    When you run `npm run dev`, you'll see the Agentbase prompt:
 
-## Step 2: Test CLI chat to understand Agentbase
+    ```
+    ✻ Welcome to Agentbase!
 
-When you run `npm run dev`, you'll see the Agentbase prompt:
+    > Try asking "What can you do?" to get started...
+    ```
 
-```
-✻ Welcome to Agentbase!
+    Test basic interactions to understand agent capabilities:
 
-> Try asking "What can you do?" to get started...
-```
+    ```
+    > What can you do?
+    > Can you write and run code?
+    > Can you search the web for current information?
+    > Can you use a browser to visit websites?
+    ```
 
-Test basic interactions to understand agent capabilities:
+    <Note>
+      The CLI uses the same API as your applications will use, so testing here directly translates to production integration.
+    </Note>
+  </Step>
 
-```
-> What can you do?
-> Can you write and run code?
-> Can you search the web for current information?
-> Can you use a browser to visit websites?
-```
+  <Step title="Try different agent modes">
+    Test the different agent modes to understand their capabilities. You can experiment in two ways:
 
-<Note>
-  The CLI uses the same API as your applications will use, so testing here directly translates to production integration.
-</Note>
+    **Editing the code directly:**
+    In your project's `index.ts` file, find the `sendMessage` function and add a `mode` parameter:
 
-## Step 3: Try different agent modes
-
-Test the different agent modes to understand their capabilities. You can experiment in two ways:
-
-**Editing the code directly:**
-In your project's `index.ts` file, find the `sendMessage` function and add a `mode` parameter:
-
-```typescript
+    ```typescript
 /**
  * Send a message to the agent and process the response stream
  */
@@ -109,29 +109,29 @@ async function sendMessage(message: string) {
 }
 ```
 
-**Using curl commands:**
-```bash
-# Edit the "mode" field to "fast", "flash", or "max"
-curl -X POST "https://api.agentbase.sh" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Your task here", "mode": "fast"}'
-```
+    **Using curl commands:**
+    ```bash
+    # Edit the "mode" field to "fast", "flash", or "max"
+    curl -X POST "https://api.agentbase.sh" \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{"message": "Your task here", "mode": "fast"}'
+    ```
 
-**Mode differences:**
-- **Fast**: Balanced performance, best for most production use cases (no thinking events)
-- **Flash**: Shows agent thinking process, good for learning and debugging  
-- **Max**: Advanced reasoning for complex multi-step tasks (includes thinking events)
+    **Mode differences:**
+    - **Fast**: Balanced performance, best for most production use cases (no thinking events)
+    - **Flash**: Shows agent thinking process, good for learning and debugging  
+    - **Max**: Advanced reasoning for complex multi-step tasks (includes thinking events)
 
-<Note>
-  Agent thinking events (showing reasoning process) are available in **flash** and **max** modes, but not in fast mode.
-</Note>
+    <Note>
+      Agent thinking events (showing reasoning process) are available in **flash** and **max** modes, but not in fast mode.
+    </Note>
+  </Step>
 
-## Step 4: Maintain session for conversations
+  <Step title="Maintain session for conversations">
+    To keep the agent in the same conversation context, you need to maintain the session ID:
 
-To keep the agent in the same conversation context, you need to maintain the session ID:
-
-**Editing the code directly:**
+    **Editing the code directly:**
 In your project's `index.ts` file, the session ID is already handled in the `sendMessage` function:
 
 ```typescript
@@ -186,18 +186,18 @@ curl -X POST "https://api.agentbase.sh?session=SESSION_ID" \
   -d '{"message": "Now create social media content for this campaign"}'
 ```
 
-<Note>
-  Without maintaining the session ID, each request starts a new conversation and the agent won't remember previous context.
-</Note>
+    <Note>
+      Without maintaining the session ID, each request starts a new conversation and the agent won't remember previous context.
+    </Note>
+  </Step>
 
-## Step 5: Test streaming vs complete messages
+  <Step title="Test streaming vs complete messages">
+    Experiment with different response formats. You can test in two ways:
 
-Experiment with different response formats. You can test in two ways:
+    **Editing the code directly:**
+    In your project's `index.ts` file, find the `sendMessage` function and add a `streaming` parameter:
 
-**Editing the code directly:**
-In your project's `index.ts` file, find the `sendMessage` function and add a `streaming` parameter:
-
-```typescript
+    ```typescript
 /**
  * Send a message to the agent and process the response stream
  */
@@ -235,48 +235,50 @@ async function sendMessage(message: string) {
 }
 ```
 
-**Using curl commands:**
-```bash
-# Edit the "streaming" field to true or false
-curl -X POST "https://api.agentbase.sh" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Your task here", "streaming": false}'
-```
+    **Using curl commands:**
+    ```bash
+    # Edit the "streaming" field to true or false
+    curl -X POST "https://api.agentbase.sh" \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{"message": "Your task here", "streaming": false}'
+    ```
 
-**When to use each:**
-- **Streaming (true)**: Better user experience for long responses, real-time feedback
-- **Complete (false)**: Easier to handle programmatically, better for automated processing
+    **When to use each:**
+    - **Streaming (true)**: Better user experience for long responses, real-time feedback
+    - **Complete (false)**: Easier to handle programmatically, better for automated processing
 
-**Streaming event types:**
-When streaming is enabled, you'll receive different event types with specific labels.
+    **Streaming event types:**
+    When streaming is enabled, you'll receive different event types with specific labels.
 
-<Note>
-  See the complete list of [Streaming Message Types](/api/streaming-message-types) for all event details and examples.
-</Note>
+    <Note>
+      See the complete list of [Streaming Message Types](/api/streaming-message-types) for all event details and examples.
+    </Note>
+  </Step>
 
-## Step 6: Test computer and agentic capabilities
+  <Step title="Test computer and agentic capabilities">
+    Now let's explore the agent's ability to use a computer and perform complex agentic tasks:
 
-Now let's explore the agent's ability to use a computer and perform complex agentic tasks:
+    **Computer capabilities:**
+    ```
+    > Can you write a Python script that calculates the Fibonacci sequence and run it?
+    ```
 
-**Computer capabilities:**
-```
-> Can you write a Python script that calculates the Fibonacci sequence and run it?
-```
+    **Research and analysis:**
+    ```
+    > Research renewable energy trends and create a market analysis report
+    ```
 
-**Research and analysis:**
-```
-> Research renewable energy trends and create a market analysis report
-```
+    **Content creation:**
+    ```
+    > Create a social media campaign for a coffee shop including posts, images, and scheduling
+    ```
 
-**Content creation:**
-```
-> Create a social media campaign for a coffee shop including posts, images, and scheduling
-```
-
-<Note>
-  The agent can automatically use computer instances, web search, and browser automation. You don't need to specify which tools to use - just describe what you want to achieve. See [Common Use Cases](/intro/common-use-cases) for more examples.
-</Note>
+    <Note>
+      The agent can automatically use computer instances, web search, and browser automation. You don't need to specify which tools to use - just describe what you want to achieve. See [Common Use Cases](/getting-started/common-use-cases) for more examples.
+    </Note>
+  </Step>
+</Steps>
 
 ## Ready to integrate?
 
