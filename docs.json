@@ -24,6 +24,10 @@
     "og:site_name": "Agentbase Documentation",
     "twitter:site": "@agentbase_"
   },
+  "topbarCtaButton": {
+    "name": "Get Free Credits",
+    "url": "https://base.agentbase.sh/sign-up"
+  },
   "navigation": {
     "tabs": [
       {
@@ -40,25 +44,25 @@
               "introduction", 
               "pricing",
               "build/cost-tracking",
-              "environment/persistence",
-              "build/modes",
-              "environment/computer", 
+              "build/persistence",
+              "build/agent-modes",
+              "build/agent-computer", 
               "build/system-prompts",
               "build/rules", 
               "build/tools",
-              "build/web-search",
-              "build/mcp"
+              "build/web-search-and-crawl",
+              "build/model-context-protocol"
             ]
           },
           {
             "group": "Agents API",
             "pages": [
-              "api/streaming-message-types",
-              "api/api-call-example",
+              "api/message-events",
+              "api/example",
               "api/run-agent",
               "api/get-messages",
               "api/clear-messages",
-              "api/agent-capabilities"
+              "api/capabilities"
             ]
           },
           {
