@@ -8,100 +8,23 @@ icon: "dollar-sign"
 
 ## Cost-per-Step Pricing
 
-*All prices in US dollars*
+*Currency: USD ($)*
 
-| Mode | Cost per Step | Cached Step | Best For |
-|------|---------------|-------------|----------|
-| **Fast** | $0.01 - $0.04 | $0.003 - $0.012 | _Simple tasks, high-volume operations_ |
-| **Flash** | $0.05 - $0.15 | $0.015 - $0.045 | _**Recommended** - Balanced workflows_ |
-| **Max** | $0.15 - $0.40 | $0.045 - $0.12 | _Advanced reasoning and analysis_ |
-
-<Note>
-**Variable Pricing**: Not every task requires a computer or large context. Prices vary based on _context size_ and whether your agent needs _computer capabilities_ - simple text-based tasks stay at the lower end of each range.
-</Note>
-
-## Why Step-Based Pricing?
-
-Instead of confusing token-based billing, Agentbase charges per **step** - each _discrete action_ your agent takes.
-
-**What counts as a step:**
-- Planning and reasoning
-- Tool usage (web search, file operations, etc.)
-- Analysis and decision making
-- Response generation
-
-**Total Cost of Ownership Benefits:**
-- **Fewer total steps** - Our optimized agents complete tasks _more efficiently_
-- **Predictable costs** - No surprise bills from _token overruns_  
-- **Value-aligned pricing** - Pay for _results_, not just compute time
-- **No token counting** - Focus on _building_, not optimization
-
-### Get Started
-- **Free credits** with _work email_ signup
-- **Start small**: Fast mode for _experimentation and simple tasks_
-- **Scale up**: Flash mode for _most production workflows_
-- **Testing budget**: $15-$30 recommended for _extensive testing_
-
-### Enterprise & Production Planning
-For large corporate deployments or detailed production project cost planning, contact our team for a customized breakdown and calculation. Reach out through our [Discord community](https://discord.com/invite/KFtqf7j9fs) or [website](https://www.agentbase.sh).
-
-## Context Window Tiers
-
-Our pricing reflects the computational cost of processing different context sizes:
-
-| Small Context (< 30k tokens) | Large Context (30k - 128k tokens) |
-|-------------------------------|-----------------------------------|
-| _Most cost-effective_ for standard workflows | _Higher pricing_ reflects increased computational requirements |
-| Handles _typical conversations, documents, and code files_ | Supports _large documents, extensive conversations, complex codebases_ |
-| **Best for**: _API calls, data analysis, simple automation_ | **Best for**: _Document analysis, long conversations, comprehensive research_ |
-
-## Prompt Caching
-
-<Tip>
-**70% savings** on cached rates when context is _reused across steps_. Perfect for _conversational agents_ and _recurring workflows_ where the same context is processed multiple times.
-</Tip>
-
-## How We Optimize Your Costs
-
-### Intelligent Model Routing
-Agentbase uses a **mixture of models** optimized for different task types, automatically routing to the _most cost-effective option_:
-
-**Step Reduction Strategy:**
-- **Smart planning** reduces _redundant operations_
-- **Efficient context management** across _multi-step workflows_
-- **Optimized tool usage** minimizes _unnecessary steps_
-
-**Value Alignment:**
-- We make money when we solve your problems _efficiently_
-- Our incentive is to _reduce total steps_, which saves you money
-- Focus on **Total Cost of Ownership**, not _per-API-call_ pricing
-
-## Cost Tracking & Features
-
-### Real-Time Cost Monitoring
-```javascript
-// Included in every API response
-{
-  "type": "agent_cost",
-  "session": "e3jbak7k4xnvct3",
-  "cost": "0.0146",
-  "balance": 47.4557,
-  "deductionSuccess": true,
-  "lowBalance": false
-}
-```
-
-### How Costs Scale by Task Type
-
-| Task Type | Computer Needed? | Cost Level | Examples |
-|-----------|------------------|------------|----------|
-| **Text & Analysis** | No | Lower | _Writing, research, planning_ |
-| **Code & Files** | Yes | Medium | _Programming, file operations_ |
-| **Multi-tool Workflows** | Yes | Higher | _Web scraping + analysis + reports_ |
+| Mode | Context Window Size | Cost per Step |
+|------|-------------------|---------------|
+| **Flash** | < 30k tokens | $0.005 |
+| | 30k - 128k tokens | $0.012 |
+| **Fast** | < 30k tokens | $0.05 |
+| | 30k - 128k tokens | $0.12 |
+| **Max** | < 30k tokens | $0.15 |
+| | 30k - 128k tokens | $0.40 |
 
 <Note>
-  Costs increase when agents use computer environments and multiple tools. Simple text-based tasks keep costs minimal.
+**Context-Based Pricing**: Costs increase with larger context windows (30k+ tokens) due to higher computational requirements. Most standard workflows use small context (< 30k tokens) for optimal cost efficiency.
 </Note>
+
+
+
 
 ## What's Next?
 

@@ -1,370 +1,92 @@
 ---
 title: "Quickstart"
-description: "Get started with Agentbase AI agents in 5 minutes"
+description: "Get started with Agentbase AI agents in 2 minutes"
 icon: "rocket"
 ---
 
-> Welcome to Agentbase!
-
-This quickstart guide will have you using AI-powered agents in just a few minutes. We built a general-purpose agent called "Base" that doesn't use any framework - it's a raw agent for simplicity. It's delivered via API and comes with all features in one request. The API is packed with features for you to add capabilities, skills, and more to your software build or project.
-
-You'll start by exploring the capabilities through our CLI, then learn how to integrate Agentbase to power intelligent features in your applications.
+Get your first AI agent running locally in 2 minutes.
 
 ## Before you begin
 
-Make sure you have:
-* A terminal or command prompt open
-* An [Agentbase account](https://base.agentbase.sh/sign-up) with credits  
-* Node.js 18 or newer installed
+* [Agentbase account](https://base.agentbase.sh/sign-up) with credits
+* Node.js 18+ installed
 
-<Tip>
-  Sign up with your work email to automatically receive credits!
-</Tip>
+<Tip>Sign up with your work email to get free credits automatically!</Tip>
 
-<Steps>
-  <Step title="Install Agentbase CLI">
-    Install the CLI to explore Agentbase capabilities:
+## Step 1: Install and run
 
-    ```bash
-    # Create your first agent project
-    npm create agentbase@latest
+```bash
+# Create your agent project
+npm create agentbase@latest
 
-    # Navigate to your project
-    cd my-agent
-
-    # Start the interactive CLI
-    npm run dev
-    # You'll be prompted to add your API key on first use
-    ```
-
-    <Tip>
-      Sign up with your work email to automatically receive credits!
-    </Tip>
-  </Step>
-
-  <Step title="Test CLI chat to understand Agentbase">
-    When you run `npm run dev`, you'll see the Agentbase prompt:
-
-    ```
-    ✻ Welcome to Agentbase!
-
-    > Try asking "What can you do?" to get started...
-    ```
-
-    Test basic interactions to understand agent capabilities:
-
-    ```
-    > What can you do?
-    > Can you write and run code?
-    > Can you search the web for current information?
-    > Can you use a browser to visit websites?
-    ```
-
-    <Note>
-      The CLI uses the same API as your applications will use, so testing here directly translates to production integration.
-    </Note>
-  </Step>
-
-  <Step title="Try different agent modes">
-    Test the different agent modes to understand their capabilities. You can experiment in two ways:
-
-    **Editing the code directly:**
-    In your project's `index.ts` file, find the `sendMessage` function and add a `mode` parameter:
-
-    ```typescript
-/**
- * Send a message to the agent and process the response stream
- */
-async function sendMessage(message: string) {
-  try {
-    // Prepare parameters - include session ID if we have one
-    const params: {
-      message: string; // The message to send to the agent
-      session?: string; // The session ID to continue the conversation
-      mode?: string | "flash" | "fast" | "max"; // The mode for the agent, defaults to fast
-      system?: string; // The system prompt for the agent
-      rules?: string[]; // The rules for the agent
-      mcpServers?: [{ serverName: string; serverUrl: string }]; // The MCP servers for the agent
-      streaming?: boolean; // Whether to stream the response token by token, defaults to false
-    } = { 
-      message: message,
-      mode: "fast" // Change to "fast", "flash", or "max"
-    };
-
-    // Include session ID if we have one to maintain the agent conversation
-    if (sessionId) {
-      params.session = sessionId;
-    }
-
-    // Send message and get response stream
-    const stream = await agentbase.runAgent(params);
-
-    // Process each response in the stream
-    for await (const response of stream) {
-      handleResponse(response);
-    }
-  } catch (error) {
-    console.error("❌ Error:", error);
-  }
-}
+# Navigate and start
+cd my-agent
+npm run dev
 ```
 
-    **Using curl commands:**
-    ```bash
-    # Edit the "mode" field to "fast", "flash", or "max"
-    curl -X POST "https://api.agentbase.sh" \
-      -H "Authorization: Bearer YOUR_API_KEY" \
-      -H "Content-Type: application/json" \
-      -d '{"message": "Your task here", "mode": "fast"}'
-    ```
+You'll be prompted to add your API key on first use.
 
-    **Mode differences:**
-    - **Fast**: Balanced performance, best for most production use cases (no thinking events)
-    - **Flash**: Shows agent thinking process, good for learning and debugging  
-    - **Max**: Advanced reasoning for complex multi-step tasks (includes thinking events)
+## Step 2: Test capabilities
 
-    <Note>
-      Agent thinking events (showing reasoning process) are available in **flash** and **max** modes, but not in fast mode.
-    </Note>
-  </Step>
+Try these prompts in the CLI to understand what agents can do:
 
-  <Step title="Maintain session for conversations">
-    To keep the agent in the same conversation context, you need to maintain the session ID:
+```
+> What can you do?
+> Write and run a Python function to calculate fibonacci numbers
+> Search for the latest AI news and summarize it
+> Create a React component for a user profile card
+```
 
-    **Editing the code directly:**
-In your project's `index.ts` file, the session ID is already handled in the `sendMessage` function:
+## Step 3: Understand agent modes
+
+Change the mode in your `index.ts` file:
 
 ```typescript
-/**
- * Send a message to the agent and process the response stream
- */
-async function sendMessage(message: string) {
-  try {
-    // Prepare parameters - include session ID if we have one
-    const params: {
-      message: string; // The message to send to the agent
-      session?: string; // The session ID to continue the conversation
-      mode?: string | "flash" | "fast" | "max"; // The mode for the agent, defaults to fast
-      system?: string; // The system prompt for the agent
-      rules?: string[]; // The rules for the agent
-      mcpServers?: [{ serverName: string; serverUrl: string }]; // The MCP servers for the agent
-      streaming?: boolean; // Whether to stream the response token by token, defaults to false
-    } = { 
-      message: message
-    };
-
-    // Include session ID if we have one to maintain the agent conversation
-    if (sessionId) {
-      params.session = sessionId;
-    }
-
-    // Send message and get response stream
-    const stream = await agentbase.runAgent(params);
-
-    // Process each response in the stream
-    for await (const response of stream) {
-      handleResponse(response);
-    }
-  } catch (error) {
-    console.error("❌ Error:", error);
-  }
-}
+const params = { 
+  message: message,
+  mode: "fast" // "fast", "flash", or "max"
+};
 ```
 
-**Using curl commands:**
-```bash
-# First message creates a new session
-curl -X POST "https://api.agentbase.sh" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Help me plan a marketing campaign"}'
-
-# Continue with the session ID from the response
-curl -X POST "https://api.agentbase.sh?session=SESSION_ID" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Now create social media content for this campaign"}'
-```
-
-    <Note>
-      Without maintaining the session ID, each request starts a new conversation and the agent won't remember previous context.
-    </Note>
-  </Step>
-
-  <Step title="Test streaming vs complete messages">
-    Experiment with different response formats. You can test in two ways:
-
-    **Editing the code directly:**
-    In your project's `index.ts` file, find the `sendMessage` function and add a `streaming` parameter:
-
-    ```typescript
-/**
- * Send a message to the agent and process the response stream
- */
-async function sendMessage(message: string) {
-  try {
-    // Prepare parameters - include session ID if we have one
-    const params: {
-      message: string; // The message to send to the agent
-      session?: string; // The session ID to continue the conversation
-      mode?: string | "flash" | "fast" | "max"; // The mode for the agent, defaults to fast
-      system?: string; // The system prompt for the agent
-      rules?: string[]; // The rules for the agent
-      mcpServers?: [{ serverName: string; serverUrl: string }]; // The MCP servers for the agent
-      streaming?: boolean; // Whether to stream the response token by token, defaults to false
-    } = { 
-      message: message,
-      streaming: false // Change to true for token-by-token, false for complete responses
-    };
-
-    // Include session ID if we have one to maintain the agent conversation
-    if (sessionId) {
-      params.session = sessionId;
-    }
-
-    // Send message and get response stream
-    const stream = await agentbase.runAgent(params);
-
-    // Process each response in the stream
-    for await (const response of stream) {
-      handleResponse(response);
-    }
-  } catch (error) {
-    console.error("❌ Error:", error);
-  }
-}
-```
-
-    **Using curl commands:**
-    ```bash
-    # Edit the "streaming" field to true or false
-    curl -X POST "https://api.agentbase.sh" \
-      -H "Authorization: Bearer YOUR_API_KEY" \
-      -H "Content-Type: application/json" \
-      -d '{"message": "Your task here", "streaming": false}'
-    ```
-
-    **When to use each:**
-    - **Streaming (true)**: Better user experience for long responses, real-time feedback
-    - **Complete (false)**: Easier to handle programmatically, better for automated processing
-
-    **Streaming event types:**
-    When streaming is enabled, you'll receive different event types with specific labels.
-
-    <Note>
-      See the complete list of [Streaming Message Types](/api/message-events) for all event details and examples.
-    </Note>
-  </Step>
-
-  <Step title="Test computer and agentic capabilities">
-    Now let's explore the agent's ability to use a computer and perform complex agentic tasks:
-
-    **Computer capabilities:**
-    ```
-    > Can you write a Python script that calculates the Fibonacci sequence and run it?
-    ```
-
-    **Research and analysis:**
-    ```
-    > Research renewable energy trends and create a market analysis report
-    ```
-
-    **Content creation:**
-    ```
-    > Create a social media campaign for a coffee shop including posts, images, and scheduling
-    ```
-
-    <Note>
-      The agent can automatically use computer instances, web search, and browser automation. You don't need to specify which tools to use - just describe what you want to achieve. See [Common Use Cases](/getting-started/common-use-cases) for more examples.
-    </Note>
-  </Step>
-</Steps>
+**Mode differences:**
+- **Fast**: Balanced performance (recommended for production)
+- **Flash**: Shows agent thinking process (great for learning)  
+- **Max**: Advanced reasoning for complex tasks
 
 ## Ready to integrate?
 
-You now understand the core Agentbase concepts! The CLI uses the same API your applications will use, so everything you've tested here translates directly to production.
+The CLI uses the same API your applications will use. Everything you tested here works in production.
 
-**Two ways to use Agentbase:**
+### Key integration parameters:
 
-1. **Embed into existing applications** - Add agent capabilities to your current software with simple API calls to make it agent-native
-2. **Start fresh with agents** - Create a new Agentbase project and build agent-powered applications from the ground up
-
-**Key parameters for integration:**
-
-| Parameter | What it does | Example |
-| --------- | ------------ | ------- |
-| `message` | The task for your agent | `"Write a Python function"` |
-| `mode` | Agent capability level | `"flash"`, `"fast"`, `"max"` |
-| `streaming` | Response format | `true` (token-by-token), `false` (complete) |
+| Parameter | Purpose | Example |
+|-----------|---------|---------|
+| `message` | The task | `"Write a Python function"` |
+| `mode` | Capability level | `"fast"`, `"flash"`, `"max"` |
 | `session` | Continue conversation | `?session=SESSION_ID` |
-| `system` | Give agent expertise | `"You are a data scientist"` |
-| `rules` | Set constraints | `["Be concise", "Show examples"]` |
-
-See the [API reference](/api/run-agent) for complete integration examples and parameter details.
-
-### Try the API Now
-<CardGroup cols={1}>
-  <Card title="Test in Mintlify Playground" icon="play" href="/api/run-agent">
-    **Get your API key and test instantly** - Use the interactive playground to try the run-agent endpoint with your own prompts
-  </Card>
-</CardGroup>
-
-## Pro tips for developers
-
-<AccordionGroup>
-  <Accordion title="Start with the CLI, then integrate">
-    Use the CLI to test prompts and understand agent capabilities before adding them to your application. What works in the CLI will work in your API integration.
-  </Accordion>
-  
-  <Accordion title="Be specific with your requests">
-    Instead of: "help with my code"
-    
-    Try: "create a React component that displays user profiles with loading states and error handling"
-  </Accordion>
-  
-  <Accordion title="Let agents use their tools automatically">
-    Don't try to manage tool usage - agents automatically choose the right tools:
-    * Computer instances for code execution
-    * Web search for current information
-    * Browser automation for website interaction
-  </Accordion>
-  
-  <Accordion title="Choose the right mode for your use case">
-    * **Flash**: Development and debugging (see agent reasoning)
-    * **Fast**: Most production features (balanced cost/performance)
-    * **Max**: Complex multi-step automation (advanced reasoning)
-  </Accordion>
-  
-  <Accordion title="Monitor costs and usage">
-    * Each response includes cost information
-    * Tool usage (computer, browser, web search) increases costs
-  </Accordion>
-</AccordionGroup>
 
 ## What's next?
 
-Now that you've learned the basics, explore more:
-
-<CardGroup cols={3}>
-  <Card title="Agent Capabilities" icon="robot" href="/api/capabilities">
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Complete integration guide and examples
+  </Card>
+  
+  <Card title="Built-in Tools" icon="tools" href="/build/tools">
     See all built-in tools and features
   </Card>
   
-  <Card title="API Examples" icon="code" href="/api/example">
-    More integration patterns
+  <Card title="Common Use Cases" icon="lightbulb" href="/getting-started/common-use-cases">
+    Real-world examples and patterns
   </Card>
   
-  <Card title="Streaming Guide" icon="stream" href="/api/message-events">
-    Real-time response handling
+  <Card title="API Examples" icon="book" href="/api/example">
+    More integration patterns
   </Card>
 </CardGroup>
 
-## Getting help
+## Need help?
 
-* **API docs**: Browse other guides for detailed examples
-* **Community**: Join our [Discord](https://discord.com/invite/KFtqf7j9fs) for support
-* **Dashboard**: Monitor usage at [base.agentbase.sh](https://base.agentbase.sh)
-
-<Tip>
-  **Remember**: Describe what you want to achieve in natural language. Agentbase agents handle the implementation details using their built-in tools.
-</Tip>
+- Join our [Discord](https://discord.com/invite/KFtqf7j9fs) for support
+- Monitor usage at [base.agentbase.sh](https://base.agentbase.sh)
+- Check [API examples](/api/example) for more patterns

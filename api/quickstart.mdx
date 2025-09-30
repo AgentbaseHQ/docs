@@ -1,56 +1,21 @@
 ---
 title: "Quickstart"
-description: "Get started with Agentbase's AI agents in just a few minutes."
+description: "Get started with Agentbase's AI agents in under 2 minutes."
 tag: "NEW"
 ---
 
-Welcome to Agentbase!
+Get your first AI agent running in under 2 minutes.
 
-This quickstart guide will have you running AI-powered agents in just a few minutes. By the end, you'll understand how to use Agentbase for intelligent automation and complex task execution.
+## Step 1: Get your API key
 
-## Before you begin
+1. Sign up at [base.agentbase.sh/sign-up](https://base.agentbase.sh/sign-up)
+2. Generate your API key from the [Overview page](https://base.agentbase.sh/overview)
+3. Add credits from the [Billing page](https://base.agentbase.sh/credits) ($5 is plenty for testing)
 
-Make sure you have:
-- A terminal or command prompt open
-- Node.js 18 or newer installed (for JavaScript examples)
-- Python 3.7+ installed (for Python examples)  
-- An HTTP client (curl comes pre-installed on most systems)
-- A code project or workspace to experiment with
+<Tip>Sign up with your work email to get free credits automatically!</Tip>
 
-## Step 1: Create your account
+## Step 2: Make your first call
 
-Agentbase requires an account to use. When you start using the API, you'll need your credentials:
-
-- Navigate to [base.agentbase.sh/sign-up](https://base.agentbase.sh/sign-up) and create your account
-- Go to the [Overview page](https://base.agentbase.sh/overview) to generate your API key  
-- Visit the [Billing page](https://base.agentbase.sh/credits) to purchase credits
-
-**Credit recommendations for development:**
-- **$5**: Enough for basic development, testing, and experimentation
-- **$20-30**: For extensive testing over days or weeks of continuous development
-- **Note**: Costs increase with more API features utilized and larger context sizes
-
-**Pro tip**: Sign up with your work email to automatically receive credits!
-
-## Step 2: Make your first API call
-
-Let's start by asking the agent to introduce itself:
-
-```bash
-curl -X POST "https://api.agentbase.sh" \
-  -H "Content-Type: application/json" \
-  -H "Accept: text/event-stream" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{"message": "What can you do?"}'
-```
-
-You'll receive a real-time stream of the agent's response showing its capabilities and thought process.
-
-## Step 3: Try different tasks
-
-Now let's explore what your agent can do. Try these examples:
-
-### Code Generation
 ```bash
 curl -X POST "https://api.agentbase.sh" \
   -H "Content-Type: application/json" \
@@ -58,119 +23,9 @@ curl -X POST "https://api.agentbase.sh" \
   -d '{"message": "Write a Python function to calculate fibonacci numbers"}'
 ```
 
-### Data Analysis
-```bash
-curl -X POST "https://api.agentbase.sh" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{"message": "Create a JSON schema for a user profile with name, email, and preferences"}'
-```
+That's it! Your agent will generate the code and explain how it works.
 
-### Web Search and Research
-```bash
-curl -X POST "https://api.agentbase.sh" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{"message": "Search for the latest developments in AI and summarize the key findings"}'
-```
-
-### Complex Automation
-```bash
-curl -X POST "https://api.agentbase.sh" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{"message": "Plan a project roadmap for building a mobile app with user authentication, including technical requirements and timeline"}'
-```
-
-## Step 4: Understand streaming and modes
-
-Agentbase provides different response modes and streaming options:
-
-### Streaming Behavior
-```bash
-# Non-streaming (default) - returns complete blocks of text and actions
-curl -X POST "https://api.agentbase.sh" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{
-    "message": "Write a product description",
-    "streaming": false
-  }'
-
-# Streaming enabled - returns token-by-token responses  
-curl -X POST "https://api.agentbase.sh" \
-  -H "Content-Type: application/json" \
-  -H "Accept: text/event-stream" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{
-    "message": "Analyze this website and suggest improvements", 
-    "streaming": true
-  }'
-```
-
-### Agent Modes
-```bash
-# Flash mode - see agent thinking process (upgraded from fast)
-curl -X POST "https://api.agentbase.sh" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{
-    "message": "Plan a marketing strategy",
-    "mode": "flash"
-  }'
-
-# Fast mode - balanced performance (default)
-curl -X POST "https://api.agentbase.sh" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{
-    "message": "Generate code examples",
-    "mode": "fast"
-  }'
-
-# Max mode - complex reasoning and planning
-curl -X POST "https://api.agentbase.sh" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{
-    "message": "Design a complete system architecture",
-    "mode": "max"
-  }'
-```
-
-**Key insights:**
-- **Streaming `false`**: Returns complete blocks of text and finished actions
-- **Streaming `true`**: Shows token-by-token output as it's generated  
-- **Flash mode**: Reveals agent thinking process (upgrade from fast mode)
-- **Cost**: Increases with more features used and larger context sizes
-- **Models**: Agentbase uses a mixture of models optimized for different tasks
-
-## Step 5: Continue conversations with sessions
-
-Sessions allow you to maintain context across multiple interactions. **You must reuse the session ID to continue the chat conversation.**
-
-```bash
-# First message - creates a new session
-curl -X POST "https://api.agentbase.sh" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{"message": "Help me plan a marketing campaign for a SaaS product"}'
-
-# Save the session ID from the response, then continue the conversation
-curl -X POST "https://api.agentbase.sh?session=SESSION_ID" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{"message": "Now create social media content for this campaign"}'
-```
-
-**Session Management:**
-- **Auto-Creation**: If you don't specify a session ID, a new one is automatically created
-- **Continue Conversations**: Append `?session=[SESSION_ID]` to the URL for follow-up messages
-- **Persistent Context**: The agent remembers previous messages within the same session
-
-## Step 6: Integrate with your application
-
-Use Agentbase in your preferred programming language:
+## Step 3: Use in your application
 
 ### JavaScript/Node.js
 ```javascript
@@ -181,8 +36,7 @@ const response = await fetch('https://api.agentbase.sh', {
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    message: 'Generate a product description for an AI-powered analytics tool',
-    mode: 'fast'
+    message: 'Generate a product description for an AI analytics tool'
   })
 });
 
@@ -201,8 +55,7 @@ response = requests.post(
         'Content-Type': 'application/json'
     },
     json={
-        'message': 'Create a data analysis report from this CSV data',
-        'mode': 'fast'
+        'message': 'Create a data analysis report from this CSV data'
     }
 )
 
@@ -210,130 +63,28 @@ data = response.json()
 print(data)
 ```
 
-### cURL with Custom Tools and Rules
-```bash
-curl -X POST "https://api.agentbase.sh" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{
-    "message": "Optimize this SQL query for better performance",
-    "mode": "max",
-    "system": "You are a database optimization expert",
-    "rules": ["Always explain your reasoning", "Provide before/after comparisons"],
-    "mcpServers": [
-      {
-        "serverName": "database-tools", 
-        "serverUrl": "https://your-mcp-server.com/mcp"
-      }
-    ]
-  }'
-```
-
-**Important notes:**
-- **Custom Tools**: Each tool needs a definition via MCP servers
-- **Rules**: Provide constraints that the agent must follow
-- **System Prompts**: Give the agent specific expertise or context
-
-## Step 7: Explore advanced capabilities
-
-Your Agentbase agents come with powerful built-in tools:
-
-### File Processing
-```bash
-curl -X POST "https://api.agentbase.sh" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Analyze this spreadsheet and create visualizations of the key trends"}'
-```
-
-### Web Automation
-```bash
-curl -X POST "https://api.agentbase.sh" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Monitor competitor pricing on their website and compile a comparison report"}'
-```
-
-### Multi-step Planning
-```bash
-curl -X POST "https://api.agentbase.sh" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Create a complete deployment strategy for a new microservice, including CI/CD pipeline, monitoring, and rollback procedures"}'
-```
-
-## Step 8: Debug common issues
-
-Understanding how to troubleshoot your Agentbase integration:
-
-### Streaming Issues
-```bash
-# If your stream is choked and token-by-token, you may have enabled streaming
-# Use streaming: false for complete blocks of text
-curl -X POST "https://api.agentbase.sh" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{
-    "message": "Write documentation",
-    "streaming": false
-  }'
-```
-
-### See Agent Thinking
-```bash
-# To see the agent's reasoning process, upgrade from fast to flash mode
-curl -X POST "https://api.agentbase.sh" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{
-    "message": "Solve this complex problem step by step",
-    "mode": "flash"
-  }'
-```
-
-### Set up proper error handling
-```javascript
-try {
-  const response = await fetch('https://api.agentbase.sh', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer YOUR_API_KEY',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      message: 'Your task here',
-      mode: 'fast'
-    })
-  });
-  
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-  
-  const data = await response.json();
-  return data;
-} catch (error) {
-  console.error('Agent request failed:', error);
-}
-```
-
-### Monitor usage and costs
-Track your usage through the [Agentbase dashboard](https://base.agentbase.sh/overview) to monitor costs and optimize performance.
-
 ## What's next?
 
-Now that you're up and running with Agentbase:
-
-- **[Explore Agent Capabilities](/api/capabilities)** - Discover all the built-in tools and features
-- **[Learn About Streaming](/api/message-events)** - Understand real-time response handling  
-- **[Browse API Examples](/api/example)** - See more integration patterns
-- **[Read the API Reference](/api/run-agent)** - Complete endpoint documentation
-- **[Understand the Platform](/api/what-is-the-agents-api)** - Deep dive into Agentbase architecture
+<CardGroup cols={2}>
+  <Card title="Built-in Tools" icon="tools" href="/build/tools">
+    Discover built-in tools: web search, file processing, code execution
+  </Card>
+  
+  <Card title="API Examples" icon="code" href="/api/example">
+    See more integration patterns and advanced usage
+  </Card>
+  
+  <Card title="Streaming & Modes" icon="bolt" href="/api/message-events">
+    Learn about real-time responses and different agent modes
+  </Card>
+  
+  <Card title="API Reference" icon="book" href="/api/run-agent">
+    Complete endpoint documentation and parameters
+  </Card>
+</CardGroup>
 
 ## Need help?
 
-- Check out more [API examples](/api/example)
 - Join our [Discord community](https://discord.com/invite/KFtqf7j9fs) for support
-- Visit our [main website](https://agentbase.sh) for additional resources
-
-Remember: Agentbase agents are your AI assistants for complex tasks. Describe what you want to achieve in natural language, and they'll handle the implementation details using their built-in tools and capabilities.
+- Check out [API examples](/api/api-call-example) for more patterns
+- Visit [agentbase.sh](https://agentbase.sh) for additional resources

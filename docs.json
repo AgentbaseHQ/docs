@@ -43,14 +43,13 @@
             "pages": [
               "introduction", 
               "pricing",
-              "build/cost-tracking",
-              "build/persistence",
               "build/agent-modes",
-              "build/agent-computer", 
+              "build/persistence",
+              "build/agent-computer",
+              "build/cost-tracking",
               "build/system-prompts",
               "build/rules", 
               "build/tools",
-              "build/web-search-and-crawl",
               "build/model-context-protocol"
             ]
           },
@@ -60,9 +59,13 @@
               "api/message-events",
               "api/example",
               "api/run-agent",
-              "api/get-messages",
-              "api/clear-messages",
-              "api/capabilities"
+              {
+                "group": "Messages",
+                "pages": [
+                  "api/get-messages",
+                  "api/clear-messages"
+                ]
+              }
             ]
           },
           {
