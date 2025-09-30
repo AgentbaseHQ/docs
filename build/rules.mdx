@@ -1,0 +1,92 @@
+---
+title: "Rules"
+description: "Set specific constraints and requirements for agent behavior"
+icon: "gavel"
+---
+
+> Rules provide specific constraints and requirements that agents must follow.
+
+Rules work alongside system prompts to enforce boundaries and compliance requirements.
+
+## Basic Usage
+
+```javascript
+const response = await agentbase.runAgent({
+  message: "Help with customer refund request",
+  system: "You are a customer service specialist",
+  rules: [
+    "Never approve refunds over $500 without manager approval",
+    "Always verify customer identity before processing requests",
+    "Document all refund decisions with clear reasoning"
+  ]
+});
+```
+
+## Combining Rules with System Prompts
+
+```javascript
+const response = await agentbase.runAgent({
+  message: "Help customer with billing dispute",
+  system: "You are an empathetic customer service specialist focused on resolution",
+  rules: [
+    "Maximum refund authorization without approval: $200",
+    "Always verify account ownership before discussing billing",
+    "Document all billing adjustments with detailed reasoning",
+    "Escalate disputes over $500 to billing supervisor"
+  ]
+});
+```
+
+## Example Rules
+
+### Compliance
+```javascript
+rules: [
+  "Never provide medical advice or diagnoses",
+  "Do not store or request personal identifying information",
+  "Always include required disclaimers in financial content"
+]
+```
+
+### Business Policy
+```javascript
+rules: [
+  "Maximum discount authorization is 15% without approval",
+  "Only recommend products currently in our catalog",
+  "Escalate complaints about billing to the finance team"
+]
+```
+
+### Quality Standards
+```javascript
+rules: [
+  "Always include specific examples with explanations",
+  "Responses must be under 500 words unless requested otherwise",
+  "Include source citations for all statistical claims"
+]
+```
+
+### Security
+```javascript
+rules: [
+  "Never execute code that modifies system configurations",
+  "Do not access files outside the designated workspace",
+  "Always validate URLs before web browsing"
+]
+```
+
+## What's Next?
+
+<CardGroup cols={3}>
+  <Card title="System Prompts" icon="user" href="/build/system-prompts">
+    Define agent personality and expertise
+  </Card>
+  
+  <Card title="Tools" icon="hammer" href="/build/tools">
+    Explore available agent capabilities
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    See complete rules parameters
+  </Card>
+</CardGroup>

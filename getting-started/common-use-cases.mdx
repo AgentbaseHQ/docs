@@ -1,0 +1,337 @@
+---
+title: "Common use cases"
+description: "Real-world examples of integrating AI agents across departments and workflows"
+icon: "lightbulb"
+---
+
+> Discover how teams use Agentbase agents to automate workflows, enhance customer experience, and accelerate operations across every department.
+
+Agentbase's general-purpose "Base" agent integrates seamlessly into existing software and processes. Here are proven use cases organized by department to inspire your implementation.
+
+## Marketing & Sales
+
+<AccordionGroup>
+  <Accordion title="Lead Qualification & Scoring">
+    **What it does**: _Automatically_ analyze incoming leads, score them based on your criteria, and route qualified prospects to sales teams.
+    
+    **Integration example**:
+    ```javascript
+    const leadScore = await agentbase.runAgent({
+      message: `Analyze this lead: ${leadData}. Score 1-10 based on company size, budget signals, and urgency indicators.`,
+      system: "You are a lead qualification specialist. Provide structured scoring with reasoning."
+    });
+    ```
+    
+    **Perfect for**: _CRM integration, marketing automation, sales pipeline optimization_
+  </Accordion>
+
+  <Accordion title="Content Generation & Social Media">
+    **What it does**: Generate marketing copy, social media posts, email campaigns, and blog content _tailored to your brand voice_.
+    
+    **Integration example**:
+    ```javascript
+    const campaign = await agentbase.runAgent({
+      message: `Create a week's worth of LinkedIn posts for our B2B SaaS product launch`,
+      system: "You are our brand voice expert. Be professional but approachable, focus on developer benefits.",
+      rules: ["Keep posts under 150 words", "Include relevant hashtags", "Add clear CTAs"]
+    });
+    ```
+    
+    **Perfect for**: _Content calendars, campaign automation, brand consistency_
+  </Accordion>
+
+  <Accordion title="Competitive Analysis">
+    **What it does**: Research competitors, analyze pricing, features, and market positioning to _inform strategy_.
+    
+    **Integration example**:
+    ```javascript
+    const analysis = await agentbase.runAgent({
+      message: `Research our top 3 competitors and compare their pricing models, key features, and positioning against ours`,
+      system: "You are a market research analyst. Provide actionable insights and recommendations."
+    });
+    ```
+    
+    **Perfect for**: _Market intelligence, strategic planning, positioning decisions_
+  </Accordion>
+</AccordionGroup>
+
+## Engineering & Product
+
+<AccordionGroup>
+  <Accordion title="Code Review & Documentation">
+    **What it does**: Review code quality, suggest improvements, and _automatically_ generate technical documentation.
+    
+    **Integration example**:
+    ```javascript
+    const review = await agentbase.runAgent({
+      message: `Review this pull request for security issues, performance concerns, and code quality: ${prData}`,
+      system: "You are a senior software engineer. Focus on security, performance, and maintainability."
+    });
+    ```
+    
+    **Perfect for**: _GitHub/GitLab integration, CI/CD pipelines, code quality automation_
+  </Accordion>
+
+  <Accordion title="Bug Triage & Analysis">
+    **What it does**: _Automatically_ categorize bug reports, assess severity, and suggest initial troubleshooting steps.
+    
+    **Integration example**:
+    ```javascript
+    const triage = await agentbase.runAgent({
+      message: `Analyze this bug report and categorize severity, assign to appropriate team, suggest debugging steps: ${bugReport}`,
+      system: "You are a technical support lead with deep product knowledge."
+    });
+    ```
+    
+    **Perfect for**: _Issue tracking systems, support ticket automation, development workflow_
+  </Accordion>
+
+  <Accordion title="API Testing & Monitoring">
+    **What it does**: Test API endpoints, validate responses, and monitor performance across different scenarios.
+    
+    **Integration example**:
+    ```javascript
+    const apiTest = await agentbase.runAgent({
+      message: `Test our REST API endpoints for edge cases and generate a comprehensive test report`,
+      system: "You are a QA automation expert. Test thoroughly and document any issues found."
+    });
+    ```
+    
+    **Perfect for**: _Testing automation, monitoring systems, quality assurance_
+  </Accordion>
+</AccordionGroup>
+
+## Customer Success & Support
+
+<AccordionGroup>
+  <Accordion title="Intelligent Customer Service">
+    **What it does**: Handle customer inquiries, troubleshoot issues, and escalate complex cases to human agents with context.
+    
+    **Integration example**:
+    ```javascript
+    const support = await agentbase.runAgent({
+      message: `Customer issue: ${customerMessage}. Account details: ${accountInfo}`,
+      system: "You are a customer success specialist. Be helpful, empathetic, and solution-focused.",
+      session: customerSessionId
+    });
+    ```
+    
+    **Perfect for**: _Live chat integration, helpdesk automation, 24/7 support coverage_
+  </Accordion>
+
+  <Accordion title="Onboarding & User Education">
+    **What it does**: Guide new users through setup, answer product questions, and provide personalized tutorials.
+    
+    **Integration example**:
+    ```javascript
+    const onboarding = await agentbase.runAgent({
+      message: `Help new user complete setup: ${userProfile}. They need guidance on ${specificFeature}`,
+      system: "You are an onboarding specialist. Break down complex tasks into simple steps."
+    });
+    ```
+    
+    **Perfect for**: _In-app guidance, welcome sequences, feature adoption_
+  </Accordion>
+
+  <Accordion title="Feedback Analysis & Insights">
+    **What it does**: Analyze customer feedback, identify trends, and suggest product improvements.
+    
+    **Integration example**:
+    ```javascript
+    const insights = await agentbase.runAgent({
+      message: `Analyze this month's customer feedback and identify top 3 improvement opportunities: ${feedbackData}`,
+      system: "You are a customer insights analyst. Focus on actionable patterns and recommendations."
+    });
+    ```
+    
+    **Perfect for**: _Survey analysis, review monitoring, product roadmap planning_
+  </Accordion>
+</AccordionGroup>
+
+## Operations & Data
+
+<AccordionGroup>
+  <Accordion title="Data Analysis & Reporting">
+    **What it does**: Analyze datasets, generate insights, and create automated reports with visualizations.
+    
+    **Integration example**:
+    ```javascript
+    const analysis = await agentbase.runAgent({
+      message: `Analyze Q3 sales data and create executive summary with key trends: ${salesData}`,
+      system: "You are a data analyst. Provide clear insights with supporting evidence and recommendations."
+    });
+    ```
+    
+    **Perfect for**: _Business intelligence, automated reporting, trend analysis_
+  </Accordion>
+
+  <Accordion title="Data Cleanup & Validation">
+    **What it does**: Clean messy datasets, standardize formats, and identify data quality issues.
+    
+    **Integration example**:
+    ```javascript
+    const cleanup = await agentbase.runAgent({
+      message: `Clean and standardize this customer database: ${rawData}. Fix formatting, remove duplicates, validate emails.`,
+      system: "You are a data quality specialist. Be thorough and document all changes made."
+    });
+    ```
+    
+    **Perfect for**: _CRM maintenance, database migrations, data preparation_
+  </Accordion>
+
+  <Accordion title="Process Automation & Workflows">
+    **What it does**: Automate repetitive tasks, manage approvals, and coordinate between different systems.
+    
+    **Integration example**:
+    ```javascript
+    const workflow = await agentbase.runAgent({
+      message: `Process expense report: ${expenseData}. Check policy compliance and route for approval.`,
+      system: "You are an operations specialist. Follow company policies strictly and flag any issues."
+    });
+    ```
+    
+    **Perfect for**: _Expense management, approval workflows, system integration_
+  </Accordion>
+</AccordionGroup>
+
+## Human Resources
+
+<AccordionGroup>
+  <Accordion title="Job Posting Generation & Distribution">
+    **What it does**: Create compelling job descriptions, optimize for different platforms, and distribute across job boards.
+    
+    **Integration example**:
+    ```javascript
+    const jobPost = await agentbase.runAgent({
+      message: `Create job posting for Senior DevOps Engineer. Include: ${requirements}. Optimize for LinkedIn and Indeed.`,
+      system: "You are an HR specialist. Write engaging, inclusive job descriptions that attract top talent.",
+      rules: ["Include salary range", "Emphasize company culture", "Use inclusive language"]
+    });
+    ```
+    
+    **Perfect for**: _ATS integration, recruitment automation, employer branding_
+  </Accordion>
+
+  <Accordion title="Resume Screening & Candidate Matching">
+    **What it does**: Screen resumes against job requirements, rank candidates, and identify top matches.
+    
+    **Integration example**:
+    ```javascript
+    const screening = await agentbase.runAgent({
+      message: `Screen these resumes for Software Engineer role: ${resumes}. Rank by fit and highlight key strengths.`,
+      system: "You are a technical recruiter. Focus on relevant experience and potential for growth."
+    });
+    ```
+    
+    **Perfect for**: _Applicant tracking, candidate pipelines, hiring efficiency_
+  </Accordion>
+
+  <Accordion title="Employee Onboarding & Documentation">
+    **What it does**: Create personalized onboarding plans, generate documentation, and answer new hire questions.
+    
+    **Integration example**:
+    ```javascript
+    const onboarding = await agentbase.runAgent({
+      message: `Create 30-day onboarding plan for new Marketing Manager: ${roleDetails}`,
+      system: "You are an HR business partner. Design comprehensive, engaging onboarding experiences."
+    });
+    ```
+    
+    **Perfect for**: _HRIS integration, new hire portals, documentation systems_
+  </Accordion>
+</AccordionGroup>
+
+## Research & Intelligence
+
+<AccordionGroup>
+  <Accordion title="Web Research & Data Collection">
+    **What it does**: Research topics, gather information from multiple sources, and compile comprehensive reports.
+    
+    **Integration example**:
+    ```javascript
+    const research = await agentbase.runAgent({
+      message: `Research emerging trends in AI automation for small businesses. Include market size, key players, adoption barriers.`,
+      system: "You are a market research analyst. Provide well-sourced, objective analysis."
+    });
+    ```
+    
+    **Perfect for**: _Market research, competitive intelligence, industry analysis_
+  </Accordion>
+
+  <Accordion title="Content Monitoring & Brand Tracking">
+    **What it does**: Monitor mentions across web, social media, and forums. Track sentiment and alert on issues.
+    
+    **Integration example**:
+    ```javascript
+    const monitoring = await agentbase.runAgent({
+      message: `Monitor brand mentions for this week and analyze sentiment trends: ${mentionData}`,
+      system: "You are a brand monitoring specialist. Identify potential PR issues and opportunities."
+    });
+    ```
+    
+    **Perfect for**: _Social listening, reputation management, crisis prevention_
+  </Accordion>
+
+  <Accordion title="Legal & Compliance Research">
+    **What it does**: Research regulations, analyze compliance requirements, and track legal developments.
+    
+    **Integration example**:
+    ```javascript
+    const compliance = await agentbase.runAgent({
+      message: `Research GDPR compliance requirements for our new data processing feature: ${featureSpec}`,
+      system: "You are a compliance specialist. Provide thorough, actionable guidance on regulatory requirements."
+    });
+    ```
+    
+    **Perfect for**: _Legal research, compliance automation, risk assessment_
+  </Accordion>
+</AccordionGroup>
+
+## Finance & Accounting
+
+<AccordionGroup>
+  <Accordion title="Invoice Processing & Expense Management">
+    **What it does**: Extract data from invoices, categorize expenses, and flag anomalies or policy violations.
+    
+    **Integration example**:
+    ```javascript
+    const invoice = await agentbase.runAgent({
+      message: `Process this invoice and extract all relevant data: ${invoiceImage}. Check for accuracy and compliance.`,
+      system: "You are an accounting specialist. Be precise with numbers and flag any discrepancies."
+    });
+    ```
+    
+    **Perfect for**: _Accounting software integration, expense automation, audit trails_
+  </Accordion>
+
+  <Accordion title="Financial Analysis & Forecasting">
+    **What it does**: Analyze financial data, identify trends, and generate forecasts with scenario planning.
+    
+    **Integration example**:
+    ```javascript
+    const forecast = await agentbase.runAgent({
+      message: `Analyze Q3 financials and create Q4 forecast with 3 scenarios: ${financialData}`,
+      system: "You are a financial analyst. Provide data-driven insights with clear assumptions."
+    });
+    ```
+    
+    **Perfect for**: _Financial planning, budget analysis, investment decisions_
+  </Accordion>
+</AccordionGroup>
+
+## Getting Started with Your Use Case
+
+<Note>
+  **Start Simple**: Pick one use case that addresses your biggest pain point. Test it with the CLI first, then integrate into your existing systems.
+</Note>
+
+
+**Next steps:**
+- Choose a use case that fits your team's immediate needs
+- Start with the [Quickstart](/getting-started/quickstart) to understand agent basics
+- Review the [API documentation](/api/run-agent) for integration details
+- Join our [Discord community](https://discord.com/invite/KFtqf7j9fs) to share your implementation
+
+<Tip>
+  **Pro tip**: The same agent can handle multiple related tasks. For example, a customer service agent can answer questions, escalate issues, AND analyze conversation sentiment - all in one integration.
+</Tip>

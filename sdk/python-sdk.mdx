@@ -1,0 +1,241 @@
+---
+title: "Python SDK"
+description: "Official Python SDK for the Agentbase API"
+icon: "python"
+---
+
+> The official Python SDK for seamless integration with Agentbase agents.
+
+## Installation
+
+```bash
+pip install agentbase
+```
+
+## Quick Start
+
+```python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key="your-api-key")
+
+# Run an agent
+response = agentbase.run_agent(
+    message="Hello, analyze this data for me"
+)
+
+# Handle streaming response
+for event in response:
+    print(event)
+```
+
+## Configuration
+
+```python
+from agentbase import Agentbase
+
+agentbase = Agentbase(
+    api_key="your-api-key",
+    base_url="https://api.agentbase.sh",  # optional
+    timeout=30  # optional, in seconds
+)
+```
+
+## API Methods
+
+### run_agent()
+
+```python
+stream = agentbase.run_agent(
+    message="Your task here",
+    mode="fast",  # optional: "fast", "flash", "max"
+    system="You are a helpful assistant",  # optional
+    rules=["Be concise", "Show examples"],  # optional
+    session="session-id",  # optional for conversation continuity
+    streaming=True,  # optional, defaults to True
+    mcp_servers=[  # optional
+        {
+            "serverName": "my-api",
+            "serverUrl": "https://api.example.com/mcp"
+        }
+    ]
+)
+```
+
+### get_messages()
+
+```python
+messages = agentbase.get_messages(session="session-id")
+```
+
+### clear_messages()
+
+```python
+agentbase.clear_messages(session="session-id")
+```
+
+## Error Handling
+
+```python
+from agentbase import Agentbase, AgentbaseError
+
+try:
+    response = agentbase.run_agent(message="Your task")
+except AgentbaseError as e:
+    print(f"API Error: {e.message}")
+    print(f"Status: {e.status}")
+except Exception as e:
+    print(f"Unexpected error: {e}")
+```
+
+## Type Hints
+
+```python
+from typing import List, Dict, Optional, Iterator
+from agentbase.types import AgentEvent, MCPServer
+
+def run_agent(
+    message: str,
+    mode: Optional[str] = None,
+    system: Optional[str] = None,
+    rules: Optional[List[str]] = None,
+    session: Optional[str] = None,
+    streaming: bool = True,
+    mcp_servers: Optional[List[MCPServer]] = None
+) -> Iterator[AgentEvent]:
+    pass
+```
+
+## Examples
+
+### Basic Chat
+
+```python
+chat = agentbase.run_agent(
+    message="What's the weather like today?"
+)
+
+for event in chat:
+    if event["type"] == "agent_message":
+        print(f"Agent: {event['content']}")
+```
+
+### With Session Continuity
+
+```python
+session_id = None
+
+# First message
+response1 = agentbase.run_agent(
+    message="Hello, I'm working on a Python project"
+)
+
+for event in response1:
+    if "session" in event:
+        session_id = event["session"]
+
+# Continue conversation
+response2 = agentbase.run_agent(
+    message="Can you help me with async programming?",
+    session=session_id
+)
+```
+
+### Cost Tracking
+
+```python
+total_cost = 0
+
+response = agentbase.run_agent(
+    message="Analyze this dataset"
+)
+
+for event in response:
+    if event["type"] == "agent_cost":
+        cost = float(event.get("cost", 0))
+        total_cost += cost
+        print(f"Current cost: ${event['cost']}")
+        print(f"Total spent: ${total_cost}")
+```
+
+### Async Support
+
+```python
+import asyncio
+from agentbase import AsyncAgentbase
+
+async def main():
+    agentbase = AsyncAgentbase(api_key="your-api-key")
+    
+    response = await agentbase.run_agent(
+        message="Analyze this data asynchronously"
+    )
+    
+    async for event in response:
+        print(event)
+
+# Run the async function
+asyncio.run(main())
+```
+
+### Context Manager
+
+```python
+with Agentbase(api_key="your-api-key") as client:
+    response = client.run_agent(message="Your task")
+    for event in response:
+        print(event)
+```
+
+## Advanced Usage
+
+### Custom HTTP Client
+
+```python
+import httpx
+from agentbase import Agentbase
+
+# Use custom HTTP client
+custom_client = httpx.Client(timeout=60)
+agentbase = Agentbase(
+    api_key="your-api-key",
+    http_client=custom_client
+)
+```
+
+### Retry Configuration
+
+```python
+from agentbase import Agentbase
+from agentbase.retry import RetryConfig
+
+agentbase = Agentbase(
+    api_key="your-api-key",
+    retry_config=RetryConfig(
+        max_retries=3,
+        backoff_factor=1.5
+    )
+)
+```
+
+## Resources
+
+- **GitHub Repository**: [agentbase-python](https://github.com/AgentbaseHQ/agentbase-python)
+- **PyPI Package**: [agentbase-sdk](https://pypi.org/project/agentbase-sdk/)
+- **Issues & Support**: [GitHub Issues](https://github.com/AgentbaseHQ/agentbase-python/issues)
+
+## What's Next?
+
+<CardGroup cols={3}>
+  <Card title="TypeScript SDK" icon="code" href="/sdk/typescript-sdk">
+    Use Agentbase with TypeScript/JavaScript
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Complete API documentation
+  </Card>
+  
+  <Card title="Examples" icon="lightbulb" href="/api/example">
+    See more integration examples
+  </Card>
+</CardGroup>

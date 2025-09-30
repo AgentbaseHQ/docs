@@ -1,0 +1,43 @@
+---
+title: "Cost Tracking"
+description: "Monitor agent usage costs in real-time"
+icon: "chart-line"
+---
+
+> Every API response includes detailed cost information for real-time tracking.
+
+<Note>
+  **Looking for pricing information?** See our [Pricing Overview](/pricing) for cost ranges and monthly projections.
+</Note>
+
+## Cost Event Structure
+
+Every API response includes an `agent_cost` event:
+
+```json
+{
+  "type": "agent_cost",
+  "session": "sess_abc123",
+  "cost": "0.0091",
+  "balance": 49.99,
+  "deductionSuccess": true,
+  "lowBalance": false
+}
+```
+
+
+## What's Next?
+
+<CardGroup cols={3}>
+  <Card title="Pricing Overview" icon="dollar-sign" href="/pricing">
+    Understand cost ranges and monthly projections
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Complete API documentation with cost parameters
+  </Card>
+  
+  <Card title="System Prompts" icon="user" href="/build/system-prompts">
+    Optimize agent behavior to control costs
+  </Card>
+</CardGroup>

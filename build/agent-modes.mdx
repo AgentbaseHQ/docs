@@ -1,0 +1,152 @@
+---
+title: "Agent Mode"
+description: "Understanding Fast, Flash, and Max modes for optimized performance and cost"
+icon: "gauge"
+---
+
+Agentbase offers three distinct agent modes that optimize performance and cost through intelligent model selection. Rather than using a single model, each mode employs a **mixture of models** including custom models specifically designed to reduce agent execution steps and overall costs.
+
+## Why Model Mixtures?
+
+Agent costs are primarily driven by input tokens (approximately 80% of total cost), as agents must send the same context repeatedly across multiple steps. By using intelligent model mixtures, we can:
+
+- **Reduce execution steps** through smarter planning
+- **Lower input token costs** by completing tasks more efficiently  
+- **Optimize for specific use cases** with specialized model combinations
+
+## Available Modes
+
+<CardGroup cols={3}>
+  <Card title="Fast Mode" color="#10b981">
+    Most cost optimized and efficient
+  </Card>
+  <Card title="Flash Mode" color="#f59e0b">
+    Thinking capability with good speed
+  </Card>
+  <Card title="Max Mode" color="#8b5cf6">
+    Highest capability for complex tasks
+  </Card>
+</CardGroup>
+
+## Mode Comparison
+
+| Feature | Fast | Flash | Max |
+|---------|------|-------|-----|
+| **Primary Focus** | Cost optimization | Thinking + speed balance | Maximum capability |
+| **Model Mixture** | Efficiency-focused models | Thinking + speed models | Advanced + specialized models |
+| **Cost Efficiency** | Highest | Moderate | Lower |
+| **Thinking Capability** | Basic | Enhanced | Advanced |
+| **Use Cases** | Most general tasks | Complex tasks with thinking | Research, analysis |
+| **Best For** | Simple to moderate tasks | Tasks requiring reasoning | Complex multi-step work |
+| **Response Time** | Fastest | Fast | Moderate |
+
+## How Modes Optimize Costs
+
+1. **Fewer Steps = Lower Costs**
+   - Smart planning reduces redundant operations
+   - Efficient context management across steps
+
+2. **Model Selection Intelligence**
+   - Route simple tasks to faster, cheaper models
+   - Use powerful models only when necessary
+
+3. **Custom Model Integration**
+   - Purpose-built models for specific agent workflows
+   - Optimized for tool usage and planning
+
+## Choosing the Right Mode
+
+### Fast Mode
+Most cost-effective option. Perfect for straightforward tasks and general automation.
+
+```json
+{
+  "message": "Send a summary email of today's sales",
+  "mode": "fast"
+}
+```
+
+### Flash Mode  
+Well-balanced mode with thinking capabilities. Use when tasks require reasoning but still need good speed.
+
+```json
+{
+  "message": "Analyze this data and suggest three optimization strategies",
+  "mode": "flash"
+}
+```
+
+### Max Mode
+Best for complex analysis, research tasks, and scenarios requiring maximum capability.
+
+```json
+{
+  "message": "Research market trends and create a comprehensive competitive analysis",
+  "mode": "max"
+}
+```
+
+## Implementation Examples
+
+### API Usage
+
+```bash
+curl -X POST "https://api.agentbase.sh/v1/run-agent" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Your task here",
+    "mode": "fast"
+  }'
+```
+
+### SDK Usage
+
+<CodeGroup>
+```python Python
+response = client.run_agent(
+    message="Analyze this dataset",
+    mode="fast"  # or "flash", "max"
+)
+```
+
+```javascript TypeScript
+const response = await agentbase.runAgent({
+  message: "Analyze this dataset",
+  mode: "fast" // or "flash", "max"
+});
+```
+</CodeGroup>
+
+## Performance Recommendations
+
+1. **Start with Fast Mode** for most tasks - it's the most cost-effective
+2. **Use Flash Mode** when tasks involve lots of thinking and tool usage
+3. **Use Max Mode** for complex analysis and research requiring maximum capability
+4. **Monitor costs** and adjust modes based on task complexity
+
+## Ready to Try AgentBase?
+
+Experience the power of intelligent agent modes with your own tasks. Start with Fast mode for cost-effective automation, then explore Flash and Max modes as your needs grow.
+
+<CardGroup cols={1}>
+  <Card title="Sign Up & Get Started" icon="rocket" href="https://base.agentbase.sh/sign-up">
+    **Get free credits** with your work email and test all three modes today
+  </Card>
+</CardGroup>
+
+## What's Next?
+
+<CardGroup cols={2}>
+  <Card title="Python SDK" icon="python" href="/sdk/python-sdk">
+    Use Agentbase with Python
+  </Card>
+  
+  <Card title="TypeScript SDK" icon="code" href="/sdk/typescript-sdk">
+    Use Agentbase with TypeScript/JavaScript
+  </Card>
+</CardGroup>
+
+<Note>
+Mode selection is automatically optimized based on task complexity, but you can override the default behavior by specifying your preferred mode.
+</Note>

@@ -1,0 +1,203 @@
+---
+title: "TypeScript SDK"
+description: "Official TypeScript/JavaScript SDK for the Agentbase API"
+icon: "code"
+---
+
+> The official TypeScript SDK for seamless integration with Agentbase agents.
+
+## Installation
+
+```bash
+npm install agentbase
+# or
+yarn add agentbase
+```
+
+## Quick Start
+
+```typescript
+import { Agentbase } from 'agentbase';
+
+const agentbase = new Agentbase({
+  apiKey: 'your-api-key'
+});
+
+// Run an agent
+const response = await agentbase.runAgent({
+  message: "Hello, analyze this data for me"
+});
+
+// Handle streaming response
+for await (const event of response) {
+  console.log(event);
+}
+```
+
+## Configuration
+
+```typescript
+const agentbase = new Agentbase({
+  apiKey: 'your-api-key',
+  baseURL: 'https://api.agentbase.sh', // optional
+  timeout: 30000 // optional, in milliseconds
+});
+```
+
+## API Methods
+
+### runAgent()
+
+```typescript
+const stream = await agentbase.runAgent({
+  message: "Your task here",
+  mode: "fast", // optional: "fast", "flash", "max"
+  system: "You are a helpful assistant", // optional
+  rules: ["Be concise", "Show examples"], // optional
+  session: "session-id", // optional for conversation continuity
+  streaming: true, // optional, defaults to true
+  mcpServers: [ // optional
+    {
+      serverName: "my-api",
+      serverUrl: "https://api.example.com/mcp"
+    }
+  ]
+});
+```
+
+### getMessages()
+
+```typescript
+const messages = await agentbase.getMessages({
+  session: "session-id"
+});
+```
+
+### clearMessages()
+
+```typescript
+await agentbase.clearMessages({
+  session: "session-id"
+});
+```
+
+## Error Handling
+
+```typescript
+try {
+  const response = await agentbase.runAgent({
+    message: "Your task"
+  });
+} catch (error) {
+  if (error instanceof AgentbaseError) {
+    console.error('API Error:', error.message);
+    console.error('Status:', error.status);
+  } else {
+    console.error('Unexpected error:', error);
+  }
+}
+```
+
+## TypeScript Types
+
+```typescript
+interface RunAgentParams {
+  message: string;
+  mode?: "fast" | "flash" | "max";
+  system?: string;
+  rules?: string[];
+  session?: string;
+  streaming?: boolean;
+  mcpServers?: MCPServer[];
+}
+
+interface MCPServer {
+  serverName: string;
+  serverUrl: string;
+}
+
+interface AgentEvent {
+  type: string;
+  content?: string;
+  session?: string;
+  cost?: string;
+  balance?: number;
+}
+```
+
+## Examples
+
+### Basic Chat
+
+```typescript
+const chat = await agentbase.runAgent({
+  message: "What's the weather like today?"
+});
+
+for await (const event of chat) {
+  if (event.type === 'agent_message') {
+    console.log('Agent:', event.content);
+  }
+}
+```
+
+### With Session Continuity
+
+```typescript
+let sessionId: string | undefined;
+
+// First message
+const response1 = await agentbase.runAgent({
+  message: "Hello, I'm working on a React project"
+});
+
+for await (const event of response1) {
+  if (event.session) sessionId = event.session;
+}
+
+// Continue conversation
+const response2 = await agentbase.runAgent({
+  message: "Can you help me with state management?",
+  session: sessionId
+});
+```
+
+### Cost Tracking
+
+```typescript
+let totalCost = 0;
+
+const response = await agentbase.runAgent({
+  message: "Analyze this dataset"
+});
+
+for await (const event of response) {
+  if (event.type === 'agent_cost') {
+    totalCost += parseFloat(event.cost || '0');
+    console.log(`Current cost: $${event.cost}`);
+    console.log(`Total spent: $${totalCost}`);
+  }
+}
+```
+
+## Resources
+
+- **GitHub Repository**: [agentbase-sdk](https://github.com/AgentbaseHQ/agentbase-sdk)
+- **NPM Package**: [agentbase-sdk](https://www.npmjs.com/package/agentbase-sdk)
+- **Issues & Support**: [GitHub Issues](https://github.com/AgentbaseHQ/agentbase-sdk/issues)
+
+## What's Next?
+
+<CardGroup cols={3}>
+  <Card title="Python SDK" icon="python" href="/sdk/python-sdk">
+    Use Agentbase with Python
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Complete API documentation
+  </Card>
+  
+  <Card title="Examples" icon="lightbulb" href="/api/example">
+    See more integration examples
+  </Card>
+</CardGroup>

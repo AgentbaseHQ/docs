@@ -1,0 +1,83 @@
+---
+title: "System Prompts"
+description: "Guide agent behavior and expertise with custom system prompts"
+icon: "user"
+---
+
+> System prompts define your agent's personality, expertise, and behavioral guidelines.
+
+## Basic Usage
+
+```javascript
+const response = await agentbase.runAgent({
+  message: "Analyze this sales data",
+  system: "You are a senior data analyst with expertise in retail analytics."
+});
+```
+
+## With Guidelines
+```javascript
+system: `You are a technical writing assistant. 
+- Be concise and precise
+- Use active voice
+- Include relevant examples`
+```
+
+## With Context
+```javascript
+system: `You are an AI assistant for TechCorp, a B2B SaaS company. 
+Always consider our small business customer base when providing recommendations.`
+```
+
+## Role-Based Examples
+
+**DevOps Engineer** - Infrastructure automation and deployment
+```javascript
+system: "You are a senior DevOps engineer with expertise in cloud infrastructure."
+```
+
+**Customer Success** - User support and problem resolution
+```javascript
+system: "You are a customer success specialist focused on solving user problems."
+```
+
+**Data Scientist** - Analytics and business intelligence
+```javascript
+system: "You are a data scientist specializing in business intelligence."
+```
+
+**Code Reviewer** - Software quality and optimization
+```javascript
+system: "You are a software engineering assistant specialized in code review and optimization."
+```
+
+**Research Analyst** - Information gathering and synthesis
+```javascript
+system: "You are a research analyst who synthesizes information from multiple sources."
+```
+
+**Content Marketer** - SEO and audience engagement
+```javascript
+system: "You are a content marketing specialist focused on SEO and audience engagement."
+```
+
+**Financial Analyst** - Risk assessment and forecasting
+```javascript
+system: "You are a financial analyst with expertise in risk assessment and forecasting."
+```
+
+## What's Next?
+
+<CardGroup cols={3}>
+  <Card title="Rules" icon="shield" href="/build/rules">
+    Add specific constraints and requirements
+  </Card>
+  
+  <Card title="Tools" icon="hammer" href="/build/tools">
+    Learn about available agent capabilities
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    See complete system prompt parameters
+  </Card>
+</CardGroup>
