@@ -6,41 +6,23 @@ icon: "database"
 
 > Agentbase uses a two-tier persistence model that separates conversational state from computational environments for optimal performance and cost efficiency.
 
-Understanding persistence is crucial for building reliable applications with Agentbase. Our architecture ensures your conversations and work environments are preserved appropriately while maintaining cost efficiency.
-
 ## Two-Tier Persistence Model
-
-Agentbase separates persistence into two distinct tiers, each optimized for different use cases and cost structures.
 
 ### 1. Chat & Message History
 
-**Automatic & Free**: Message history and chat history are persisted by default with no cost. See [pricing details](/pricing).
+**Automatic & Free**: Message history persists by default at no cost.
 
 - Zero cost for storage
 - Automatic for all conversations
-- Resume conversations without losing context
 - Use session IDs to maintain context
-
-```javascript
-// Conversation automatically persists
-const session1 = await agentbase.runAgent({
-  message: "Help me plan a marketing campaign"
-});
-
-```
 
 ### 2. Computer Environment
 
-**On-Demand Creation**: Computers are only created when agents need them for tasks like code execution, file operations, or web browsing.
-
-**Persistence**: Once created, computers persist.
+**On-Demand Creation**: Computers are created when agents need them for code execution, file operations, or web browsing.
 
 - Auto-pause after 5 minutes of inactivity
-- All files and installations remain
-- Instant resume when needed
+- Files and installations remain
 - Use same session ID to reuse environment
-
-**Created for**: Code execution, file operations, web browsing, package installation
 
 
 
