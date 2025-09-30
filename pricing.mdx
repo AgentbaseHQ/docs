@@ -11,17 +11,24 @@ icon: "dollar-sign"
 *Currency: USD ($)*
 
 | Mode | Context Window Size | Cost per Step |
-|------|-------------------|---------------|
-| **Flash** | < 30k tokens | $0.005 |
-| | 30k - 128k tokens | $0.012 |
-| **Fast** | < 30k tokens | $0.05 |
-| | 30k - 128k tokens | $0.12 |
-| **Max** | < 30k tokens | $0.15 |
-| | 30k - 128k tokens | $0.40 |
+|:-----|:--------------------|:--------------|
+| **Flash** | 0 - 30K tokens | $0.01 - $0.04 |
+| | 30K - 128K tokens | $0.06 - $0.09 |
+| | 128K - 200K tokens | $0.08 - $0.12 |
+| **Fast** | 0 - 30K tokens | $0.05 - $0.15 |
+| | 30K - 128K tokens | $0.10 - $0.20 |
+| | 128K - 200K tokens | $0.13 - $0.25 |
+| **Max** | 0 - 30K tokens | $0.15 - $0.40 |
+| | 30K - 128K tokens | $0.20 - $0.45 |
+| | 128K - 200K tokens | $0.25 - $0.55 |
 
 <Note>
-**Context-Based Pricing**: Costs increase with larger context windows (30k+ tokens) due to higher computational requirements. Most standard workflows use small context (< 30k tokens) for optimal cost efficiency.
+**Extended Context**: We offer long context up to 1M tokens for specialized use cases. Contact us for pricing and availability.
 </Note>
+
+<Tip>
+**Beta Phase**: During our beta phase, all other resources like computers, datastore, etc are free. You only pay for agent steps.
+</Tip>
 
 
 

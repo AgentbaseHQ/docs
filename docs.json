@@ -28,6 +28,11 @@
     "name": "Get Free Credits",
     "url": "https://base.agentbase.sh/sign-up"
   },
+  "banner": {
+    "content": "🎉 Agentbase is now in public beta! Try it free with work email signup.",
+    "ctaText": "Get Started",
+    "url": "https://base.agentbase.sh/sign-up"
+  },
   "navigation": {
     "tabs": [
       {
