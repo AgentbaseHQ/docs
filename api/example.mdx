@@ -1,24 +1,276 @@
 ---
-title: "Example"
-description: "See a real Agentbase API call and its streaming response."
+title: "API Examples"
+description: "Complete examples for different use cases and integration patterns."
 ---
 
-## Example: Streaming API Call
+## Basic Usage Examples
 
-The Agents API streams responses by default using Server-Sent Events (SSE). This allows you to receive real-time updates as the agent thinks and acts.
-
-### Request
+### Simple Text Generation
 
 ```bash
-curl -X POST \
+curl -X POST "https://api.agentbase.sh" \
   -H "Content-Type: application/json" \
-  -H "Accept: text/event-stream" \
-  -H "Authorization: Bearer sk-ptr-..." \
-  -d '{"message": "Can you introduce yourself?"}' \
-  "https://api.agentbase.sh"
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{"message": "Write a Python function to calculate fibonacci numbers"}'
 ```
 
-### Streaming Response
+### Code Generation
+
+```bash
+curl -X POST "https://api.agentbase.sh" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{"message": "Create a JSON schema for a user profile with name, email, and preferences"}'
+```
+
+### Web Search and Research
+
+```bash
+curl -X POST "https://api.agentbase.sh" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{"message": "Search for the latest developments in AI and summarize the key findings"}'
+```
+
+### Complex Automation
+
+```bash
+curl -X POST "https://api.agentbase.sh" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{"message": "Plan a project roadmap for building a mobile app with user authentication, including technical requirements and timeline"}'
+```
+
+## Agent Modes
+
+### Fast Mode (Balanced Performance)
+```bash
+curl -X POST "https://api.agentbase.sh" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "message": "Generate code examples",
+    "mode": "fast"
+  }'
+```
+
+### Flash Mode (See Agent Thinking)
+```bash
+curl -X POST "https://api.agentbase.sh" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "message": "Plan a marketing strategy",
+    "mode": "flash"
+  }'
+```
+
+### Max Mode (Complex Reasoning)
+```bash
+curl -X POST "https://api.agentbase.sh" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "message": "Design a complete system architecture",
+    "mode": "max"
+  }'
+```
+
+## Streaming Control
+
+### Non-Streaming (Complete Blocks)
+```bash
+curl -X POST "https://api.agentbase.sh" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "message": "Write a product description",
+    "streaming": false
+  }'
+```
+
+### Streaming Enabled (Token-by-Token)
+```bash
+curl -X POST "https://api.agentbase.sh" \
+  -H "Content-Type: application/json" \
+  -H "Accept: text/event-stream" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "message": "Analyze this website and suggest improvements", 
+    "streaming": true
+  }'
+```
+
+## Session Management
+
+### Continue Conversations
+```bash
+# First message - creates a new session
+curl -X POST "https://api.agentbase.sh" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{"message": "Help me plan a marketing campaign for a SaaS product"}'
+
+# Save the session ID from the response, then continue the conversation
+curl -X POST "https://api.agentbase.sh?session=SESSION_ID" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{"message": "Now create social media content for this campaign"}'
+```
+
+**Session Management:**
+- **Auto-Creation**: If you don't specify a session ID, a new one is automatically created
+- **Continue Conversations**: Append `?session=[SESSION_ID]` to the URL for follow-up messages
+- **Persistent Context**: The agent remembers previous messages within the same session
+
+## Advanced Features
+
+### Custom Tools and Rules
+```bash
+curl -X POST "https://api.agentbase.sh" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "message": "Optimize this SQL query for better performance",
+    "mode": "max",
+    "system": "You are a database optimization expert",
+    "rules": ["Always explain your reasoning", "Provide before/after comparisons"],
+    "mcpServers": [
+      {
+        "serverName": "database-tools", 
+        "serverUrl": "https://your-mcp-server.com/mcp"
+      }
+    ]
+  }'
+```
+
+### Built-in Capabilities
+
+#### File Processing
+```bash
+curl -X POST "https://api.agentbase.sh" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Analyze this spreadsheet and create visualizations of the key trends"}'
+```
+
+#### Web Automation
+```bash
+curl -X POST "https://api.agentbase.sh" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Monitor competitor pricing on their website and compile a comparison report"}'
+```
+
+#### Multi-step Planning
+```bash
+curl -X POST "https://api.agentbase.sh" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Create a complete deployment strategy for a new microservice, including CI/CD pipeline, monitoring, and rollback procedures"}'
+```
+
+## Programming Language Integration
+
+### JavaScript/Node.js with Error Handling
+```javascript
+async function callAgent(message) {
+  try {
+    const response = await fetch('https://api.agentbase.sh', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: message,
+        mode: 'fast'
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Agent request failed:', error);
+    throw error;
+  }
+}
+```
+
+### Python with Session Management
+```python
+import requests
+
+class AgentbaseClient:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.session_id = None
+        self.base_url = 'https://api.agentbase.sh'
+    
+    def send_message(self, message, mode='fast'):
+        url = self.base_url
+        if self.session_id:
+            url += f'?session={self.session_id}'
+        
+        response = requests.post(
+            url,
+            headers={
+                'Authorization': f'Bearer {self.api_key}',
+                'Content-Type': 'application/json'
+            },
+            json={
+                'message': message,
+                'mode': mode
+            }
+        )
+        
+        data = response.json()
+        
+        # Save session ID for future requests
+        if 'session' in data:
+            self.session_id = data['session']
+        
+        return data
+
+# Usage
+client = AgentbaseClient('YOUR_API_KEY')
+response1 = client.send_message('Plan a marketing campaign')
+response2 = client.send_message('Create social media content for this campaign')
+```
+
+## Troubleshooting
+
+### Common Issues and Solutions
+
+#### Streaming Problems
+```bash
+# If your stream is choppy, disable streaming for complete blocks
+curl -X POST "https://api.agentbase.sh" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "message": "Write documentation",
+    "streaming": false
+  }'
+```
+
+#### See Agent Reasoning
+```bash
+# Use flash mode to see the agent's thinking process
+curl -X POST "https://api.agentbase.sh" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "message": "Solve this complex problem step by step",
+    "mode": "flash"
+  }'
+```
+
+## Example Streaming Response
 
 ```text
 data: {"type":"agent_started","session":"[SESSION_ID]"}
@@ -35,8 +287,3 @@ data: {"type":"agent_completed","session":"[SESSION_ID]"}
 ```
 
 For an explanation of every `type` value, see [Streaming Message Types](/api/message-events).
-
-## Session Handling
-
-- **Auto-Creation**: If you do not specify a session ID, a new one is automatically created.
-- **Continue a Session**: Append `?session=[SESSION_ID]` to the URL.
