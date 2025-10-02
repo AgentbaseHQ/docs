@@ -1,0 +1,65 @@
+---
+title: "Index Document"
+api: "POST https://api.agentbase.sh/index-document"
+authMethod: "bearer"
+description: "Upload and index a document to an Agentbase datastore."
+contentType: "multipart/form-data"
+---
+
+### Body Parameters
+
+<ParamField body="file" type="file" required>
+  The document file to upload and index. Supported formats include PDF, TXT,
+  PNG, JPG, and more.
+</ParamField>
+
+<ParamField body="datastore_id" type="string" required>
+  The ID of the datastore where the document will be indexed. You can get this
+  ID from the Create Datastore endpoint.
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X POST https://api.agentbase.sh/index-document \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@./Trends_Artificial_Intelligence.pdf" \
+  -F "datastore_id=ds_1234567890abcdef"
+```
+
+### Response
+
+Returns information about the indexed document.
+
+```json
+{
+  "document_id": "doc_abcdef1234567890",
+  "datastore_id": "ds_1234567890abcdef",
+  "filename": "Trends_Artificial_Intelligence.pdf",
+  "status": "indexed",
+  "indexed_at": "2025-10-01T12:00:00Z"
+}
+```
+
+### Response Fields
+
+<ResponseField name="document_id" type="string">
+  The unique identifier for the indexed document
+</ResponseField>
+
+<ResponseField name="datastore_id" type="string">
+  The ID of the datastore containing the document
+</ResponseField>
+
+<ResponseField name="filename" type="string">
+  The name of the uploaded file
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  The indexing status of the document (e.g., `indexed`, `processing`)
+</ResponseField>
+
+<ResponseField name="indexed_at" type="string">
+  Timestamp of when the document was successfully indexed
+</ResponseField>
