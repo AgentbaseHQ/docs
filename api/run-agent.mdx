@@ -22,17 +22,17 @@ description: "Run an agent with a message and receive a streaming agent response
 >
   The task or message to run the agent with.
 </ParamField>
+<ParamField body="system" type="string" optional>
+  A system prompt to provide system information to the agent. The Agents API
+  defaults to the Agentbase default system prompt.
+</ParamField>
 <ParamField body="mode" type="string" optional default="fast">
   The mode of the agent. Can be `flash`, `fast` or `max`. Flash mode is great
   for simple, one-off tasks. Fast mode is much faster and cheaper, with
   comparable performance to `max` mode. The Agents API defaults to `fast`.
 </ParamField>
-<ParamField body="system" type="string" optional>
-  A system prompt to provide system information to the agent. The Agents API
-  defaults to the Agentbase default system prompt.
-</ParamField>
 <ParamField
-  body="mcpServers"
+  body="mcp_servers"
   type="{serverName: string, serverUrl: string}[]"
   optional
 >
@@ -42,9 +42,21 @@ description: "Run an agent with a message and receive a streaming agent response
   `serverUrl`. We have backward compatibility with the old `/sse` endpoint.
   ```json
   {
-    "mcpServers": [
+    "mcp_servers": [
       { "serverName": "mcp-server-1", "serverUrl": "https://mcp-server-1.com/mcp" },
       { "serverName": "mcp-server-2", "serverUrl": "https://mcp-server-2.com/mcp" }
+    ]
+  }
+  ```
+</ParamField>
+<ParamField body="datastores" type="{datastore_name: string, datastore_id: string}[]" optional>
+  A set of datastores to provide to the agent. Datastores are a set of data
+  sources that the agent can utilize. Datastores are either databases or
+  documents as the knowledge base.
+  ```json
+  {
+    "datastores": [
+      { "datastore_name": "my-datastore", "datastore_id": "ds_1234567890abcdef"}
     ]
   }
   ```
@@ -53,7 +65,7 @@ description: "Run an agent with a message and receive a streaming agent response
   A set of rules to provide to the agent. Rules are a set of constraints that
   the agent must follow. Defaults to no rules.
 </ParamField>
-<ParamField body="streaming" type="boolean" optional>
+<ParamField body="streaming_tokens" type="boolean" optional>
   Whether to stream the agent messages token by token. Defaults to `false`.
 </ParamField>
 
