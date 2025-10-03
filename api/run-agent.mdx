@@ -49,14 +49,14 @@ description: "Run an agent with a message and receive a streaming agent response
   }
   ```
 </ParamField>
-<ParamField body="datastores" type="{datastore_name: string, datastore_id: string}[]" optional>
+<ParamField body="datastores" type="{id: string, name: string}[]" optional>
   A set of datastores to provide to the agent. Datastores are a set of data
   sources that the agent can utilize. Datastores are either databases or
   documents as the knowledge base.
   ```json
   {
     "datastores": [
-      { "datastore_name": "my-datastore", "datastore_id": "ds_1234567890abcdef"}
+      { "id": "ds_1234567890abcdef", "name": "my-datastore"}
     ]
   }
   ```
