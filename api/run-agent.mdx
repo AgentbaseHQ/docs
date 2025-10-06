@@ -34,6 +34,92 @@ description: "Run an agent with a message and receive a streaming agent response
   comparable performance to `max` mode. The Agents API defaults to `fast`.
 </ParamField>
 
+<ParamField body="workflows" type="Workflow[]" optional>
+  A set of declarative workflows for the agent to execute. Each workflow is a
+  DAG (Directed Acyclic Graph) of steps that the agent interprets and executes
+  dynamically. The agent decides how to implement each step based on its
+  description, making this a truly AI-native workflow system rather than a
+  deterministic workflow builder.
+  ```json
+  {
+    "workflows": [
+      {
+        "id": "customer_onboarding",
+        "name": "onboard_new_customer",
+        "description": "Onboard new customers by collecting information and setting up their account",
+        "steps": [
+          {
+            "id": "step_1",
+            "name": "collect_customer_info",
+            "description": "Gather customer name, email, and company details from the conversation",
+            "depends_on": []
+          },
+          {
+            "id": "step_2",
+            "name": "validate_email",
+            "description": "Verify the email address is valid and not already registered in the system",
+            "depends_on": ["step_1"]
+          },
+          {
+            "id": "step_3",
+            "name": "create_account",
+            "description": "Create a new user account with the collected and validated information",
+            "depends_on": ["step_2"]
+          },
+          {
+            "id": "step_4",
+            "name": "send_welcome_email",
+            "description": "Send a welcome email with account details and next steps",
+            "depends_on": ["step_3"]
+          }
+        ]
+      }
+    ]
+  }
+  ```
+
+  **Workflow Schema:**
+  - `id` (string, required): Unique identifier for the workflow
+  - `name` (string, required): Name of the workflow
+  - `description` (string, required): What the workflow accomplishes
+  - `steps` (array, required): Array of step objects
+
+  **Step Schema:**
+  - `id` (string, required): Unique identifier for the step
+  - `name` (string, required): Name of the step
+  - `description` (string, required): What the step should accomplish - the agent interprets this to decide HOW to execute
+  - `depends_on` (string[], required): Array of step IDs that must complete before this step runs. Empty array means the step can run immediately. Steps with no dependencies run in parallel.
+
+  **Advanced Step Options:**
+  ```json
+  {
+    "steps": [
+      {
+        "id": "step_1",
+        "name": "optional_verification",
+        "description": "Attempt to verify user identity through third-party service",
+        "depends_on": [],
+        "optional": true,
+        "retry_policy": {
+          "max_attempts": 3,
+          "backoff": "exponential"
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "verified": { "type": "boolean" },
+            "confidence_score": { "type": "number" }
+          }
+        }
+      }
+    ]
+  }
+  ```
+  - `optional` (boolean, optional): Whether the step can be skipped if it fails
+  - `retry_policy` (object, optional): Retry configuration for the step
+  - `output_schema` (object, optional): JSON schema for expected output validation
+</ParamField>
+
 <ParamField body="rules" type="string[]" optional>
   A set of rules to provide to the agent. Rules are a set of constraints that
   the agent must follow. Defaults to no rules.
