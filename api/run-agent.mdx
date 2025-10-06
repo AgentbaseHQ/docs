@@ -22,15 +22,23 @@ description: "Run an agent with a message and receive a streaming agent response
 >
   The task or message to run the agent with.
 </ParamField>
+
 <ParamField body="system" type="string" optional>
   A system prompt to provide system information to the agent. The Agents API
   defaults to the Agentbase default system prompt.
 </ParamField>
+
 <ParamField body="mode" type="string" optional default="fast">
   The mode of the agent. Can be `flash`, `fast` or `max`. Flash mode is great
   for simple, one-off tasks. Fast mode is much faster and cheaper, with
   comparable performance to `max` mode. The Agents API defaults to `fast`.
 </ParamField>
+
+<ParamField body="rules" type="string[]" optional>
+  A set of rules to provide to the agent. Rules are a set of constraints that
+  the agent must follow. Defaults to no rules.
+</ParamField>
+
 <ParamField
   body="mcp_servers"
   type="{serverName: string, serverUrl: string}[]"
@@ -49,6 +57,32 @@ description: "Run an agent with a message and receive a streaming agent response
   }
   ```
 </ParamField>
+
+<ParamField body="background" type="boolean" optional>
+  Whether to run the agent asynchronously on the server. When set to `true`, the
+  agent runs in the background and you can use the `callback` parameter to
+  receive agent message events. Defaults to `false`.
+</ParamField>
+
+<ParamField
+  body="callback"
+  type="{url: string, headers: object}"
+  optional
+>
+  A callback endpoint configuration to send agent message events back to. Use
+  this with `background: true` to receive events at your specified endpoint.
+  ```json
+  {
+    "callback": {
+      "url": "https://your-server.com/webhook",
+      "headers": {
+        "Authorization": "Bearer your-token"
+      }
+    }
+  }
+  ```
+</ParamField>
+
 <ParamField body="datastores" type="{id: string, name: string}[]" optional>
   A set of datastores to provide to the agent. Datastores are a set of data
   sources that the agent can utilize. Datastores are either databases or
@@ -61,12 +95,71 @@ description: "Run an agent with a message and receive a streaming agent response
   }
   ```
 </ParamField>
-<ParamField body="rules" type="string[]" optional>
-  A set of rules to provide to the agent. Rules are a set of constraints that
-  the agent must follow. Defaults to no rules.
+
+<ParamField
+  body="queries"
+  type="{name: string, description: string, query: string}[]"
+  optional
+>
+  A set of custom actions based on datastore (database) queries. Allows you to
+  quickly define actions that the agent can use to query your datastores.
+  ```json
+  {
+    "queries": [
+      {
+        "name": "getUserById",
+        "description": "Fetch user details by their ID",
+        "query": "SELECT * FROM users WHERE id = ?"
+      },
+      {
+        "name": "listActiveRecords",
+        "description": "Get all active records from the database",
+        "query": "SELECT * FROM records WHERE status = 'active'"
+      }
+    ]
+  }
+  ```
 </ParamField>
+
 <ParamField body="streaming_tokens" type="boolean" optional>
   Whether to stream the agent messages token by token. Defaults to `false`.
+</ParamField>
+
+<ParamField
+  body="final_output"
+  type="{name: string, strict: boolean, schema: object}"
+  optional
+>
+  Configuration for an extra final output event that processes the entire agent
+  message thread and produces a structured output based on the provided JSON
+  schema.
+  ```json
+  {
+    "final_output": {
+      "name": "task_summary",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "summary": { "type": "string" },
+          "outcome": {
+            "type": "string",
+            "enum": ["success", "partial_success", "failure"]
+          },
+          "next_steps": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Recommended next steps or follow-up actions",
+            "minItems": 3,
+            "maxItems": 3
+          }
+        },
+        "required": ["summary", "outcome", "next_steps"],
+        "additionalProperties": false
+      }
+    }
+  }
+  ```
 </ParamField>
 
 See [Streaming Message Types](/api/message-events) for event details.

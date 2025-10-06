@@ -12,9 +12,19 @@ description: "Create a new datastore to organize your documents or databases."
 </ParamField>
 
 <ParamField body="type" type="string" required>
-  The type of datastore to create. Supported values:
-  - `database` - For structured database content
-  - `documents` - For document files
+  The type of datastore to create. Supported values: - `database` - For
+  structured database content - `documents` - For document files
+</ParamField>
+
+<ParamField body="metadata" type="object" optional>
+  The metadata for the datastore. This is only required for `database` type datastores. Set the connection string for the database.
+  ```json
+  {
+    "metadata": {
+      "connectionString": "postgresql://username:password@host:port/database"
+    }
+  }
+  ```
 </ParamField>
 
 ### Response
@@ -33,7 +43,8 @@ Returns the created datastore information including the datastore ID.
 ### Response Fields
 
 <ResponseField name="datastore_id" type="string">
-  The unique identifier for the created datastore. Use this ID when indexing documents.
+  The unique identifier for the created datastore. Use this ID when indexing
+  documents.
 </ResponseField>
 
 <ResponseField name="name" type="string">
