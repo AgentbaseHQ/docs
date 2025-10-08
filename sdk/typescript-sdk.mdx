@@ -68,7 +68,7 @@ const stream = await agentbase.runAgent({
 ### getMessages()
 
 ```typescript
-const messages = await agentbase.getMessages({
+const messages = await agentbase.getMessages.retrieve({
   session: "session-id"
 });
 ```
@@ -76,7 +76,7 @@ const messages = await agentbase.getMessages({
 ### clearMessages()
 
 ```typescript
-await agentbase.clearMessages({
+await agentbase.clearMessages.clear({
   session: "session-id"
 });
 ```
