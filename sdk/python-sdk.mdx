@@ -15,7 +15,7 @@ pip install agentbase-sdk
 ## Quick Start
 
 ```python
-from agentbase_sdk import Agentbase
+from agentbase import Agentbase
 
 client = Agentbase(api_key="your-api-key")
 
@@ -37,7 +37,7 @@ for event in response:
 ## Configuration
 
 ```python
-from agentbase_sdk import Agentbase
+from agentbase import Agentbase
 
 client = Agentbase(
     api_key="your-api-key",
@@ -177,7 +177,7 @@ result = client.messages.clear(session="session-id")
 ## Error Handling
 
 ```python
-from agentbase_sdk import Agentbase, AgentbaseError
+from agentbase import Agentbase, AgentbaseError
 
 try:
     response = client.run_agent(message="Your task")
@@ -311,7 +311,7 @@ for event in response:
 
 ```python
 import asyncio
-from agentbase_sdk import AsyncAgentbase
+from agentbase import AsyncAgentbase
 
 async def main():
     client = AsyncAgentbase(api_key="your-api-key")
@@ -342,7 +342,7 @@ with Agentbase(api_key="your-api-key") as client:
 
 ```python
 import httpx
-from agentbase_sdk import Agentbase
+from agentbase import Agentbase
 
 # Use custom HTTP client
 custom_http_client = httpx.Client(timeout=60)
@@ -355,8 +355,8 @@ client = Agentbase(
 ### Retry Configuration
 
 ```python
-from agentbase_sdk import Agentbase
-from agentbase_sdk.retry import RetryConfig
+from agentbase import Agentbase
+from agentbase.retry import RetryConfig
 
 client = Agentbase(
     api_key="your-api-key",
