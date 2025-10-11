@@ -19,12 +19,17 @@ yarn add agentbase-sdk
 ```typescript
 import { Agentbase } from 'agentbase-sdk';
 
-const agentbase = new Agentbase({
+const client = new Agentbase({
   apiKey: 'your-api-key'
 });
 
-// Run an agent
-const response = await agentbase.runAgent({
+// Run an agent (root-level method)
+const response = await client.runAgent({
+  message: "Hello, analyze this data for me"
+});
+
+// Or use the agent resource
+const response2 = await client.agent.run({
   message: "Hello, analyze this data for me"
 });
 
@@ -37,7 +42,7 @@ for await (const event of response) {
 ## Configuration
 
 ```typescript
-const agentbase = new Agentbase({
+const client = new Agentbase({
   apiKey: 'your-api-key',
   baseURL: 'https://api.agentbase.sh', // optional
   timeout: 30000 // optional, in milliseconds
@@ -46,37 +51,132 @@ const agentbase = new Agentbase({
 
 ## API Methods
 
-### runAgent()
+### Root-Level Methods
+
+#### client.runAgent()
+
+Run an agent directly from the root client:
 
 ```typescript
-const stream = await agentbase.runAgent({
-  message: "Your task here",
-  mode: "fast", // optional: "fast", "flash", "max"
-  system: "You are a helpful assistant", // optional
-  rules: ["Be concise", "Show examples"], // optional
-  session: "session-id", // optional for conversation continuity
-  streaming: true, // optional, defaults to true
-  mcpServers: [ // optional
+const stream = await client.runAgent({
+  message: "Your task here", // required
+  session: "session-id", // optional: continue conversation
+  mode: "fast", // optional: "fast" | "flash" | "max", defaults to "fast"
+  system: "You are a helpful assistant", // optional: system prompt
+  rules: ["Be concise", "Show examples"], // optional: array of constraints
+  workflows: [ // optional: declarative workflows
+    {
+      id: "workflow_1",
+      name: "example_workflow",
+      description: "Example workflow description",
+      steps: [
+        {
+          id: "step_1",
+          name: "first_step",
+          description: "What this step should accomplish",
+          depends_on: [],
+          optional: false, // optional
+          retry_policy: { // optional
+            max_attempts: 3,
+            backoff: "exponential"
+          },
+          output_schema: { // optional
+            type: "object",
+            properties: {
+              result: { type: "string" }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  mcpServers: [ // optional: MCP server configs
     {
       serverName: "my-api",
       serverUrl: "https://api.example.com/mcp"
     }
-  ]
+  ],
+  background: false, // optional: run agent asynchronously, defaults to false
+  callback: { // optional: use with background: true
+    url: "https://your-server.com/webhook",
+    headers: {
+      Authorization: "Bearer your-token"
+    }
+  },
+  datastores: [ // optional: data sources for the agent
+    {
+      id: "ds_1234567890abcdef",
+      name: "my-datastore"
+    }
+  ],
+  queries: [ // optional: custom datastore queries
+    {
+      name: "getUserById",
+      description: "Fetch user details by their ID",
+      query: "SELECT * FROM users WHERE id = ?"
+    }
+  ],
+  streaming_tokens: false, // optional: stream tokens, defaults to false
+  final_output: { // optional: structured final output
+    name: "task_summary",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        summary: { type: "string" },
+        outcome: {
+          type: "string",
+          enum: ["success", "partial_success", "failure"]
+        }
+      },
+      required: ["summary", "outcome"]
+    }
+  }
 });
 ```
 
-### getMessages()
+### Agent Resource
+
+#### client.agent.run()
+
+Run an agent using the agent resource (accepts same parameters as `client.runAgent()`):
 
 ```typescript
-const messages = await agentbase.getMessages.retrieve({
+const stream = await client.agent.run({
+  message: "Your task here", // required
+  session: "session-id", // optional
+  mode: "fast", // optional
+  system: "You are a helpful assistant", // optional
+  rules: ["Be concise", "Show examples"], // optional
+  workflows: [...], // optional
+  mcpServers: [...], // optional
+  background: false, // optional
+  callback: {...}, // optional
+  datastores: [...], // optional
+  queries: [...], // optional
+  streaming_tokens: false, // optional
+  final_output: {...} // optional
+});
+```
+
+### Messages Resource
+
+#### client.messages.get()
+
+Retrieve messages from an agent session:
+
+```typescript
+const messages = await client.messages.get({
   session: "session-id"
 });
 ```
 
-### clearMessages()
+#### client.messages.clear()
+
+Clear all messages from an agent session:
 
 ```typescript
-await agentbase.clearMessages.clear({
+const result = await client.messages.clear({
   session: "session-id"
 });
 ```
@@ -85,7 +185,7 @@ await agentbase.clearMessages.clear({
 
 ```typescript
 try {
-  const response = await agentbase.runAgent({
+  const response = await client.runAgent({
     message: "Your task"
   });
 } catch (error) {
@@ -103,17 +203,65 @@ try {
 ```typescript
 interface RunAgentParams {
   message: string;
+  session?: string;
   mode?: "fast" | "flash" | "max";
   system?: string;
   rules?: string[];
-  session?: string;
-  streaming?: boolean;
+  workflows?: Workflow[];
   mcpServers?: MCPServer[];
+  background?: boolean;
+  callback?: CallbackConfig;
+  datastores?: Datastore[];
+  queries?: Query[];
+  streaming_tokens?: boolean;
+  final_output?: FinalOutputConfig;
+}
+
+interface Workflow {
+  id: string;
+  name: string;
+  description: string;
+  steps: WorkflowStep[];
+}
+
+interface WorkflowStep {
+  id: string;
+  name: string;
+  description: string;
+  depends_on: string[];
+  optional?: boolean;
+  retry_policy?: {
+    max_attempts: number;
+    backoff: "linear" | "exponential";
+  };
+  output_schema?: Record<string, any>;
 }
 
 interface MCPServer {
   serverName: string;
   serverUrl: string;
+}
+
+interface CallbackConfig {
+  url: string;
+  headers?: Record<string, string>;
+}
+
+interface Datastore {
+  id: string;
+  name: string;
+}
+
+interface Query {
+  name: string;
+  description: string;
+  query: string;
+}
+
+interface FinalOutputConfig {
+  name: string;
+  strict: boolean;
+  schema: Record<string, any>;
 }
 
 interface AgentEvent {
@@ -130,7 +278,7 @@ interface AgentEvent {
 ### Basic Chat
 
 ```typescript
-const chat = await agentbase.runAgent({
+const chat = await client.runAgent({
   message: "What's the weather like today?"
 });
 
@@ -147,7 +295,7 @@ for await (const event of chat) {
 let sessionId: string | undefined;
 
 // First message
-const response1 = await agentbase.runAgent({
+const response1 = await client.runAgent({
   message: "Hello, I'm working on a React project"
 });
 
@@ -156,7 +304,7 @@ for await (const event of response1) {
 }
 
 // Continue conversation
-const response2 = await agentbase.runAgent({
+const response2 = await client.agent.run({
   message: "Can you help me with state management?",
   session: sessionId
 });
@@ -167,7 +315,7 @@ const response2 = await agentbase.runAgent({
 ```typescript
 let totalCost = 0;
 
-const response = await agentbase.runAgent({
+const response = await client.runAgent({
   message: "Analyze this dataset"
 });
 
