@@ -17,10 +17,15 @@ pip install agentbase-sdk
 ```python
 from agentbase_sdk import Agentbase
 
-agentbase = Agentbase(api_key="your-api-key")
+client = Agentbase(api_key="your-api-key")
 
-# Run an agent
-response = agentbase.run_agent(
+# Run an agent (root-level method)
+response = client.run_agent(
+    message="Hello, analyze this data for me"
+)
+
+# Or use the agent resource
+response2 = client.agent.run(
     message="Hello, analyze this data for me"
 )
 
@@ -34,7 +39,7 @@ for event in response:
 ```python
 from agentbase_sdk import Agentbase
 
-agentbase = Agentbase(
+client = Agentbase(
     api_key="your-api-key",
     base_url="https://api.agentbase.sh",  # optional
     timeout=30  # optional, in seconds
@@ -43,35 +48,130 @@ agentbase = Agentbase(
 
 ## API Methods
 
-### run_agent()
+### Root-Level Methods
+
+#### client.run_agent()
+
+Run an agent directly from the root client:
 
 ```python
-stream = agentbase.run_agent(
-    message="Your task here",
-    mode="fast",  # optional: "fast", "flash", "max"
-    system="You are a helpful assistant",  # optional
-    rules=["Be concise", "Show examples"],  # optional
-    session="session-id",  # optional for conversation continuity
-    streaming=True,  # optional, defaults to True
-    mcp_servers=[  # optional
+stream = client.run_agent(
+    message="Your task here",  # required
+    session="session-id",  # optional: continue conversation
+    mode="fast",  # optional: "fast" | "flash" | "max", defaults to "fast"
+    system="You are a helpful assistant",  # optional: system prompt
+    rules=["Be concise", "Show examples"],  # optional: array of constraints
+    workflows=[  # optional: declarative workflows
+        {
+            "id": "workflow_1",
+            "name": "example_workflow",
+            "description": "Example workflow description",
+            "steps": [
+                {
+                    "id": "step_1",
+                    "name": "first_step",
+                    "description": "What this step should accomplish",
+                    "depends_on": [],
+                    "optional": False,  # optional
+                    "retry_policy": {  # optional
+                        "max_attempts": 3,
+                        "backoff": "exponential"
+                    },
+                    "output_schema": {  # optional
+                        "type": "object",
+                        "properties": {
+                            "result": {"type": "string"}
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    mcp_servers=[  # optional: MCP server configs
         {
             "serverName": "my-api",
             "serverUrl": "https://api.example.com/mcp"
         }
-    ]
+    ],
+    background=False,  # optional: run agent asynchronously, defaults to False
+    callback={  # optional: use with background=True
+        "url": "https://your-server.com/webhook",
+        "headers": {
+            "Authorization": "Bearer your-token"
+        }
+    },
+    datastores=[  # optional: data sources for the agent
+        {
+            "id": "ds_1234567890abcdef",
+            "name": "my-datastore"
+        }
+    ],
+    queries=[  # optional: custom datastore queries
+        {
+            "name": "getUserById",
+            "description": "Fetch user details by their ID",
+            "query": "SELECT * FROM users WHERE id = ?"
+        }
+    ],
+    streaming_tokens=False,  # optional: stream tokens, defaults to False
+    final_output={  # optional: structured final output
+        "name": "task_summary",
+        "strict": True,
+        "schema": {
+            "type": "object",
+            "properties": {
+                "summary": {"type": "string"},
+                "outcome": {
+                    "type": "string",
+                    "enum": ["success", "partial_success", "failure"]
+                }
+            },
+            "required": ["summary", "outcome"]
+        }
+    }
 )
 ```
 
-### get_messages()
+### Agent Resource
+
+#### client.agent.run()
+
+Run an agent using the agent resource (accepts same parameters as `client.run_agent()`):
 
 ```python
-messages = agentbase.get_messages(session="session-id")
+stream = client.agent.run(
+    message="Your task here",  # required
+    session="session-id",  # optional
+    mode="fast",  # optional
+    system="You are a helpful assistant",  # optional
+    rules=["Be concise", "Show examples"],  # optional
+    workflows=[...],  # optional
+    mcp_servers=[...],  # optional
+    background=False,  # optional
+    callback={...},  # optional
+    datastores=[...],  # optional
+    queries=[...],  # optional
+    streaming_tokens=False,  # optional
+    final_output={...}  # optional
+)
 ```
 
-### clear_messages()
+### Messages Resource
+
+#### client.messages.get()
+
+Retrieve messages from an agent session:
 
 ```python
-agentbase.clear_messages(session="session-id")
+messages = client.messages.get(session="session-id")
+```
+
+#### client.messages.clear()
+
+Clear all messages from an agent session:
+
+```python
+result = client.messages.clear(session="session-id")
 ```
 
 ## Error Handling
@@ -80,7 +180,7 @@ agentbase.clear_messages(session="session-id")
 from agentbase_sdk import Agentbase, AgentbaseError
 
 try:
-    response = agentbase.run_agent(message="Your task")
+    response = client.run_agent(message="Your task")
 except AgentbaseError as e:
     print(f"API Error: {e.message}")
     print(f"Status: {e.status}")
@@ -91,17 +191,66 @@ except Exception as e:
 ## Type Hints
 
 ```python
-from typing import List, Dict, Optional, Iterator
-from agentbase_sdk.types import AgentEvent, MCPServer
+from typing import List, Dict, Optional, Iterator, TypedDict, Any
+
+class WorkflowStep(TypedDict, total=False):
+    id: str
+    name: str
+    description: str
+    depends_on: List[str]
+    optional: bool
+    retry_policy: Dict[str, Any]
+    output_schema: Dict[str, Any]
+
+class Workflow(TypedDict):
+    id: str
+    name: str
+    description: str
+    steps: List[WorkflowStep]
+
+class MCPServer(TypedDict):
+    serverName: str
+    serverUrl: str
+
+class CallbackConfig(TypedDict, total=False):
+    url: str
+    headers: Dict[str, str]
+
+class Datastore(TypedDict):
+    id: str
+    name: str
+
+class Query(TypedDict):
+    name: str
+    description: str
+    query: str
+
+class FinalOutputConfig(TypedDict):
+    name: str
+    strict: bool
+    schema: Dict[str, Any]
+
+class AgentEvent(TypedDict, total=False):
+    type: str
+    content: str
+    session: str
+    cost: str
+    balance: float
 
 def run_agent(
     message: str,
+    session: Optional[str] = None,
     mode: Optional[str] = None,
     system: Optional[str] = None,
     rules: Optional[List[str]] = None,
-    session: Optional[str] = None,
-    streaming: bool = True,
-    mcp_servers: Optional[List[MCPServer]] = None
+    workflows: Optional[List[Workflow]] = None,
+    mcp_servers: Optional[List[MCPServer]] = None,
+    background: bool = False,
+    callback: Optional[CallbackConfig] = None,
+    datastores: Optional[List[Datastore]] = None,
+    queries: Optional[List[Query]] = None,
+    streaming_tokens: bool = False,
+    final_output: Optional[FinalOutputConfig] = None
 ) -> Iterator[AgentEvent]:
     pass
 ```
@@ -111,7 +260,7 @@ def run_agent(
 ### Basic Chat
 
 ```python
-chat = agentbase.run_agent(
+chat = client.run_agent(
     message="What's the weather like today?"
 )
 
@@ -126,7 +275,7 @@ for event in chat:
 session_id = None
 
 # First message
-response1 = agentbase.run_agent(
+response1 = client.run_agent(
     message="Hello, I'm working on a Python project"
 )
 
@@ -135,7 +284,7 @@ for event in response1:
         session_id = event["session"]
 
 # Continue conversation
-response2 = agentbase.run_agent(
+response2 = client.agent.run(
     message="Can you help me with async programming?",
     session=session_id
 )
@@ -146,7 +295,7 @@ response2 = agentbase.run_agent(
 ```python
 total_cost = 0
 
-response = agentbase.run_agent(
+response = client.run_agent(
     message="Analyze this dataset"
 )
 
@@ -165,12 +314,12 @@ import asyncio
 from agentbase_sdk import AsyncAgentbase
 
 async def main():
-    agentbase = AsyncAgentbase(api_key="your-api-key")
-    
-    response = await agentbase.run_agent(
+    client = AsyncAgentbase(api_key="your-api-key")
+
+    response = await client.run_agent(
         message="Analyze this data asynchronously"
     )
-    
+
     async for event in response:
         print(event)
 
@@ -196,10 +345,10 @@ import httpx
 from agentbase_sdk import Agentbase
 
 # Use custom HTTP client
-custom_client = httpx.Client(timeout=60)
-agentbase = Agentbase(
+custom_http_client = httpx.Client(timeout=60)
+client = Agentbase(
     api_key="your-api-key",
-    http_client=custom_client
+    http_client=custom_http_client
 )
 ```
 
@@ -209,7 +358,7 @@ agentbase = Agentbase(
 from agentbase_sdk import Agentbase
 from agentbase_sdk.retry import RetryConfig
 
-agentbase = Agentbase(
+client = Agentbase(
     api_key="your-api-key",
     retry_config=RetryConfig(
         max_retries=3,
