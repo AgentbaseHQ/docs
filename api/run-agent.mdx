@@ -212,6 +212,42 @@ description: "Run an agent with a message and receive a streaming agent response
 </ParamField>
 
 <ParamField
+  body="schedules"
+  type="{schedule: string | number | Date, message: string}[]"
+  optional
+>
+  A set of scheduled tasks to run the agent with messages at specific times or intervals. Each schedule can be defined using:
+  - A number (seconds from now): `10` runs in 10 seconds
+  - A Date string: `"2025-01-01"` runs at that specific date/time
+  - A cron expression: `"*/10 * * * *"` runs every 10 minutes
+
+  ```json
+  {
+    "schedules": [
+      {
+        "schedule": 10,
+        "message": "Run a task in 10 seconds"
+      },
+      {
+        "schedule": "2025-01-01",
+        "message": "Run a task on New Year's Day"
+      },
+      {
+        "schedule": "*/10 * * * *",
+        "message": "Run a recurring task every 10 minutes"
+      },
+      {
+        "schedule": "*/10 * * * 1",
+        "message": "Run a task every 10 minutes on Mondays"
+      }
+    ]
+  }
+  ```
+
+  Each scheduled task will trigger the agent with the specified message at the scheduled time. Returns task IDs that can be used to cancel schedules later.
+</ParamField>
+
+<ParamField
   body="final_output"
   type="{name: string, strict: boolean, schema: object}"
   optional
