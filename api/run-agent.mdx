@@ -78,47 +78,51 @@ description: "Run an agent with a message and receive a streaming agent response
   }
   ```
 
-  **Workflow Schema:**
-  - `id` (string, required): Unique identifier for the workflow
-  - `name` (string, required): Name of the workflow
-  - `description` (string, required): What the workflow accomplishes
-  - `steps` (array, required): Array of step objects
+**Workflow Schema:**
 
-  **Step Schema:**
-  - `id` (string, required): Unique identifier for the step
-  - `name` (string, required): Name of the step
-  - `description` (string, required): What the step should accomplish - the agent interprets this to decide HOW to execute
-  - `depends_on` (string[], required): Array of step IDs that must complete before this step runs. Empty array means the step can run immediately. Steps with no dependencies run in parallel.
+- `id` (string, required): Unique identifier for the workflow
+- `name` (string, required): Name of the workflow
+- `description` (string, required): What the workflow accomplishes
+- `steps` (array, required): Array of step objects
 
-  **Advanced Step Options:**
-  ```json
-  {
-    "steps": [
-      {
-        "id": "step_1",
-        "name": "optional_verification",
-        "description": "Attempt to verify user identity through third-party service",
-        "depends_on": [],
-        "optional": true,
-        "retry_policy": {
-          "max_attempts": 3,
-          "backoff": "exponential"
-        },
-        "output_schema": {
-          "type": "object",
-          "properties": {
-            "verified": { "type": "boolean" },
-            "confidence_score": { "type": "number" }
-          }
+**Step Schema:**
+
+- `id` (string, required): Unique identifier for the step
+- `name` (string, required): Name of the step
+- `description` (string, required): What the step should accomplish - the agent interprets this to decide HOW to execute
+- `depends_on` (string[], required): Array of step IDs that must complete before this step runs. Empty array means the step can run immediately. Steps with no dependencies run in parallel.
+
+**Advanced Step Options:**
+
+```json
+{
+  "steps": [
+    {
+      "id": "step_1",
+      "name": "optional_verification",
+      "description": "Attempt to verify user identity through third-party service",
+      "depends_on": [],
+      "optional": true,
+      "retry_policy": {
+        "max_attempts": 3,
+        "backoff": "exponential"
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "verified": { "type": "boolean" },
+          "confidence_score": { "type": "number" }
         }
       }
-    ]
-  }
-  ```
-  - `optional` (boolean, optional): Whether the step can be skipped if it fails
-  - `retry_policy` (object, optional): Retry configuration for the step
-  - `output_schema` (object, optional): JSON schema for expected output validation
-</ParamField>
+    }
+  ]
+}
+```
+
+- `optional` (boolean, optional): Whether the step can be skipped if it fails
+- `retry_policy` (object, optional): Retry configuration for the step
+- `output_schema` (object, optional): JSON schema for expected output validation
+  </ParamField>
 
 <ParamField body="rules" type="string[]" optional>
   A set of rules to provide to the agent. Rules are a set of constraints that
@@ -127,18 +131,38 @@ description: "Run an agent with a message and receive a streaming agent response
 
 <ParamField
   body="mcp_servers"
-  type="{serverName: string, serverUrl: string}[]"
+  type="{serverName: string, serverUrl: string, auth?: object}[]"
   optional
 >
   A set of MCP servers to provide to the agent. MCP servers configs are not
   stored within the agent, so each request must include the MCP servers configs,
   and you can modify them each time. You need to provide both `serverName` and
-  `serverUrl`. We have backward compatibility with the old `/sse` endpoint.
+  `serverUrl`. Optionally include `auth` for authentication. We have backward compatibility with the old `/sse` endpoint.
   ```json
   {
     "mcp_servers": [
-      { "serverName": "mcp-server-1", "serverUrl": "https://mcp-server-1.com/mcp" },
-      { "serverName": "mcp-server-2", "serverUrl": "https://mcp-server-2.com/mcp" }
+      {
+        "serverName": "mcp-server-authless",
+        "serverUrl": "https://mcp-server-authless.com/mcp"
+      },
+      {
+        "serverName": "mcp-server-bearer",
+        "serverUrl": "https://mcp-server-bearer.com/mcp",
+        "auth": {
+          "type": "bearer",
+          "token": "your-bearer-token"
+        }
+      },
+      {
+        "serverName": "mcp-server-oauth",
+        "serverUrl": "https://mcp-server-oauth.com/mcp",
+        "auth": {
+          "type": "oauth",
+          "oauth": {
+            "accessToken": "your-oauth-access-token"
+          }
+        }
+      }
     ]
   }
   ```
@@ -221,30 +245,31 @@ description: "Run an agent with a message and receive a streaming agent response
   - A Date string: `"2025-01-01"` runs at that specific date/time
   - A cron expression: `"*/10 * * * *"` runs every 10 minutes
 
-  ```json
-  {
-    "schedules": [
-      {
-        "schedule": 10,
-        "message": "Run a task in 10 seconds"
-      },
-      {
-        "schedule": "2025-01-01",
-        "message": "Run a task on New Year's Day"
-      },
-      {
-        "schedule": "*/10 * * * *",
-        "message": "Run a recurring task every 10 minutes"
-      },
-      {
-        "schedule": "*/10 * * * 1",
-        "message": "Run a task every 10 minutes on Mondays"
-      }
-    ]
-  }
-  ```
+```json
+{
+  "schedules": [
+    {
+      "schedule": 10,
+      "message": "Run a task in 10 seconds"
+    },
+    {
+      "schedule": "2025-01-01",
+      "message": "Run a task on New Year's Day"
+    },
+    {
+      "schedule": "*/10 * * * *",
+      "message": "Run a recurring task every 10 minutes"
+    },
+    {
+      "schedule": "*/10 * * * 1",
+      "message": "Run a task every 10 minutes on Mondays"
+    }
+  ]
+}
+```
 
-  Each scheduled task will trigger the agent with the specified message at the scheduled time. Returns task IDs that can be used to cancel schedules later.
+Each scheduled task will trigger the agent with the specified message at the scheduled time. Returns task IDs that can be used to cancel schedules later.
+
 </ParamField>
 
 <ParamField
