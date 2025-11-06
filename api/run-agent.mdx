@@ -135,22 +135,22 @@ description: "Run an agent with a message and receive a streaming agent response
   type="{name: string, description: string}[]"
   optional
 >
-  A set of agent configurations that enables the agent to transfer conversations to other specialized agents. When provided, the main agent will have access to a seamless handoffs between agents based on the conversation context.
+  A set of agent configurations that enables the agent to transfer conversations to other specialized agents. When provided, the main agent will have access to seamless handoffs between agents based on the conversation context.
 
-  ```json
-  {
-    "agents": [
-      {
-        "name": "Support Agent",
-        "description": "Handles customer support inquiries and technical issues"
-      },
-      {
-        "name": "Sales Agent",
-        "description": "Handles sales questions and product inquiries"
-      }
-    ]
-  }
-  ```
+```json
+{
+  "agents": [
+    {
+      "name": "Support Agent",
+      "description": "Handles customer support inquiries and technical issues"
+    },
+    {
+      "name": "Sales Agent",
+      "description": "Handles sales questions and product inquiries"
+    }
+  ]
+}
+```
 
 This enables multi-agent workflows where specialized agents handle specific types of requests.
 
