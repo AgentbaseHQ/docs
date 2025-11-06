@@ -131,6 +131,32 @@ description: "Run an agent with a message and receive a streaming agent response
 </ParamField>
 
 <ParamField
+  body="agents"
+  type="{name: string, description: string}[]"
+  optional
+>
+  A set of agent configurations that enables the agent to transfer conversations to other specialized agents. When provided, the main agent will have access to a seamless handoffs between agents based on the conversation context.
+
+  ```json
+  {
+    "agents": [
+      {
+        "name": "Support Agent",
+        "description": "Handles customer support inquiries and technical issues"
+      },
+      {
+        "name": "Sales Agent",
+        "description": "Handles sales questions and product inquiries"
+      }
+    ]
+  }
+  ```
+
+This enables multi-agent workflows where specialized agents handle specific types of requests.
+
+</ParamField>
+
+<ParamField
   body="mcp_servers"
   type="{serverName: string, serverUrl: string, auth?: object}[]"
   optional
