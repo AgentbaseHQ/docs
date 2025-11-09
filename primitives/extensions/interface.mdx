@@ -1,0 +1,1282 @@
+---
+title: "Interface"
+description: "Build interactive user interfaces and communication channels for agents"
+icon: "window"
+---
+
+> Interface primitives enable agents to communicate through various channels - from chat interfaces to voice calls to custom UI components - providing flexible ways for users to interact with agent capabilities.
+
+## Overview
+
+The Interface primitive provides the building blocks for creating rich, interactive user experiences with agents. Whether you're building a chat application, voice assistant, embedded widget, or custom dashboard, interfaces make agent capabilities accessible through the channels your users prefer.
+
+Interfaces are essential for:
+
+- **Multi-Channel Communication**: Deploy agents across chat, voice, email, and more
+- **Custom UI Components**: Build branded agent experiences
+- **Real-Time Interaction**: Stream responses and provide instant feedback
+- **Rich Media**: Support images, files, buttons, and interactive elements
+- **Accessibility**: Ensure agents work across devices and abilities
+- **White-Label Solutions**: Customize interface to match your brand
+
+<CardGroup cols={2}>
+  <Card title="Chat Interface" icon="messages">
+    Rich chat experiences with streaming, typing indicators, and media
+  </Card>
+
+  <Card title="Voice Interface" icon="microphone">
+    Voice-based interactions with speech-to-text and text-to-speech
+  </Card>
+
+  <Card title="Widget Embed" icon="code">
+    Embeddable components for websites and applications
+  </Card>
+
+  <Card title="Custom UI" icon="palette">
+    Full control over design and user experience
+  </Card>
+</CardGroup>
+
+## How Interfaces Work
+
+When you implement an interface:
+
+1. **Channel Selection**: Choose communication channel (chat, voice, email, etc.)
+2. **UI Components**: Configure interactive elements and styling
+3. **Message Handling**: Process user inputs and route to agents
+4. **Response Rendering**: Display agent responses with appropriate formatting
+5. **State Management**: Maintain conversation state and context
+6. **Event Handling**: React to user actions and system events
+
+<Note>
+**Streaming Support**: All interfaces support real-time response streaming for immediate user feedback.
+</Note>
+
+## Interface Types
+
+### Chat Interface
+
+```typescript
+{
+  type: "chat",
+  features: {
+    streaming: true,
+    fileUpload: true,
+    richMedia: true,
+    typing: true
+  }
+}
+```
+
+### Voice Interface
+
+```typescript
+{
+  type: "voice",
+  features: {
+    speechToText: true,
+    textToSpeech: true,
+    language: "en-US",
+    voice: "neural"
+  }
+}
+```
+
+### Email Interface
+
+```typescript
+{
+  type: "email",
+  features: {
+    threading: true,
+    attachments: true,
+    templates: true
+  }
+}
+```
+
+### Custom Widget
+
+```typescript
+{
+  type: "widget",
+  features: {
+    position: "bottom-right",
+    theme: "light",
+    branding: true
+  }
+}
+```
+
+## Code Examples
+
+### Basic Chat Interface
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Initialize chat interface
+const chat = await agentbase.createInterface({
+  type: "chat",
+  name: "Customer Support Chat",
+  config: {
+    greeting: "Hi! How can I help you today?",
+    placeholder: "Type your message...",
+    streaming: true,
+    fileUpload: {
+      enabled: true,
+      maxSize: 10485760, // 10MB
+      allowedTypes: ["image/*", "application/pdf"]
+    }
+  },
+  agent: {
+    system: "You are a helpful customer support agent.",
+    capabilities: {
+      memory: { enabled: true }
+    }
+  }
+});
+
+console.log('Chat interface created:', chat.id);
+console.log('Widget URL:', chat.widgetUrl);
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Initialize chat interface
+chat = agentbase.create_interface(
+    type="chat",
+    name="Customer Support Chat",
+    config={
+        "greeting": "Hi! How can I help you today?",
+        "placeholder": "Type your message...",
+        "streaming": True,
+        "file_upload": {
+            "enabled": True,
+            "max_size": 10485760,  # 10MB
+            "allowed_types": ["image/*", "application/pdf"]
+        }
+    },
+    agent={
+        "system": "You are a helpful customer support agent.",
+        "capabilities": {
+            "memory": {"enabled": True}
+        }
+    }
+)
+
+print(f"Chat interface created: {chat.id}")
+print(f"Widget URL: {chat.widget_url}")
+```
+
+</CodeGroup>
+
+### Streaming Chat Responses
+
+<CodeGroup>
+
+```typescript TypeScript
+// Stream agent responses in real-time
+const stream = await agentbase.streamMessage({
+  interfaceId: chat.id,
+  sessionId: session.id,
+  message: "Explain quantum computing"
+});
+
+// Handle streaming chunks
+for await (const chunk of stream) {
+  if (chunk.type === "text") {
+    console.log(chunk.text); // Display incrementally
+  } else if (chunk.type === "function_call") {
+    console.log("Calling function:", chunk.function);
+  } else if (chunk.type === "complete") {
+    console.log("Response complete");
+  }
+}
+```
+
+```python Python
+# Stream agent responses in real-time
+stream = agentbase.stream_message(
+    interface_id=chat.id,
+    session_id=session.id,
+    message="Explain quantum computing"
+)
+
+# Handle streaming chunks
+async for chunk in stream:
+    if chunk.type == "text":
+        print(chunk.text)  # Display incrementally
+    elif chunk.type == "function_call":
+        print(f"Calling function: {chunk.function}")
+    elif chunk.type == "complete":
+        print("Response complete")
+```
+
+</CodeGroup>
+
+### Embeddable Chat Widget
+
+<CodeGroup>
+
+```typescript TypeScript
+// Generate embeddable widget code
+const widget = await agentbase.generateWidgetCode({
+  interfaceId: chat.id,
+  customization: {
+    position: "bottom-right",
+    theme: {
+      primaryColor: "#0066cc",
+      fontFamily: "Inter, sans-serif",
+      borderRadius: "12px"
+    },
+    branding: {
+      showPoweredBy: false,
+      logo: "https://yourcompany.com/logo.png",
+      companyName: "Your Company"
+    },
+    behavior: {
+      openByDefault: false,
+      showNotifications: true,
+      soundEnabled: true
+    }
+  }
+});
+
+console.log('Widget code:', widget.embedCode);
+// Add to your website's <head> or before </body>
+```
+
+```python Python
+# Generate embeddable widget code
+widget = agentbase.generate_widget_code(
+    interface_id=chat.id,
+    customization={
+        "position": "bottom-right",
+        "theme": {
+            "primary_color": "#0066cc",
+            "font_family": "Inter, sans-serif",
+            "border_radius": "12px"
+        },
+        "branding": {
+            "show_powered_by": False,
+            "logo": "https://yourcompany.com/logo.png",
+            "company_name": "Your Company"
+        },
+        "behavior": {
+            "open_by_default": False,
+            "show_notifications": True,
+            "sound_enabled": True
+        }
+    }
+)
+
+print(f"Widget code: {widget.embed_code}")
+```
+
+</CodeGroup>
+
+### Voice Interface
+
+<CodeGroup>
+
+```typescript TypeScript
+// Create voice interface
+const voice = await agentbase.createInterface({
+  type: "voice",
+  name: "Phone Support",
+  config: {
+    voice: {
+      provider: "elevenlabs",
+      voiceId: "21m00Tcm4TlvDq8ikWAM", // Rachel voice
+      model: "eleven_multilingual_v2",
+      stability: 0.5,
+      similarityBoost: 0.75
+    },
+    speech: {
+      language: "en-US",
+      timeout: 5000, // 5 seconds silence
+      interruptible: true
+    },
+    greeting: "Hello! How can I assist you today?"
+  },
+  agent: {
+    system: "You are a phone support agent. Be concise and clear."
+  }
+});
+
+// Handle voice call
+const call = await agentbase.initiateVoiceCall({
+  interfaceId: voice.id,
+  phoneNumber: "+1234567890"
+});
+```
+
+```python Python
+# Create voice interface
+voice = agentbase.create_interface(
+    type="voice",
+    name="Phone Support",
+    config={
+        "voice": {
+            "provider": "elevenlabs",
+            "voice_id": "21m00Tcm4TlvDq8ikWAM",  # Rachel voice
+            "model": "eleven_multilingual_v2",
+            "stability": 0.5,
+            "similarity_boost": 0.75
+        },
+        "speech": {
+            "language": "en-US",
+            "timeout": 5000,  # 5 seconds silence
+            "interruptible": True
+        },
+        "greeting": "Hello! How can I assist you today?"
+    },
+    agent={
+        "system": "You are a phone support agent. Be concise and clear."
+    }
+)
+
+# Handle voice call
+call = agentbase.initiate_voice_call(
+    interface_id=voice.id,
+    phone_number="+1234567890"
+)
+```
+
+</CodeGroup>
+
+### Email Interface
+
+<CodeGroup>
+
+```typescript TypeScript
+// Create email interface
+const email = await agentbase.createInterface({
+  type: "email",
+  name: "Support Email",
+  config: {
+    email: {
+      address: "support@yourcompany.com",
+      displayName: "Customer Support"
+    },
+    threading: {
+      enabled: true,
+      maxThreadLength: 10
+    },
+    templates: {
+      signature: `
+        Best regards,
+        Customer Support Team
+        Your Company
+      `,
+      footer: "This email was sent by an AI agent"
+    },
+    attachments: {
+      enabled: true,
+      maxSize: 25 * 1024 * 1024 // 25MB
+    }
+  },
+  agent: {
+    system: `You are an email support agent.
+
+    Guidelines:
+    - Professional and courteous tone
+    - Comprehensive answers
+    - Include relevant links and resources
+    - Sign with your signature`
+  }
+});
+
+// Process incoming email
+await agentbase.processEmail({
+  interfaceId: email.id,
+  from: "customer@example.com",
+  subject: "Question about billing",
+  body: "I have a question about my recent invoice...",
+  inReplyTo: "previous_message_id" // For threading
+});
+```
+
+```python Python
+# Create email interface
+email = agentbase.create_interface(
+    type="email",
+    name="Support Email",
+    config={
+        "email": {
+            "address": "support@yourcompany.com",
+            "display_name": "Customer Support"
+        },
+        "threading": {
+            "enabled": True,
+            "max_thread_length": 10
+        },
+        "templates": {
+            "signature": """
+                Best regards,
+                Customer Support Team
+                Your Company
+            """,
+            "footer": "This email was sent by an AI agent"
+        },
+        "attachments": {
+            "enabled": True,
+            "max_size": 25 * 1024 * 1024  # 25MB
+        }
+    },
+    agent={
+        "system": """You are an email support agent.
+
+        Guidelines:
+        - Professional and courteous tone
+        - Comprehensive answers
+        - Include relevant links and resources
+        - Sign with your signature"""
+    }
+)
+```
+
+</CodeGroup>
+
+### Rich Interactive Messages
+
+<CodeGroup>
+
+```typescript TypeScript
+// Send message with interactive components
+await agentbase.sendMessage({
+  interfaceId: chat.id,
+  sessionId: session.id,
+  content: {
+    text: "I found these products for you:",
+    components: [
+      {
+        type: "card_carousel",
+        cards: [
+          {
+            title: "Product A",
+            description: "High-quality product",
+            image: "https://example.com/product-a.jpg",
+            price: "$99.99",
+            buttons: [
+              {
+                label: "View Details",
+                action: "open_url",
+                url: "https://example.com/product-a"
+              },
+              {
+                label: "Add to Cart",
+                action: "callback",
+                data: { productId: "prod_a", action: "add_cart" }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        type: "quick_replies",
+        options: [
+          { label: "Show more", value: "show_more" },
+          { label: "Filter by price", value: "filter_price" },
+          { label: "Start over", value: "start_over" }
+        ]
+      }
+    ]
+  }
+});
+```
+
+```python Python
+# Send message with interactive components
+agentbase.send_message(
+    interface_id=chat.id,
+    session_id=session.id,
+    content={
+        "text": "I found these products for you:",
+        "components": [
+            {
+                "type": "card_carousel",
+                "cards": [
+                    {
+                        "title": "Product A",
+                        "description": "High-quality product",
+                        "image": "https://example.com/product-a.jpg",
+                        "price": "$99.99",
+                        "buttons": [
+                            {
+                                "label": "View Details",
+                                "action": "open_url",
+                                "url": "https://example.com/product-a"
+                            },
+                            {
+                                "label": "Add to Cart",
+                                "action": "callback",
+                                "data": {"product_id": "prod_a", "action": "add_cart"}
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "type": "quick_replies",
+                "options": [
+                    {"label": "Show more", "value": "show_more"},
+                    {"label": "Filter by price", "value": "filter_price"},
+                    {"label": "Start over", "value": "start_over"}
+                ]
+            }
+        ]
+    }
+)
+```
+
+</CodeGroup>
+
+### Custom React Component
+
+```typescript
+// Build custom chat UI with React
+import { useAgentbase } from '@agentbase/react';
+
+function CustomChat() {
+  const { messages, sendMessage, isTyping, streamResponse } = useAgentbase({
+    interfaceId: "int_123",
+    sessionId: session.id
+  });
+
+  const handleSend = async (text: string) => {
+    await sendMessage(text);
+  };
+
+  return (
+    <div className="chat-container">
+      <div className="messages">
+        {messages.map(msg => (
+          <Message
+            key={msg.id}
+            role={msg.role}
+            content={msg.content}
+            timestamp={msg.timestamp}
+          />
+        ))}
+        {isTyping && <TypingIndicator />}
+      </div>
+
+      <ChatInput onSend={handleSend} />
+    </div>
+  );
+}
+```
+
+### Multi-Channel Interface
+
+<CodeGroup>
+
+```typescript TypeScript
+// Deploy agent across multiple channels
+const multiChannel = await agentbase.createInterface({
+  type: "multi_channel",
+  name: "Omnichannel Support",
+  channels: [
+    {
+      type: "chat",
+      config: { /* chat config */ }
+    },
+    {
+      type: "voice",
+      config: { /* voice config */ }
+    },
+    {
+      type: "email",
+      config: { /* email config */ }
+    },
+    {
+      type: "sms",
+      config: {
+        phoneNumber: "+1234567890",
+        provider: "twilio"
+      }
+    }
+  ],
+  agent: {
+    system: `You are an omnichannel support agent.
+
+    Adapt your communication style to the channel:
+    - Chat: Conversational, can use emojis
+    - Voice: Clear, concise, spoken language
+    - Email: Professional, comprehensive
+    - SMS: Very brief, essential info only`
+  }
+});
+```
+
+```python Python
+# Deploy agent across multiple channels
+multi_channel = agentbase.create_interface(
+    type="multi_channel",
+    name="Omnichannel Support",
+    channels=[
+        {
+            "type": "chat",
+            "config": {}  # chat config
+        },
+        {
+            "type": "voice",
+            "config": {}  # voice config
+        },
+        {
+            "type": "email",
+            "config": {}  # email config
+        },
+        {
+            "type": "sms",
+            "config": {
+                "phone_number": "+1234567890",
+                "provider": "twilio"
+            }
+        }
+    ],
+    agent={
+        "system": """You are an omnichannel support agent.
+
+        Adapt your communication style to the channel:
+        - Chat: Conversational, can use emojis
+        - Voice: Clear, concise, spoken language
+        - Email: Professional, comprehensive
+        - SMS: Very brief, essential info only"""
+    }
+)
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Customer Support Chat
+
+Build comprehensive support chat:
+
+```typescript
+const supportChat = await agentbase.createInterface({
+  type: "chat",
+  name: "Customer Support",
+  config: {
+    greeting: "Hi! I'm here to help. What can I assist you with?",
+    quickReplies: [
+      "Track my order",
+      "Return an item",
+      "Technical support",
+      "Billing question"
+    ],
+    fileUpload: {
+      enabled: true,
+      types: ["image/*", "application/pdf"],
+      hint: "Upload screenshots or documents"
+    },
+    availability: {
+      businessHours: {
+        monday: { start: "9:00", end: "17:00" },
+        tuesday: { start: "9:00", end: "17:00" },
+        wednesday: { start: "9:00", end: "17:00" },
+        thursday: { start: "9:00", end: "17:00" },
+        friday: { start: "9:00", end: "17:00" }
+      },
+      timezone: "America/New_York",
+      offHoursMessage: "We're currently offline. Leave a message and we'll respond when we're back!"
+    }
+  },
+  agent: {
+    system: `You are a customer support agent.
+
+    Capabilities:
+    - Answer questions about products and services
+    - Help track orders and shipments
+    - Process returns and refunds
+    - Troubleshoot technical issues
+    - Escalate to human when needed
+
+    Always be helpful, patient, and professional.`,
+    integrations: {
+      zendesk: { enabled: true },
+      shopify: { enabled: true }
+    }
+  }
+});
+```
+
+### 2. Sales Assistant
+
+Interactive sales chat:
+
+```typescript
+const salesChat = await agentbase.createInterface({
+  type: "chat",
+  name: "Sales Assistant",
+  config: {
+    greeting: "Welcome! Looking for something specific?",
+    proactive: {
+      enabled: true,
+      triggers: [
+        {
+          condition: "pageViews > 3",
+          message: "I noticed you're browsing. Can I help you find something?"
+        },
+        {
+          condition: "cartAbandoned",
+          delay: 60000, // 1 minute
+          message: "I see you have items in your cart. Any questions before checkout?"
+        }
+      ]
+    }
+  },
+  agent: {
+    system: `You are a sales assistant.
+
+    Goals:
+    - Understand customer needs
+    - Recommend appropriate products
+    - Answer product questions
+    - Help with purchasing decisions
+    - Guide through checkout
+
+    Use product catalog to make informed recommendations.`,
+    dataConnectors: {
+      postgres: { enabled: true } // Product catalog
+    }
+  }
+});
+```
+
+### 3. Voice Assistant
+
+Phone support with voice:
+
+```typescript
+const voiceAssistant = await agentbase.createInterface({
+  type: "voice",
+  name: "Phone Support",
+  config: {
+    voice: {
+      provider: "elevenlabs",
+      voiceId: "professional_voice",
+      speed: 1.0,
+      pitch: 0
+    },
+    speech: {
+      language: "en-US",
+      continuous: true,
+      interruptible: true,
+      silenceTimeout: 3000
+    },
+    dtmf: {
+      enabled: true, // Touch-tone support
+      menu: {
+        "1": "Sales",
+        "2": "Support",
+        "3": "Billing",
+        "0": "Operator"
+      }
+    }
+  },
+  agent: {
+    system: `You are a phone support agent.
+
+    Voice guidelines:
+    - Speak clearly and at moderate pace
+    - Use simple language
+    - Confirm understanding
+    - Provide step-by-step instructions
+    - Be patient with interruptions
+
+    If you can't help, transfer to appropriate department.`
+  }
+});
+```
+
+### 4. Email Automation
+
+Automated email responses:
+
+```typescript
+const emailSupport = await agentbase.createInterface({
+  type: "email",
+  name: "Email Support",
+  config: {
+    routing: {
+      rules: [
+        {
+          condition: "subject contains 'urgent' OR subject contains 'down'",
+          priority: "high",
+          notify: ["support-lead@company.com"]
+        },
+        {
+          condition: "from domain 'enterprise-customer.com'",
+          priority: "high",
+          assignTo: "enterprise-team"
+        }
+      ]
+    },
+    autoReply: {
+      enabled: true,
+      message: "Thank you for contacting us. We've received your email and will respond within 24 hours."
+    },
+    categorization: {
+      enabled: true,
+      categories: ["billing", "technical", "sales", "general"]
+    }
+  },
+  agent: {
+    system: `You are an email support agent.
+
+    Process:
+    1. Categorize the email
+    2. Determine if you can fully resolve it
+    3. Provide comprehensive answer
+    4. Include relevant links/resources
+    5. If escalation needed, create ticket
+
+    Maintain professional email etiquette.`
+  }
+});
+```
+
+### 5. In-App Assistant
+
+Contextual help within application:
+
+```typescript
+const inAppAssistant = await agentbase.createInterface({
+  type: "chat",
+  name: "In-App Assistant",
+  config: {
+    contextual: {
+      enabled: true,
+      trackPageView: true,
+      trackUserActions: true
+    },
+    suggestions: {
+      enabled: true,
+      smartSuggestions: [
+        {
+          page: "/dashboard",
+          suggestions: [
+            "How do I create a new project?",
+            "Explain my usage metrics",
+            "How to invite team members?"
+          ]
+        },
+        {
+          page: "/billing",
+          suggestions: [
+            "How to upgrade my plan?",
+            "View payment history",
+            "Update payment method"
+          ]
+        }
+      ]
+    }
+  },
+  agent: {
+    system: `You are an in-app assistant.
+
+    Context awareness:
+    - Current page: {{page}}
+    - User role: {{user.role}}
+    - Account tier: {{user.tier}}
+
+    Provide contextual help based on where user is in the app.
+    Guide them through tasks step-by-step.
+    Use in-app terminology and match the UI.`,
+    auth: {
+      required: true,
+      inheritUserContext: true
+    }
+  }
+});
+```
+
+### 6. WhatsApp Business
+
+WhatsApp integration:
+
+```typescript
+const whatsapp = await agentbase.createInterface({
+  type: "whatsapp",
+  name: "WhatsApp Business",
+  config: {
+    phoneNumber: "+1234567890",
+    businessProfile: {
+      name: "Your Company",
+      description: "Customer Support",
+      website: "https://yourcompany.com"
+    },
+    messageTemplates: {
+      greeting: "Hello! How can we assist you today?",
+      orderStatus: "Your order #{{orderId}} is {{status}}. Track it here: {{trackingUrl}}"
+    },
+    media: {
+      enabled: true,
+      supportedTypes: ["image", "document", "video"]
+    }
+  },
+  agent: {
+    system: `You are a WhatsApp business agent.
+
+    WhatsApp best practices:
+    - Be concise and direct
+    - Use appropriate emojis
+    - Send media when helpful
+    - Quick response expected
+    - International audience`
+  }
+});
+```
+
+## Best Practices
+
+### User Experience
+
+<AccordionGroup>
+  <Accordion title="Provide Immediate Feedback">
+    ```typescript
+    {
+      streaming: true, // Show responses as they're generated
+      typing: {
+        enabled: true,
+        showAfter: 500 // Show typing indicator after 500ms
+      },
+      acknowledgment: {
+        enabled: true,
+        message: "Got it, let me help with that..."
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Errors Gracefully">
+    ```typescript
+    {
+      errorHandling: {
+        userFriendly: true,
+        fallback: "I'm having trouble processing that. Could you rephrase?",
+        retryEnabled: true,
+        escalation: {
+          afterAttempts: 3,
+          message: "Let me connect you with a human agent.",
+          action: "create_ticket"
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Support Mobile">
+    ```typescript
+    {
+      responsive: true,
+      mobile: {
+        optimized: true,
+        inputType: "text", // Optimize keyboard
+        compact Mode: true,
+        touchFriendly: true
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Accessibility">
+    ```typescript
+    {
+      accessibility: {
+        screenReader: true,
+        keyboardNavigation: true,
+        highContrast: true,
+        focusIndicators: true,
+        ariaLabels: true
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Performance
+
+<Tip>
+**Optimize Loading**: Lazy load interface components and cache static assets for faster performance.
+</Tip>
+
+<AccordionGroup>
+  <Accordion title="Enable Streaming">
+    ```typescript
+    // Stream responses for instant feedback
+    {
+      streaming: {
+        enabled: true,
+        chunkSize: 50, // Characters per chunk
+        minChunkDelay: 20 // Minimum ms between chunks
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Lazy Loading">
+    ```typescript
+    {
+      lazyLoad: {
+        enabled: true,
+        loadOnScroll: true,
+        preloadMessages: 20
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Caching">
+    ```typescript
+    {
+      caching: {
+        staticAssets: true,
+        conversationHistory: {
+          enabled: true,
+          ttl: 3600 // 1 hour
+        }
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Security
+
+<Warning>
+**Sanitize User Input**: Always sanitize and validate user inputs to prevent XSS and injection attacks.
+</Warning>
+
+<AccordionGroup>
+  <Accordion title="Input Validation">
+    ```typescript
+    {
+      validation: {
+        maxLength: 4000,
+        sanitizeHtml: true,
+        blockScripts: true,
+        rateLimiting: {
+          maxMessagesPerMinute: 10
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Authentication">
+    ```typescript
+    {
+      auth: {
+        required: true,
+        method: "jwt",
+        enforceSessionValid ity: true
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Content Filtering">
+    ```typescript
+    {
+      contentModeration: {
+        enabled: true,
+        blockProfanity: true,
+        blockPII: true,
+        customFilters: ["credit-card", "ssn"]
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Primitives
+
+### With Memory
+
+Maintain conversation context:
+
+```typescript
+const interface = await agentbase.createInterface({
+  type: "chat",
+  agent: {
+    capabilities: {
+      memory: {
+        enabled: true,
+        namespace: "user_{{userId}}"
+      }
+    }
+  }
+});
+
+// Agent remembers previous conversations
+```
+
+Learn more: [Memory Primitive](/primitives/extensions/memory)
+
+### With Skills
+
+Apply specialized skills:
+
+```typescript
+const interface = await agentbase.createInterface({
+  type: "chat",
+  agent: {
+    skills: ["customer_support", "product_knowledge"]
+  }
+});
+```
+
+Learn more: [Skills Primitive](/primitives/extensions/skills)
+
+### With Authentication
+
+Secure interfaces:
+
+```typescript
+const interface = await agentbase.createInterface({
+  type: "chat",
+  auth: {
+    required: true,
+    method: "jwt"
+  },
+  agent: {
+    auth: {
+      inheritUserContext: true
+    }
+  }
+});
+```
+
+Learn more: [Authentication Primitive](/primitives/extensions/authentication)
+
+## Performance Considerations
+
+### Response Times
+
+- **Text Chat**: < 100ms to first token
+- **Voice**: < 200ms to speech start
+- **Email**: < 1s for simple responses
+- **Streaming**: 20-50 tokens/second
+
+### Scalability
+
+- **Concurrent Users**: Thousands per interface
+- **Message Throughput**: Millions per day
+- **Global Distribution**: CDN-cached widgets
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Widget Not Loading">
+    **Problem**: Chat widget doesn't appear
+
+    **Solutions**:
+    - Check widget script is loaded
+    - Verify interfaceId is correct
+    - Check for JavaScript console errors
+    - Ensure no CSP blocking
+    - Verify domain is whitelisted
+
+    ```typescript
+    // Debug widget loading
+    window.agentbaseDebug = true;
+    ```
+  </Accordion>
+
+  <Accordion title="Messages Not Sending">
+    **Problem**: User messages fail to send
+
+    **Solutions**:
+    - Check network connectivity
+    - Verify session is active
+    - Check rate limits
+    - Review authentication
+    - Inspect browser console
+
+    ```typescript
+    // Handle send errors
+    try {
+      await sendMessage(text);
+    } catch (error) {
+      console.error('Send failed:', error);
+      showUserFriendlyError();
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Streaming Issues">
+    **Problem**: Responses not streaming smoothly
+
+    **Solutions**:
+    - Check network connection quality
+    - Verify streaming is enabled
+    - Reduce chunk size
+    - Check for proxy/firewall issues
+    - Use WebSocket instead of SSE
+
+    ```typescript
+    {
+      streaming: {
+        enabled: true,
+        transport: "websocket", // Instead of SSE
+        fallback: "polling"
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Voice" icon="microphone" href="/primitives/extensions/voice">
+    Advanced voice capabilities
+  </Card>
+
+  <Card title="Memory" icon="brain" href="/primitives/extensions/memory">
+    Conversation context and history
+  </Card>
+
+  <Card title="Authentication" icon="shield-keyhole" href="/primitives/extensions/authentication">
+    Secure user access
+  </Card>
+
+  <Card title="Email" icon="envelope" href="/primitives/extensions/email">
+    Email-based interactions
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api/interface">
+    Complete interface API docs
+  </Card>
+
+  <Card title="UI Components" icon="palette" href="/components">
+    Pre-built UI component library
+  </Card>
+
+  <Card title="Design Guide" icon="paintbrush" href="/guides/interface-design">
+    Interface design best practices
+  </Card>
+</CardGroup>
+
+<Tip>
+**Pro Tip**: Start with the pre-built chat widget for quick deployment, then customize the UI as your needs evolve. The widget provides a production-ready experience out of the box.
+</Tip>

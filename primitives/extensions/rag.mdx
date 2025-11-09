@@ -1,0 +1,990 @@
+---
+title: "RAG (Retrieval-Augmented Generation)"
+description: "Ground agent responses in your documents and knowledge bases with semantic search"
+icon: "book-open"
+---
+
+> RAG enables agents to retrieve and reference information from your documents, knowledge bases, and data sources, providing accurate, contextual responses grounded in your content.
+
+## Overview
+
+The RAG (Retrieval-Augmented Generation) primitive empowers agents to access and utilize information from your document collections, knowledge bases, and proprietary data. By combining semantic search with generation, agents can provide accurate answers grounded in your specific content rather than relying solely on training data.
+
+RAG is essential for:
+
+- **Knowledge Base Access**: Answer questions from documentation, manuals, and guides
+- **Document Search**: Find and reference specific information across large document sets
+- **Contextual Accuracy**: Provide responses grounded in verified sources
+- **Domain Expertise**: Specialize agents in specific knowledge domains
+- **Citation Support**: Back up responses with source references
+- **Up-to-Date Information**: Access latest documentation without retraining
+
+<CardGroup cols={2}>
+  <Card title="Semantic Search" icon="magnifying-glass">
+    Find relevant information using natural language queries with vector embeddings
+  </Card>
+
+  <Card title="Source Attribution" icon="quote-left">
+    Automatically cite sources and provide references for generated responses
+  </Card>
+
+  <Card title="Multi-Format Support" icon="file">
+    Index PDFs, Word docs, text files, markdown, HTML, and more
+  </Card>
+
+  <Card title="Real-Time Updates" icon="arrows-rotate">
+    Update knowledge base in real-time as documents change
+  </Card>
+</CardGroup>
+
+## How RAG Works
+
+When RAG is enabled for an agent:
+
+1. **Indexing**: Documents are processed and converted to vector embeddings
+2. **Query**: User question is embedded using same model
+3. **Retrieval**: Most relevant document chunks are retrieved via semantic search
+4. **Context Injection**: Retrieved content is added to agent's context
+5. **Generation**: Agent generates response using retrieved information
+6. **Citation**: Sources are cited in the response
+
+<Note>
+**Semantic Understanding**: RAG uses vector embeddings to understand meaning, not just keyword matching. Questions like "How do I reset my password?" will match "Password recovery steps" even without exact word overlap.
+</Note>
+
+## Code Examples
+
+### Basic RAG Setup
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Create a datastore (knowledge base)
+const datastore = await agentbase.createDatastore({
+  name: "Product Documentation",
+  description: "Technical documentation for our products"
+});
+
+// Upload documents
+await agentbase.uploadDocuments({
+  datastoreId: datastore.id,
+  files: [
+    './docs/user-guide.pdf',
+    './docs/api-reference.md',
+    './docs/faq.txt'
+  ]
+});
+
+// Use RAG in agent
+const result = await agentbase.runAgent({
+  message: "How do I integrate the payment API?",
+  datastores: [
+    {
+      id: datastore.id,
+      name: "Product Documentation"
+    }
+  ]
+});
+
+// Response includes citations
+console.log('Answer:', result.message);
+console.log('Sources:', result.sources);
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Create a datastore (knowledge base)
+datastore = agentbase.create_datastore(
+    name="Product Documentation",
+    description="Technical documentation for our products"
+)
+
+# Upload documents
+agentbase.upload_documents(
+    datastore_id=datastore.id,
+    files=[
+        './docs/user-guide.pdf',
+        './docs/api-reference.md',
+        './docs/faq.txt'
+    ]
+)
+
+# Use RAG in agent
+result = agentbase.run_agent(
+    message="How do I integrate the payment API?",
+    datastores=[
+        {
+            "id": datastore.id,
+            "name": "Product Documentation"
+        }
+    ]
+)
+
+# Response includes citations
+print(f"Answer: {result.message}")
+print(f"Sources: {result.sources}")
+```
+
+</CodeGroup>
+
+### Multiple Datastores
+
+<CodeGroup>
+
+```typescript TypeScript
+// Query across multiple knowledge bases
+const result = await agentbase.runAgent({
+  message: "What are the security best practices for deployment?",
+  datastores: [
+    {
+      id: "ds_security_docs",
+      name: "Security Documentation"
+    },
+    {
+      id: "ds_deployment_guides",
+      name: "Deployment Guides"
+    },
+    {
+      id: "ds_best_practices",
+      name: "Best Practices"
+    }
+  ]
+});
+
+// Agent searches across all datastores
+```
+
+```python Python
+# Query across multiple knowledge bases
+result = agentbase.run_agent(
+    message="What are the security best practices for deployment?",
+    datastores=[
+        {
+            "id": "ds_security_docs",
+            "name": "Security Documentation"
+        },
+        {
+            "id": "ds_deployment_guides",
+            "name": "Deployment Guides"
+        },
+        {
+            "id": "ds_best_practices",
+            "name": "Best Practices"
+        }
+    ]
+)
+
+# Agent searches across all datastores
+```
+
+</CodeGroup>
+
+### Filtered RAG Queries
+
+<CodeGroup>
+
+```typescript TypeScript
+// Filter by document metadata
+const result = await agentbase.runAgent({
+  message: "API rate limits",
+  datastores: [
+    {
+      id: datastore.id,
+      filter: {
+        category: "api-reference",
+        version: "v2",
+        tags: ["limits", "performance"]
+      }
+    }
+  ]
+});
+
+// Only searches documents matching filter criteria
+```
+
+```python Python
+# Filter by document metadata
+result = agentbase.run_agent(
+    message="API rate limits",
+    datastores=[
+        {
+            "id": datastore.id,
+            "filter": {
+                "category": "api-reference",
+                "version": "v2",
+                "tags": ["limits", "performance"]
+            }
+        }
+    ]
+)
+
+# Only searches documents matching filter criteria
+```
+
+</CodeGroup>
+
+### RAG with Custom Chunking
+
+<CodeGroup>
+
+```typescript TypeScript
+// Configure document chunking strategy
+const datastore = await agentbase.createDatastore({
+  name: "Legal Documents",
+  config: {
+    chunkSize: 1000, // Characters per chunk
+    chunkOverlap: 200, // Overlap between chunks
+    chunkingStrategy: "semantic" // semantic, fixed, or paragraph
+  }
+});
+
+await agentbase.uploadDocuments({
+  datastoreId: datastore.id,
+  files: ['./contracts/*.pdf'],
+  metadata: {
+    category: "contracts",
+    year: "2024"
+  }
+});
+```
+
+```python Python
+# Configure document chunking strategy
+datastore = agentbase.create_datastore(
+    name="Legal Documents",
+    config={
+        "chunk_size": 1000, # Characters per chunk
+        "chunk_overlap": 200, # Overlap between chunks
+        "chunking_strategy": "semantic" # semantic, fixed, or paragraph
+    }
+)
+
+agentbase.upload_documents(
+    datastore_id=datastore.id,
+    files=['./contracts/*.pdf'],
+    metadata={
+        "category": "contracts",
+        "year": "2024"
+    }
+)
+```
+
+</CodeGroup>
+
+### Hybrid Search
+
+<CodeGroup>
+
+```typescript TypeScript
+// Combine semantic and keyword search
+const result = await agentbase.runAgent({
+  message: "CloudFormation template examples",
+  datastores: [
+    {
+      id: datastore.id,
+      searchMode: "hybrid", // semantic + keyword
+      alpha: 0.7 // 70% semantic, 30% keyword
+    }
+  ]
+});
+
+// Better results for technical terms and exact matches
+```
+
+```python Python
+# Combine semantic and keyword search
+result = agentbase.run_agent(
+    message="CloudFormation template examples",
+    datastores=[
+        {
+            "id": datastore.id,
+            "search_mode": "hybrid", # semantic + keyword
+            "alpha": 0.7 # 70% semantic, 30% keyword
+        }
+    ]
+)
+
+# Better results for technical terms and exact matches
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Customer Support Knowledge Base
+
+Answer customer questions from help docs:
+
+```typescript
+// Create support knowledge base
+const supportKB = await agentbase.createDatastore({
+  name: "Customer Support KB"
+});
+
+// Upload help articles
+await agentbase.uploadDocuments({
+  datastoreId: supportKB.id,
+  files: [
+    './help/getting-started.md',
+    './help/troubleshooting.md',
+    './help/faq.md',
+    './help/account-management.md'
+  ],
+  metadata: {
+    category: "support",
+    language: "en"
+  }
+});
+
+// Support agent with RAG
+const result = await agentbase.runAgent({
+  message: "I forgot my password. How do I reset it?",
+  datastores: [{ id: supportKB.id }],
+  system: `You are a customer support agent.
+
+  Use the knowledge base to:
+  - Find accurate answers to customer questions
+  - Cite relevant help articles
+  - Provide step-by-step instructions
+  - Escalate if information not available`
+});
+
+console.log('Answer:', result.message);
+console.log('Help articles cited:', result.sources);
+```
+
+### 2. Technical Documentation Assistant
+
+Help developers with API documentation:
+
+```typescript
+const apiDocs = await agentbase.createDatastore({
+  name: "API Documentation"
+});
+
+await agentbase.uploadDocuments({
+  datastoreId: apiDocs.id,
+  files: [
+    './api-docs/authentication.md',
+    './api-docs/endpoints/*.md',
+    './api-docs/examples/*.json',
+    './api-docs/changelog.md'
+  ],
+  metadata: {
+    type: "api-reference",
+    version: "v2.0"
+  }
+});
+
+const result = await agentbase.runAgent({
+  message: "Show me how to authenticate API requests with OAuth",
+  datastores: [{ id: apiDocs.id }],
+  system: `You are a technical documentation assistant.
+
+  Provide:
+  - Code examples from the docs
+  - Step-by-step implementation guides
+  - Links to relevant documentation sections
+  - Common pitfalls and solutions`
+});
+```
+
+### 3. Internal Company Handbook
+
+Company policies and procedures:
+
+```typescript
+const handbook = await agentbase.createDatastore({
+  name: "Employee Handbook"
+});
+
+await agentbase.uploadDocuments({
+  datastoreId: handbook.id,
+  files: [
+    './handbook/policies/*.pdf',
+    './handbook/benefits.pdf',
+    './handbook/code-of-conduct.pdf',
+    './handbook/remote-work-policy.md'
+  ]
+});
+
+const result = await agentbase.runAgent({
+  message: "What is the company's remote work policy?",
+  datastores: [{ id: handbook.id }],
+  system: `You are an HR assistant.
+
+  Provide accurate information about:
+  - Company policies
+  - Benefits and perks
+  - Procedures and guidelines
+  - Always cite handbook sections`
+});
+```
+
+### 4. Legal Document Analysis
+
+Search and analyze contracts:
+
+```typescript
+const legalDocs = await agentbase.createDatastore({
+  name: "Legal Contracts",
+  config: {
+    chunkSize: 1500, // Larger chunks for legal context
+    chunkingStrategy: "semantic"
+  }
+});
+
+await agentbase.uploadDocuments({
+  datastoreId: legalDocs.id,
+  files: ['./contracts/**/*.pdf'],
+  metadata: {
+    type: "contract",
+    year: "2024"
+  }
+});
+
+const result = await agentbase.runAgent({
+  message: "What are the termination clauses in the vendor agreements?",
+  datastores: [{
+    id: legalDocs.id,
+    filter: {
+      type: "contract",
+      tags: ["vendor"]
+    }
+  }],
+  system: `You are a legal analyst.
+
+  When analyzing contracts:
+  - Quote relevant sections verbatim
+  - Cite specific contract and section
+  - Highlight key terms and conditions
+  - Note any ambiguities or concerns`
+});
+```
+
+### 5. Medical Information System
+
+Healthcare knowledge base (HIPAA-compliant):
+
+```typescript
+const medicalKB = await agentbase.createDatastore({
+  name: "Medical Knowledge Base",
+  config: {
+    encryption: true,
+    hipaaCompliant: true
+  }
+});
+
+await agentbase.uploadDocuments({
+  datastoreId: medicalKB.id,
+  files: [
+    './medical/protocols/*.pdf',
+    './medical/drug-database.json',
+    './medical/icd-codes.csv'
+  ],
+  metadata: {
+    classification: "medical",
+    verified: true
+  }
+});
+
+const result = await agentbase.runAgent({
+  message: "What are the treatment protocols for Type 2 diabetes?",
+  datastores: [{ id: medicalKB.id }],
+  system: `You are a medical information assistant.
+
+  Important:
+  - Provide evidence-based information
+  - Cite medical sources and protocols
+  - Never provide medical diagnosis
+  - Always recommend consulting healthcare provider
+  - Maintain HIPAA compliance`,
+  rules: [
+    "Never provide medical diagnosis",
+    "Always cite medical sources",
+    "Recommend consulting healthcare provider for medical advice"
+  ]
+});
+```
+
+### 6. Product Catalog Search
+
+E-commerce product information:
+
+```typescript
+const productCatalog = await agentbase.createDatastore({
+  name: "Product Catalog"
+});
+
+await agentbase.uploadDocuments({
+  datastoreId: productCatalog.id,
+  files: [
+    './products/catalog.json',
+    './products/specifications/*.md',
+    './products/manuals/*.pdf'
+  ]
+});
+
+const result = await agentbase.runAgent({
+  message: "I need a laptop with at least 16GB RAM and long battery life",
+  datastores: [{
+    id: productCatalog.id,
+    searchMode: "hybrid" // Good for product specs
+  }],
+  system: `You are a product recommendation assistant.
+
+  Help customers:
+  - Find products matching their needs
+  - Compare product specifications
+  - Provide pricing information
+  - Suggest alternatives`
+});
+```
+
+## Best Practices
+
+### Document Preparation
+
+<AccordionGroup>
+  <Accordion title="Structure Your Documents">
+    ```markdown
+    # Good: Well-structured document
+    
+    ## Authentication Overview
+    Our API uses OAuth 2.0 for authentication...
+    
+    ## Getting Started
+    1. Create API credentials
+    2. Implement OAuth flow
+    3. Make authenticated requests
+    
+    ## Code Example
+    [code here]
+    
+    ## Common Issues
+    - Issue 1: [solution]
+    - Issue 2: [solution]
+    
+    ---
+    
+    # Avoid: Wall of unstructured text
+    Authentication is done with OAuth 2.0 and you need to create credentials first then implement the flow and make requests but sometimes there are issues...
+    ```
+  </Accordion>
+
+  <Accordion title="Add Metadata">
+    ```typescript
+    // Good: Rich metadata for filtering
+    await agentbase.uploadDocuments({
+      datastoreId: datastore.id,
+      files: ['./api-v2.md'],
+      metadata: {
+        category: "api-reference",
+        version: "v2",
+        language: "en",
+        tags: ["authentication", "rest-api"],
+        lastUpdated: "2024-01-15",
+        author: "engineering-team"
+      }
+    });
+    
+    // Avoid: Minimal metadata
+    await agentbase.uploadDocuments({
+      datastoreId: datastore.id,
+      files: ['./api-v2.md']
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Optimize Chunk Size">
+    ```typescript
+    // Technical docs: Smaller chunks for precision
+    const techDocs = await agentbase.createDatastore({
+      name: "API Docs",
+      config: {
+        chunkSize: 500,
+        chunkOverlap: 50,
+        chunkingStrategy: "semantic"
+      }
+    });
+    
+    // Legal docs: Larger chunks for context
+    const legalDocs = await agentbase.createDatastore({
+      name: "Contracts",
+      config: {
+        chunkSize: 1500,
+        chunkOverlap: 200,
+        chunkingStrategy: "semantic"
+      }
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Keep Documents Current">
+    ```typescript
+    // Update documents regularly
+    async function refreshDocumentation() {
+      // Delete old version
+      await agentbase.deleteDocument({
+        datastoreId: datastore.id,
+        documentId: oldDocId
+      });
+      
+      // Upload new version
+      await agentbase.uploadDocuments({
+        datastoreId: datastore.id,
+        files: ['./docs/updated-guide.md'],
+        metadata: {
+          version: "2.0",
+          lastUpdated: new Date().toISOString()
+        }
+      });
+    }
+    
+    // Run weekly
+    cron.schedule('0 0 * * 0', refreshDocumentation);
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Query Optimization
+
+<Tip>
+**Specific Questions Work Best**: RAG performs best with specific, targeted questions rather than broad, open-ended queries.
+</Tip>
+
+```typescript
+// Good: Specific question
+"What are the rate limits for the /api/users endpoint?"
+
+// Good: Targeted query
+"How do I implement OAuth 2.0 authentication?"
+
+// Less effective: Too broad
+"Tell me everything about the API"
+
+// Less effective: Too vague
+"How does it work?"
+```
+
+### Citation and Sources
+
+<Warning>
+**Always Verify Sources**: While RAG provides citations, always verify critical information, especially for medical, legal, or financial content.
+</Warning>
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "What is the refund policy?",
+  datastores: [{ id: policyDocs }],
+  system: `Always cite sources in your responses.
+
+  Format:
+  [Your answer]
+  
+  Sources:
+  - Document: [name]
+  - Section: [section]
+  - Last updated: [date]`
+});
+
+// Verify citations are accurate
+for (const source of result.sources) {
+  console.log('Source:', source.document);
+  console.log('Excerpt:', source.excerpt);
+  console.log('Confidence:', source.relevanceScore);
+}
+```
+
+## Integration with Other Primitives
+
+### With Memory
+
+Combine RAG with conversation memory:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "What did we discuss about the API earlier?",
+  datastores: [{ id: apiDocs }],
+  memory: {
+    namespace: `user_${userId}`,
+    enabled: true
+  }
+});
+
+// Agent uses:
+// 1. Memory: Recalls previous conversation
+// 2. RAG: References API documentation
+// 3. Combines both for contextual answer
+```
+
+Learn more: [Memory Primitive](/primitives/extensions/memory)
+
+### With Custom Tools
+
+Combine RAG with live data:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Show me the deployment guide and check current system status",
+  datastores: [{ id: deploymentDocs }],
+  mcpServers: [
+    {
+      serverName: "monitoring",
+      serverUrl: "https://api.company.com/monitoring"
+    }
+  ]
+});
+
+// Agent combines:
+// - Documentation from RAG
+// - Live system status from MCP tools
+```
+
+Learn more: [MCP Primitive](/primitives/extensions/mcp)
+
+### With Multi-Agent
+
+Specialized agents with different knowledge bases:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Help with billing and technical setup",
+  agents: [
+    {
+      name: "Billing Support",
+      datastores: [{ id: billingDocs }]
+    },
+    {
+      name: "Technical Support",
+      datastores: [{ id: technicalDocs }]
+    }
+  ]
+});
+
+// Each agent accesses their specialized knowledge base
+```
+
+Learn more: [Multi-Agent Primitive](/primitives/essentials/multi-agents)
+
+## Performance Considerations
+
+### Indexing Time
+
+- **Small docs** (< 100 pages): ~1-2 minutes
+- **Medium docs** (100-1000 pages): ~5-15 minutes
+- **Large docs** (> 1000 pages): ~30-60 minutes
+
+### Query Performance
+
+- **Cold query**: ~500-1000ms (first query in session)
+- **Warm query**: ~200-400ms (subsequent queries)
+- **Optimization**: Use filters to narrow search space
+
+### Cost Optimization
+
+```typescript
+// Efficient: Targeted filtering
+const result = await agentbase.runAgent({
+  message: "Authentication guide",
+  datastores: [{
+    id: docs,
+    filter: {
+      category: "authentication",
+      version: "v2"
+    }
+  }]
+});
+
+// Less efficient: Search everything
+const result = await agentbase.runAgent({
+  message: "Authentication guide",
+  datastores: [{ id: allDocs }] // Searches all documents
+});
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Poor Retrieval Results">
+    **Problem**: RAG returns irrelevant documents
+    
+    **Solutions**:
+    - Improve document structure and headings
+    - Add more descriptive metadata
+    - Adjust chunk size
+    - Use hybrid search mode
+    - Refine query phrasing
+    
+    ```typescript
+    // Try hybrid search
+    datastores: [{
+      id: datastore.id,
+      searchMode: "hybrid",
+      alpha: 0.7
+    }]
+    ```
+  </Accordion>
+
+  <Accordion title="Slow Query Performance">
+    **Problem**: Queries taking too long
+    
+    **Solutions**:
+    - Add metadata filters to narrow search
+    - Reduce datastore size
+    - Optimize chunk size
+    - Enable caching
+    
+    ```typescript
+    // Add filters
+    datastores: [{
+      id: datastore.id,
+      filter: {
+        category: "api",
+        version: "v2"
+      }
+    }]
+    ```
+  </Accordion>
+
+  <Accordion title="Missing Recent Updates">
+    **Problem**: New documents not being found
+    
+    **Solutions**:
+    - Verify document upload completed
+    - Check indexing status
+    - Allow time for indexing (can take minutes)
+    - Refresh datastore
+    
+    ```typescript
+    // Check datastore status
+    const status = await agentbase.getDatastoreStatus({
+      datastoreId: datastore.id
+    });
+    
+    console.log('Indexing:', status.indexing);
+    console.log('Documents:', status.documentCount);
+    ```
+  </Accordion>
+
+  <Accordion title="Incorrect Citations">
+    **Problem**: Agent cites wrong sources
+    
+    **Solutions**:
+    - Improve source documents quality
+    - Add unique identifiers to sections
+    - Use structured document format
+    - Verify embedding quality
+    
+    ```typescript
+    // Better document structure
+    ## 1.1 Authentication [id: auth-overview]
+    Content here...
+    
+    ## 1.2 OAuth Flow [id: auth-oauth]
+    Content here...
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Features
+
+### Reranking
+
+Improve retrieval quality with reranking:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Security best practices",
+  datastores: [{
+    id: datastore.id,
+    rerank: true, // Re-rank results for better relevance
+    topK: 20, // Retrieve 20, rerank to top 5
+    returnTopK: 5
+  }]
+});
+```
+
+### Custom Embeddings
+
+Use domain-specific embeddings:
+
+```typescript
+const datastore = await agentbase.createDatastore({
+  name: "Medical Knowledge",
+  config: {
+    embeddingModel: "medical-embeddings-v1", // Specialized model
+    chunkSize: 800
+  }
+});
+```
+
+### Multi-Modal RAG
+
+Index images and diagrams:
+
+```typescript
+const datastore = await agentbase.createDatastore({
+  name: "Product Manuals",
+  config: {
+    multimodal: true, // Index images and text
+    extractImages: true
+  }
+});
+
+await agentbase.uploadDocuments({
+  datastoreId: datastore.id,
+  files: ['./manuals/*.pdf'] // PDFs with diagrams
+});
+
+// Agent can reference diagrams in responses
+```
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Web Search" icon="globe" href="/primitives/extensions/web-search">
+    Search the web in addition to internal docs
+  </Card>
+
+  <Card title="Memory" icon="brain" href="/primitives/extensions/memory">
+    Remember user preferences and history
+  </Card>
+
+  <Card title="MCP" icon="plug" href="/primitives/extensions/mcp">
+    Combine docs with live data from APIs
+  </Card>
+
+  <Card title="Custom Tools" icon="toolbox" href="/primitives/essentials/custom-tools">
+    Integrate RAG with custom tools
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api/datastores">
+    Datastore API documentation
+  </Card>
+
+  <Card title="RAG Guide" icon="book" href="/guides/rag-best-practices">
+    RAG optimization guide
+  </Card>
+
+  <Card title="Examples" icon="lightbulb" href="/examples/rag">
+    RAG implementation examples
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: RAG is most effective when your documents are well-structured, current, and organized with meaningful metadata. Invest time in document preparation for best results.
+</Tip>

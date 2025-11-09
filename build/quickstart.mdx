@@ -1,0 +1,93 @@
+---
+title: "Quickstart"
+description: "Get started with Agentbase AI agents in 2 minutes"
+icon: "rocket"
+---
+
+Get your first AI agent running locally in 2 minutes.
+
+## Before you begin
+
+* [Agentbase account](https://base.agentbase.sh/sign-up) with credits
+* Node.js 18+ installed
+
+<Tip>Sign up with your work email to get free credits automatically!</Tip>
+
+## Step 1: Install and run
+
+```bash
+# Create your agent project
+npm create agentbase@latest
+
+# Navigate and start
+cd my-agent
+npm run dev
+```
+
+You'll be prompted to add your API key on first use.
+
+## Step 2: Test capabilities
+
+Try these prompts in the CLI to understand what agents can do:
+
+```
+> What can you do?
+> Write and run a Python function to calculate fibonacci numbers
+> Search for the latest AI news and summarize it
+> Create a React component for a user profile card
+```
+
+## Step 3: Understand agent modes
+
+Change the mode in your `index.ts` file:
+
+```typescript
+const params = { 
+  message: message,
+  mode: "fast" // "fast", "flash", or "max"
+};
+```
+
+**Mode differences:**
+
+- **Fast**: Balanced performance (recommended)
+- **Flash**: Shows agent thinking process and steps
+- **Max**: Advanced reasoning for complex tasks
+
+## Ready to integrate?
+
+The CLI uses the same API your applications will use. Everything you tested here works in production.
+
+### Key integration parameters:
+
+| Parameter | Purpose | Example |
+|-----------|---------|---------|
+| `message` | The task | `"Write a Python function"` |
+| `mode` | Capability level | `"fast"`, `"flash"`, `"max"` |
+| `session` | Continue conversation | `?session=SESSION_ID` |
+
+## What's next?
+
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Complete integration guide and examples
+  </Card>
+  
+  <Card title="Built-in Tools" icon="tools" href="/build/tools">
+    See all built-in tools and features
+  </Card>
+  
+  <Card title="Common Use Cases" icon="lightbulb" href="/getting-started/common-use-cases">
+    Real-world examples and patterns
+  </Card>
+  
+  <Card title="API Examples" icon="book" href="/api/example">
+    More integration patterns
+  </Card>
+</CardGroup>
+
+## Need help?
+
+- Join our [Discord](https://discord.com/invite/KFtqf7j9fs) for support
+- Monitor usage at [base.agentbase.sh](https://base.agentbase.sh)
+- Check [API examples](/api/example) for more patterns

@@ -1,0 +1,482 @@
+---
+title: "Traces & Debugging"
+description: "Debug and understand agent behavior with execution traces"
+icon: "bug"
+---
+
+## Overview
+
+Traces provide detailed insights into agent execution, showing every step, tool usage, and decision made during task completion. Use traces to debug issues, optimize performance, and understand agent behavior.
+
+## What Are Traces?
+
+Traces capture the complete execution history of an agent task:
+
+- **Agent reasoning:** What the agent is thinking and planning
+- **Tool usage:** Which tools were called and with what parameters
+- **Tool responses:** Results returned from each tool
+- **Timing information:** Duration of each step
+- **Cost breakdown:** Cost per step and total cost
+- **Errors and warnings:** Any issues encountered
+
+## Accessing Traces
+
+<Tabs>
+  <Tab title="Event Streaming">
+    Stream events in real-time during agent execution:
+
+    ```typescript
+    const result = await agentbase.runAgent({
+      message: "Debug this issue",
+      mode: "fast",
+      stream: true
+    });
+
+    for await (const event of result) {
+      console.log(`[${event.type}]`, event);
+
+      switch (event.type) {
+        case 'agent_thinking':
+          console.log('Thinking:', event.content);
+          break;
+
+        case 'agent_tool_use':
+          console.log('Tool:', event.tool, 'Input:', event.input);
+          break;
+
+        case 'agent_tool_response':
+          console.log('Response:', event.response);
+          break;
+
+        case 'agent_cost':
+          console.log('Cost:', event.cost);
+          break;
+
+        case 'agent_step':
+          console.log('Completed step:', event.stepNumber);
+          break;
+
+        case 'agent_error':
+          console.error('Error:', event.error);
+          break;
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Dashboard">
+    View traces in the [Agentbase Dashboard](https://base.agentbase.sh):
+
+    <Steps>
+      <Step title="Navigate to Sessions">
+        Go to the Sessions tab in your dashboard
+      </Step>
+
+      <Step title="Select Session">
+        Click on a session to view its complete trace
+      </Step>
+
+      <Step title="Explore Execution">
+        See each step, tool call, and response in detail
+      </Step>
+
+      <Step title="Download Trace">
+        Export trace data for offline analysis
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## Event Types
+
+Understanding different event types helps you interpret traces:
+
+### Agent Thinking
+Shows internal reasoning and planning:
+
+```json
+{
+  "type": "agent_thinking",
+  "content": "I need to search for the latest pricing information. I'll use the web search tool to find recent data.",
+  "timestamp": "2025-01-08T10:30:00Z"
+}
+```
+
+### Tool Use
+Shows which tool is being called:
+
+```json
+{
+  "type": "agent_tool_use",
+  "tool": "web",
+  "input": {
+    "command": "search",
+    "query": "competitor pricing 2025"
+  },
+  "timestamp": "2025-01-08T10:30:01Z"
+}
+```
+
+### Tool Response
+Shows the result from tool execution:
+
+```json
+{
+  "type": "agent_tool_response",
+  "tool": "web",
+  "response": [
+    {
+      "url": "https://example.com/pricing",
+      "title": "Competitor Pricing 2025",
+      "snippet": "Starting at $49/month..."
+    }
+  ],
+  "timestamp": "2025-01-08T10:30:03Z"
+}
+```
+
+### Step Completion
+Indicates a step has finished:
+
+```json
+{
+  "type": "agent_step",
+  "session": "sess_abc123",
+  "stepNumber": 1,
+  "timestamp": "2025-01-08T10:30:04Z"
+}
+```
+
+### Cost Tracking
+Shows cost incurred:
+
+```json
+{
+  "type": "agent_cost",
+  "session": "sess_abc123",
+  "cost": "0.05",
+  "balance": 47.45,
+  "timestamp": "2025-01-08T10:30:04Z"
+}
+```
+
+### Errors
+Captures errors and failures:
+
+```json
+{
+  "type": "agent_error",
+  "error": "Failed to access URL: Connection timeout",
+  "step": 2,
+  "timestamp": "2025-01-08T10:30:05Z"
+}
+```
+
+## Debugging with Traces
+
+### Common Debugging Scenarios
+
+<AccordionGroup>
+  <Accordion title="Agent Not Using Expected Tool" icon="wrench">
+    **Problem:** Agent uses wrong tool or doesn't use a tool you expected
+
+    **Debugging approach:**
+    1. Check `agent_thinking` events to see reasoning
+    2. Review `agent_tool_use` events to see what was chosen
+    3. Check if tool is available in the mode you're using
+
+    **Example trace analysis:**
+    ```typescript
+    const debugTrace = [];
+
+    for await (const event of stream) {
+      debugTrace.push(event);
+
+      if (event.type === 'agent_tool_use') {
+        console.log('Agent chose tool:', event.tool);
+        console.log('Expected: web, Got:', event.tool);
+
+        // Check previous thinking
+        const thinking = debugTrace
+          .filter(e => e.type === 'agent_thinking')
+          .pop();
+        console.log('Reasoning:', thinking?.content);
+      }
+    }
+    ```
+
+    **Solution:**
+    - Make prompt more specific about tool usage
+    - Check tool availability for the mode
+    - Verify input format matches tool expectations
+  </Accordion>
+
+  <Accordion title="Task Taking Too Many Steps" icon="stairs">
+    **Problem:** Agent takes more steps than expected to complete task
+
+    **Debugging approach:**
+    1. Count steps using `agent_step` events
+    2. Analyze what each step accomplished
+    3. Identify redundant or unnecessary steps
+
+    **Example trace analysis:**
+    ```typescript
+    let stepCount = 0;
+    const stepDetails = [];
+
+    for await (const event of stream) {
+      if (event.type === 'agent_step') {
+        stepCount++;
+      }
+
+      if (event.type === 'agent_tool_use') {
+        stepDetails.push({
+          step: stepCount,
+          tool: event.tool,
+          input: event.input
+        });
+      }
+    }
+
+    console.log(`Total steps: ${stepCount}`);
+    console.log('Step breakdown:', stepDetails);
+    ```
+
+    **Solution:**
+    - Provide more context upfront
+    - Be more specific in prompt
+    - Use lower mode for simpler tasks
+  </Accordion>
+
+  <Accordion title="Unexpected Errors" icon="exclamation-triangle">
+    **Problem:** Agent fails or returns errors
+
+    **Debugging approach:**
+    1. Find `agent_error` events in trace
+    2. Check tool responses before error
+    3. Review agent thinking before failure
+
+    **Example trace analysis:**
+    ```typescript
+    const errors = [];
+    const context = [];
+
+    for await (const event of stream) {
+      context.push(event);
+
+      if (event.type === 'agent_error') {
+        errors.push({
+          error: event.error,
+          previousEvents: context.slice(-5) // Last 5 events
+        });
+      }
+    }
+
+    console.log('Errors found:', errors);
+    ```
+
+    **Solution:**
+    - Handle specific error cases
+    - Add error recovery in prompts
+    - Validate inputs before sending
+  </Accordion>
+
+  <Accordion title="Slow Performance" icon="hourglass">
+    **Problem:** Agent takes longer than expected
+
+    **Debugging approach:**
+    1. Track timestamps between events
+    2. Identify slow tool calls
+    3. Check for unnecessary waiting
+
+    **Example trace analysis:**
+    ```typescript
+    const timings = [];
+    let lastTimestamp = Date.now();
+
+    for await (const event of stream) {
+      const now = Date.now();
+      const duration = now - lastTimestamp;
+
+      if (duration > 2000) { // > 2 seconds
+        timings.push({
+          event: event.type,
+          duration,
+          details: event
+        });
+      }
+
+      lastTimestamp = now;
+    }
+
+    console.log('Slow operations:', timings);
+    ```
+
+    **Solution:**
+    - Optimize slow tool calls
+    - Use caching for repeated operations
+    - Switch to faster mode if appropriate
+  </Accordion>
+</AccordionGroup>
+
+## Trace Analysis Tools
+
+### Build a Trace Logger
+
+```typescript
+class TraceLogger {
+  private trace: any[] = [];
+  private startTime: number = Date.now();
+
+  async logAgentRun(message: string, mode: string) {
+    this.trace = [];
+    this.startTime = Date.now();
+
+    const result = await agentbase.runAgent({
+      message,
+      mode,
+      stream: true
+    });
+
+    for await (const event of result) {
+      this.logEvent(event);
+    }
+
+    return this.getSummary();
+  }
+
+  private logEvent(event: any) {
+    const timestamp = Date.now() - this.startTime;
+    this.trace.push({
+      ...event,
+      relativeTime: timestamp
+    });
+
+    // Log to console
+    console.log(`[+${timestamp}ms] ${event.type}`);
+  }
+
+  getSummary() {
+    const steps = this.trace.filter(e => e.type === 'agent_step').length;
+    const tools = this.trace.filter(e => e.type === 'agent_tool_use');
+    const errors = this.trace.filter(e => e.type === 'agent_error');
+    const totalTime = Date.now() - this.startTime;
+
+    return {
+      totalSteps: steps,
+      totalTime,
+      toolsUsed: tools.map(t => t.tool),
+      errors: errors.length,
+      trace: this.trace
+    };
+  }
+
+  exportTrace(filename: string) {
+    const fs = require('fs');
+    fs.writeFileSync(
+      filename,
+      JSON.stringify(this.trace, null, 2)
+    );
+  }
+}
+
+// Usage
+const logger = new TraceLogger();
+const summary = await logger.logAgentRun(
+  "Analyze this data",
+  "fast"
+);
+
+console.log('Summary:', summary);
+logger.exportTrace('trace.json');
+```
+
+### Trace Visualization
+
+```typescript
+function visualizeTrace(trace: any[]) {
+  console.log('\n=== Agent Execution Trace ===\n');
+
+  let stepNumber = 0;
+
+  for (const event of trace) {
+    switch (event.type) {
+      case 'agent_thinking':
+        console.log(`💭 Thinking: ${event.content.substring(0, 80)}...`);
+        break;
+
+      case 'agent_tool_use':
+        console.log(`🔧 Tool: ${event.tool}`);
+        console.log(`   Input: ${JSON.stringify(event.input).substring(0, 80)}...`);
+        break;
+
+      case 'agent_tool_response':
+        console.log(`✅ Response received`);
+        break;
+
+      case 'agent_step':
+        stepNumber++;
+        console.log(`\n--- Step ${stepNumber} Complete ---\n`);
+        break;
+
+      case 'agent_cost':
+        console.log(`💰 Cost: $${event.cost}`);
+        break;
+
+      case 'agent_error':
+        console.log(`❌ Error: ${event.error}`);
+        break;
+    }
+  }
+
+  console.log('\n=== Execution Complete ===\n');
+}
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Log All Production Traces" icon="database">
+    Store traces for debugging and analysis:
+    ```typescript
+    await saveTrace(sessionId, trace);
+    ```
+  </Card>
+
+  <Card title="Set Up Alerts" icon="bell">
+    Alert on errors or anomalies:
+    ```typescript
+    if (errors.length > 0) {
+      await notifyTeam(errors);
+    }
+    ```
+  </Card>
+
+  <Card title="Regular Review" icon="eye">
+    Periodically review traces to identify patterns and optimize
+  </Card>
+
+  <Card title="Privacy Considerations" icon="user-shield">
+    Sanitize sensitive data before logging traces
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Performance" icon="gauge" href="/improve/performance">
+    Use traces to optimize performance
+  </Card>
+
+  <Card title="Evals" icon="check-circle" href="/improve/evals">
+    Test and validate agent behavior
+  </Card>
+
+  <Card title="Event Types" icon="list" href="/deploy/api/message-events">
+    Complete event type reference
+  </Card>
+
+  <Card title="Cost Tracking" icon="dollar" href="/improve/cost-tracking">
+    Analyze costs from trace data
+  </Card>
+</CardGroup>

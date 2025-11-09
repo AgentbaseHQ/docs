@@ -1,0 +1,983 @@
+---
+title: "Self-Evolving"
+description: "Agents that learn from interactions, improve over time, and adapt to changing requirements"
+icon: "seedling"
+---
+
+> Self-Evolving agents continuously improve their performance by learning from feedback, adapting to user preferences, and optimizing their approaches based on historical outcomes.
+
+## Overview
+
+The Self-Evolving primitive enables agents to learn and improve over time without manual retraining. By analyzing past interactions, collecting feedback, and identifying patterns, self-evolving agents become more effective, personalized, and efficient with each use.
+
+Self-evolving capabilities include:
+
+- **Learning from Feedback**: Incorporate user corrections and preferences into future responses
+- **Performance Optimization**: Identify and adopt more efficient approaches based on outcomes
+- **Personalization**: Adapt to individual user styles, preferences, and requirements
+- **Pattern Recognition**: Discover and apply successful patterns from historical data
+- **Continuous Improvement**: Automatically refine behaviors without manual intervention
+
+<CardGroup cols={2}>
+  <Card title="Feedback Integration" icon="comments">
+    Learn from user corrections, ratings, and explicit feedback to improve responses
+  </Card>
+
+  <Card title="Performance Tracking" icon="chart-line">
+    Monitor success metrics and optimize strategies that work best
+  </Card>
+
+  <Card title="User Adaptation" icon="user-check">
+    Personalize behavior based on individual user preferences and patterns
+  </Card>
+
+  <Card title="Automatic Refinement" icon="wand-sparkles">
+    Continuously improve without manual updates or retraining
+  </Card>
+</CardGroup>
+
+## How Self-Evolving Works
+
+### Learning Mechanisms
+
+Self-evolving agents use multiple learning mechanisms:
+
+1. **Feedback Loop Analysis**: Collect and analyze user feedback on responses
+2. **Outcome Tracking**: Monitor whether tasks succeed or fail
+3. **Pattern Mining**: Identify successful approaches from historical interactions
+4. **Preference Learning**: Adapt to user-specific preferences and styles
+5. **A/B Testing**: Experiment with different approaches and measure results
+6. **Contextual Adaptation**: Adjust behavior based on context and use case
+
+### Evolution Process
+
+The evolution process happens automatically:
+
+1. **Baseline Behavior**: Agent starts with general capabilities
+2. **Interaction**: User interacts with agent, provides tasks and feedback
+3. **Data Collection**: System records interactions, outcomes, and feedback
+4. **Pattern Analysis**: Identify successful patterns and common preferences
+5. **Behavior Update**: Adjust agent behavior based on learnings
+6. **Validation**: Test improvements to ensure quality increases
+7. **Deployment**: Apply learnings to future interactions
+
+<Note>
+**Privacy-First Learning**: All learning happens within your isolated sessions and accounts. Learnings are never shared across different users or organizations.
+</Note>
+
+## Code Examples
+
+### Basic Feedback Learning
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Initial request
+const result = await agentbase.runAgent({
+  message: "Write a product description for our SaaS tool",
+  session: userSession
+});
+
+console.log('Initial response:', result.message);
+
+// User provides feedback
+await agentbase.provideFeedback({
+  session: userSession,
+  messageId: result.messageId,
+  feedback: {
+    rating: 3,
+    comment: "Good but too technical. Use simpler language and focus on benefits."
+  }
+});
+
+// Next request learns from feedback
+const improved = await agentbase.runAgent({
+  message: "Write another product description for our analytics feature",
+  session: userSession
+  // Agent now uses simpler language and focuses on benefits
+});
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Initial request
+result = agentbase.run_agent(
+    message="Write a product description for our SaaS tool",
+    session=user_session
+)
+
+print(f"Initial response: {result.message}")
+
+# User provides feedback
+agentbase.provide_feedback(
+    session=user_session,
+    message_id=result.message_id,
+    feedback={
+        'rating': 3,
+        'comment': 'Good but too technical. Use simpler language and focus on benefits.'
+    }
+)
+
+# Next request learns from feedback
+improved = agentbase.run_agent(
+    message="Write another product description for our analytics feature",
+    session=user_session
+    # Agent now uses simpler language and focuses on benefits
+)
+```
+
+</CodeGroup>
+
+### Preference Learning
+
+<CodeGroup>
+
+```typescript TypeScript
+// Agent learns user preferences over time
+async function evolveWithPreferences(userId: string) {
+  // Load user's session with historical context
+  const userSession = await getUserSession(userId);
+
+  // Request with implicit preferences
+  const result = await agentbase.runAgent({
+    message: "Generate weekly report",
+    session: userSession,
+    preferences: {
+      verbosity: "concise",
+      format: "markdown",
+      style: "executive-summary"
+    }
+  });
+
+  // Agent learns preferences from:
+  // 1. Explicit preferences object
+  // 2. Historical feedback
+  // 3. Usage patterns
+  // 4. Accepted vs rejected suggestions
+
+  return result;
+}
+```
+
+```python Python
+# Agent learns user preferences over time
+async def evolve_with_preferences(user_id: str):
+    # Load user's session with historical context
+    user_session = await get_user_session(user_id)
+
+    # Request with implicit preferences
+    result = agentbase.run_agent(
+        message="Generate weekly report",
+        session=user_session,
+        preferences={
+            'verbosity': 'concise',
+            'format': 'markdown',
+            'style': 'executive-summary'
+        }
+    )
+
+    # Agent learns preferences from:
+    # 1. Explicit preferences object
+    # 2. Historical feedback
+    # 3. Usage patterns
+    # 4. Accepted vs rejected suggestions
+
+    return result
+```
+
+</CodeGroup>
+
+### Performance-Based Evolution
+
+<CodeGroup>
+
+```typescript TypeScript
+// Track and optimize based on performance
+async function trackPerformance(session: string) {
+  const result = await agentbase.runAgent({
+    message: "Optimize database query performance",
+    session,
+    mode: "fast"
+  });
+
+  // Record outcome
+  await agentbase.recordOutcome({
+    session,
+    messageId: result.messageId,
+    outcome: {
+      success: true,
+      metrics: {
+        executionTime: 1.2,  // seconds
+        performanceGain: 3.5,  // 3.5x faster
+        approach: "added indexes and query optimization"
+      }
+    }
+  });
+
+  // Future similar requests will prefer successful approaches
+  // Agent learns: "For query optimization, adding indexes is effective"
+}
+```
+
+```python Python
+# Track and optimize based on performance
+async def track_performance(session: str):
+    result = agentbase.run_agent(
+        message="Optimize database query performance",
+        session=session,
+        mode="fast"
+    )
+
+    # Record outcome
+    agentbase.record_outcome(
+        session=session,
+        message_id=result.message_id,
+        outcome={
+            'success': True,
+            'metrics': {
+                'execution_time': 1.2,  # seconds
+                'performance_gain': 3.5,  # 3.5x faster
+                'approach': 'added indexes and query optimization'
+            }
+        }
+    )
+
+    # Future similar requests will prefer successful approaches
+    # Agent learns: "For query optimization, adding indexes is effective"
+```
+
+</CodeGroup>
+
+### Iterative Refinement
+
+<CodeGroup>
+
+```typescript TypeScript
+// Iteratively refine based on feedback
+async function iterativeEvolution(task: string, session: string) {
+  let attempt = 1;
+  let satisfied = false;
+
+  while (!satisfied && attempt <= 3) {
+    const result = await agentbase.runAgent({
+      message: task,
+      session
+    });
+
+    console.log(`Attempt ${attempt}:`, result.message);
+
+    // Get user feedback
+    const feedback = await getUserFeedback(result.message);
+
+    if (feedback.approved) {
+      satisfied = true;
+      await agentbase.provideFeedback({
+        session,
+        messageId: result.messageId,
+        feedback: { rating: 5, approved: true }
+      });
+    } else {
+      // Provide correction for learning
+      await agentbase.provideFeedback({
+        session,
+        messageId: result.messageId,
+        feedback: {
+          rating: 2,
+          correction: feedback.improvement
+        }
+      });
+
+      // Update task with refinement
+      task = `${task}\n\nPrevious attempt needed improvement: ${feedback.improvement}`;
+      attempt++;
+    }
+  }
+
+  return satisfied;
+}
+```
+
+```python Python
+# Iteratively refine based on feedback
+async def iterative_evolution(task: str, session: str):
+    attempt = 1
+    satisfied = False
+
+    while not satisfied and attempt <= 3:
+        result = agentbase.run_agent(
+            message=task,
+            session=session
+        )
+
+        print(f"Attempt {attempt}: {result.message}")
+
+        # Get user feedback
+        feedback = await get_user_feedback(result.message)
+
+        if feedback.approved:
+            satisfied = True
+            agentbase.provide_feedback(
+                session=session,
+                message_id=result.message_id,
+                feedback={'rating': 5, 'approved': True}
+            )
+        else:
+            # Provide correction for learning
+            agentbase.provide_feedback(
+                session=session,
+                message_id=result.message_id,
+                feedback={
+                    'rating': 2,
+                    'correction': feedback.improvement
+                }
+            )
+
+            # Update task with refinement
+            task = f"{task}\n\nPrevious attempt needed improvement: {feedback.improvement}"
+            attempt += 1
+
+    return satisfied
+```
+
+</CodeGroup>
+
+## Learning Patterns
+
+### Feedback Types
+
+Different feedback types drive different learning:
+
+<AccordionGroup>
+  <Accordion title="Explicit Ratings">
+    ```typescript
+    // Simple rating feedback
+    await agentbase.provideFeedback({
+      session: userSession,
+      messageId: messageId,
+      feedback: {
+        rating: 4,  // 1-5 scale
+        helpful: true
+      }
+    });
+
+    // Agent learns: This type of response received positive rating
+    ```
+  </Accordion>
+
+  <Accordion title="Corrective Feedback">
+    ```typescript
+    // Specific corrections
+    await agentbase.provideFeedback({
+      session: userSession,
+      messageId: messageId,
+      feedback: {
+        rating: 2,
+        correction: "Use more specific examples",
+        preferredApproach: "Show code samples instead of theory"
+      }
+    });
+
+    // Agent learns: For this user, prefer code samples over theory
+    ```
+  </Accordion>
+
+  <Accordion title="Behavioral Feedback">
+    ```typescript
+    // Behavioral preferences
+    await agentbase.provideFeedback({
+      session: userSession,
+      messageId: messageId,
+      feedback: {
+        rating: 5,
+        behaviorPreference: {
+          responseLength: "concise",
+          technicalLevel: "intermediate",
+          tone: "professional"
+        }
+      }
+    });
+
+    // Agent learns: This user prefers concise, intermediate-level, professional responses
+    ```
+  </Accordion>
+
+  <Accordion title="Outcome-Based Feedback">
+    ```typescript
+    // Success/failure outcomes
+    await agentbase.recordOutcome({
+      session: userSession,
+      messageId: messageId,
+      outcome: {
+        success: true,
+        taskCompleted: true,
+        timeToComplete: 45,  // seconds
+        userSatisfaction: "high"
+      }
+    });
+
+    // Agent learns: This approach successfully completed task quickly
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Use Cases
+
+### 1. Personalized Content Generation
+
+Adapt writing style to individual users:
+
+```typescript
+async function personalizedContentAgent(userId: string) {
+  const userSession = await getUserSession(userId);
+
+  // First use: Generic style
+  const post1 = await agentbase.runAgent({
+    message: "Write a blog post about AI trends",
+    session: userSession
+  });
+
+  // User feedback: "Too casual, I prefer professional tone"
+  await agentbase.provideFeedback({
+    session: userSession,
+    messageId: post1.messageId,
+    feedback: {
+      rating: 3,
+      correction: "Use more professional tone, less casual language"
+    }
+  });
+
+  // Second use: Agent adapts to professional tone
+  const post2 = await agentbase.runAgent({
+    message: "Write a blog post about cloud computing",
+    session: userSession
+    // Automatically uses professional tone learned from feedback
+  });
+
+  // Over time, agent learns user's complete style preferences:
+  // - Tone: Professional
+  // - Length: 500-700 words
+  // - Structure: Introduction, 3 main points, conclusion
+  // - Technical depth: Intermediate
+}
+```
+
+### 2. Customer Support Evolution
+
+Improve support quality through interaction history:
+
+```typescript
+async function evolvingSupportAgent(customerId: string) {
+  const supportSession = await getSupportSession(customerId);
+
+  // Agent learns from:
+  // 1. Customer's previous issues and resolutions
+  // 2. Communication preferences
+  // 3. Technical level
+  // 4. Satisfaction ratings
+
+  const response = await agentbase.runAgent({
+    message: "Customer: I'm having login issues again",
+    session: supportSession,
+    system: "You are a customer support specialist."
+  });
+
+  // Agent automatically:
+  // - Recalls previous login issues and what fixed them
+  // - Uses communication style customer prefers
+  // - Adjusts technical detail to customer's level
+  // - Prioritizes solutions that worked before
+}
+```
+
+### 3. Code Generation Optimization
+
+Learn preferred coding patterns and styles:
+
+```typescript
+async function adaptiveCodeGen(developerId: string) {
+  const devSession = await getDeveloperSession(developerId);
+
+  // Generate code with learning
+  const code = await agentbase.runAgent({
+    message: "Create a REST API endpoint for user authentication",
+    session: devSession
+  });
+
+  // Developer provides feedback on code style
+  await agentbase.provideFeedback({
+    session: devSession,
+    messageId: code.messageId,
+    feedback: {
+      rating: 4,
+      stylePreferences: {
+        naming: "camelCase for variables, PascalCase for classes",
+        errorHandling: "Use try-catch with specific error types",
+        comments: "JSDoc format for all functions",
+        testing: "Include unit tests by default"
+      }
+    }
+  });
+
+  // Future code generation automatically follows learned style
+  const nextCode = await agentbase.runAgent({
+    message: "Create a database model for products",
+    session: devSession
+    // Follows learned style preferences automatically
+  });
+}
+```
+
+### 4. Data Analysis Refinement
+
+Optimize analysis approaches based on outcomes:
+
+```typescript
+async function evolvingAnalytics(projectId: string) {
+  const analyticsSession = await getProjectSession(projectId);
+
+  // Perform analysis
+  const analysis = await agentbase.runAgent({
+    message: "Analyze sales trends and predict next quarter",
+    session: analyticsSession
+  });
+
+  // Record outcome quality
+  await agentbase.recordOutcome({
+    session: analyticsSession,
+    messageId: analysis.messageId,
+    outcome: {
+      success: true,
+      accuracy: 0.87,  // Prediction accuracy
+      insightsUseful: true,
+      approach: "ARIMA model with seasonal adjustment"
+    }
+  });
+
+  // Agent learns: ARIMA with seasonal adjustment works well for this data
+  // Next analysis automatically uses proven successful approach
+}
+```
+
+### 5. Workflow Automation Evolution
+
+Optimize automated workflows through performance tracking:
+
+```typescript
+async function selfOptimizingWorkflow(workflowId: string) {
+  const workflowSession = await getWorkflowSession(workflowId);
+
+  // Execute workflow
+  const execution = await agentbase.runAgent({
+    message: "Run daily data processing workflow",
+    session: workflowSession
+  });
+
+  // Track performance metrics
+  await agentbase.recordOutcome({
+    session: workflowSession,
+    messageId: execution.messageId,
+    outcome: {
+      success: true,
+      executionTime: 145,  // seconds
+      recordsProcessed: 50000,
+      errorRate: 0.002,
+      resourceUsage: { cpu: "medium", memory: "low" }
+    }
+  });
+
+  // Over time, agent learns:
+  // - Optimal batch sizes for processing
+  // - Best times to run for minimal resource conflict
+  // - Most efficient transformation approaches
+  // - Error patterns to avoid
+}
+```
+
+## Best Practices
+
+### Effective Feedback Collection
+
+<AccordionGroup>
+  <Accordion title="Provide Specific Feedback">
+    ```typescript
+    // Good: Specific, actionable feedback
+    await agentbase.provideFeedback({
+      session,
+      messageId,
+      feedback: {
+        rating: 3,
+        specific: {
+          what: "Code structure is good",
+          issue: "Missing error handling for edge cases",
+          improvement: "Add try-catch blocks and validate inputs"
+        }
+      }
+    });
+
+    // Avoid: Vague feedback
+    await agentbase.provideFeedback({
+      session,
+      messageId,
+      feedback: { rating: 3 }  // Not actionable
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Balance Positive and Corrective">
+    ```typescript
+    // Reinforce good behavior
+    await agentbase.provideFeedback({
+      session,
+      messageId,
+      feedback: {
+        rating: 5,
+        whatWorked: "Perfect level of detail, great examples",
+        keepDoing: "This explanation style is ideal"
+      }
+    });
+
+    // Also correct issues
+    await agentbase.provideFeedback({
+      session,
+      messageId,
+      feedback: {
+        rating: 2,
+        whatNeedsFix: "Too verbose, took too long",
+        preferInstead: "Concise summary with link to details"
+      }
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Track Outcome Metrics">
+    ```typescript
+    // Comprehensive outcome tracking
+    await agentbase.recordOutcome({
+      session,
+      messageId,
+      outcome: {
+        success: true,
+        metrics: {
+          taskCompleted: true,
+          timeToComplete: 30,
+          quality: 0.92,
+          userEffort: "low",
+          followUpNeeded: false
+        },
+        context: {
+          taskType: "code-generation",
+          complexity: "medium",
+          domain: "backend-api"
+        }
+      }
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Establish Feedback Loops">
+    ```typescript
+    // Regular feedback collection
+    async function collectRegularFeedback(session: string) {
+      // After every 5 interactions, request feedback
+      const interactionCount = await getInteractionCount(session);
+
+      if (interactionCount % 5 === 0) {
+        const summary = await agentbase.runAgent({
+          message: "Summarize our last 5 interactions and ask for feedback on quality",
+          session
+        });
+
+        // Collect structured feedback
+        const feedback = await promptUserFeedback();
+
+        await agentbase.provideFeedback({
+          session,
+          messageId: summary.messageId,
+          feedback
+        });
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Learning Rate Management
+
+Control how quickly agents adapt:
+
+```typescript
+// Configure learning sensitivity
+const result = await agentbase.runAgent({
+  message: "Generate report",
+  session: userSession,
+  learning: {
+    mode: "balanced",  // conservative | balanced | aggressive
+    weight: {
+      recentFeedback: 0.7,   // Weight recent feedback higher
+      historicalPatterns: 0.3  // But don't ignore history
+    },
+    minimumSamples: 5  // Need 5 examples before adapting
+  }
+});
+```
+
+### A/B Testing for Evolution
+
+Test different approaches to find optimal strategies:
+
+```typescript
+async function evolutionaryABTest(userId: string) {
+  const session = await getUserSession(userId);
+
+  // Randomly try different approaches
+  const approach = Math.random() > 0.5 ? 'detailed' : 'concise';
+
+  const result = await agentbase.runAgent({
+    message: "Explain machine learning",
+    session,
+    experimentalApproach: approach
+  });
+
+  // Track which approach performs better
+  const feedback = await getUserFeedback(result.message);
+
+  await agentbase.recordOutcome({
+    session,
+    messageId: result.messageId,
+    outcome: {
+      approach,
+      rating: feedback.rating,
+      timeToRead: feedback.timeSpent,
+      satisfaction: feedback.satisfaction
+    }
+  });
+
+  // Over time, system learns which approach works better for this user
+}
+```
+
+## Integration with Other Primitives
+
+### With Persistence
+
+Evolution requires persistent session history:
+
+```typescript
+// Long-term learning across sessions
+const result = await agentbase.runAgent({
+  message: "Continue our project",
+  session: longTermSession
+  // All previous interactions and feedback available
+  // Agent has learned preferences over weeks/months
+});
+```
+
+Learn more: [Persistence Primitive](/primitives/essentials/persistence)
+
+### With Traces
+
+Monitor learning through execution traces:
+
+```typescript
+// Track adaptation in real-time
+const result = await agentbase.runAgent({
+  message: "Generate content",
+  session: userSession,
+  stream: true
+});
+
+for await (const event of result) {
+  if (event.type === 'agent_thinking') {
+    // See how agent applies learned preferences
+    if (event.content.includes('based on previous feedback')) {
+      console.log('Agent applying learned behavior');
+    }
+  }
+}
+```
+
+Learn more: [Traces Primitive](/primitives/essentials/traces)
+
+### With Evals
+
+Validate evolution improves performance:
+
+```typescript
+// Test learning effectiveness
+describe('Self-Evolving Agent', () => {
+  it('should improve with feedback', async () => {
+    const session = createTestSession();
+
+    // Baseline
+    const before = await agentbase.runAgent({
+      message: "Explain concept",
+      session
+    });
+
+    // Provide feedback
+    await agentbase.provideFeedback({
+      session,
+      messageId: before.messageId,
+      feedback: { rating: 2, correction: "Use simpler language" }
+    });
+
+    // Test improvement
+    const after = await agentbase.runAgent({
+      message: "Explain another concept",
+      session
+    });
+
+    // Verify simpler language used
+    expect(after.readabilityScore).toBeGreaterThan(before.readabilityScore);
+  });
+});
+```
+
+Learn more: [Evals Primitive](/primitives/essentials/evals)
+
+## Performance Considerations
+
+### Learning Overhead
+
+- **Feedback Processing**: < 100ms per feedback submission
+- **Pattern Analysis**: Batch processed asynchronously
+- **Behavior Updates**: Applied immediately to session context
+- **No Request Latency**: Learning doesn't slow down requests
+
+### Data Retention
+
+- **Feedback History**: Retained for lifetime of session
+- **Outcome Metrics**: Aggregated and summarized periodically
+- **Pattern Cache**: Recent patterns kept in memory for fast access
+- **Historical Archive**: Older data archived but accessible
+
+### Optimization Strategies
+
+```typescript
+// Efficient learning configuration
+const result = await agentbase.runAgent({
+  message: "Task with optimized learning",
+  session: userSession,
+  learning: {
+    enabled: true,
+    frequency: "adaptive",  // Learn more from early feedback, stabilize over time
+    cachePatterns: true,     // Cache learned patterns for speed
+    batchUpdates: true       // Batch feedback processing
+  }
+});
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Agent Not Adapting">
+    **Problem**: Feedback doesn't seem to affect behavior
+
+    **Solutions**:
+    - Ensure using same session for continuity
+    - Provide specific, actionable feedback
+    - Give multiple examples of desired behavior
+    - Check minimum sample threshold is met
+
+    ```typescript
+    // Verify learning is active
+    const result = await agentbase.runAgent({
+      message: "Task",
+      session: userSession,
+      learning: { enabled: true, verbose: true }
+    });
+    // verbose mode shows what agent learned
+    ```
+  </Accordion>
+
+  <Accordion title="Over-Adaptation">
+    **Problem**: Agent adapts too aggressively to recent feedback
+
+    **Solutions**:
+    - Use conservative learning mode
+    - Increase minimum samples required
+    - Balance recent vs historical feedback
+
+    ```typescript
+    const result = await agentbase.runAgent({
+      message: "Task",
+      session: userSession,
+      learning: {
+        mode: "conservative",
+        minimumSamples: 10,
+        weight: { recentFeedback: 0.3, historicalPatterns: 0.7 }
+      }
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Conflicting Preferences">
+    **Problem**: Different feedback creates conflicting learned behaviors
+
+    **Solutions**:
+    - Use context-specific preferences
+    - Segment by task type
+    - Explicitly override when needed
+
+    ```typescript
+    // Context-specific learning
+    const result = await agentbase.runAgent({
+      message: "Task",
+      session: userSession,
+      context: {
+        taskType: "technical-writing",  // Separate from "creative-writing"
+        audience: "developers"
+      }
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Persistence" icon="database" href="/primitives/essentials/persistence">
+    Long-term context for learning
+  </Card>
+
+  <Card title="Traces" icon="bug" href="/primitives/essentials/traces">
+    Monitor learning and adaptation
+  </Card>
+
+  <Card title="Evals" icon="check-circle" href="/primitives/essentials/evals">
+    Validate learning improvements
+  </Card>
+
+  <Card title="Hooks" icon="webhook" href="/primitives/essentials/hooks">
+    Custom learning callbacks
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Learning and feedback parameters
+  </Card>
+
+  <Card title="Best Practices" icon="star" href="/build/overview">
+    Effective feedback patterns
+  </Card>
+
+  <Card title="Use Cases" icon="lightbulb" href="/build/use-cases">
+    Real-world evolution examples
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Self-evolution requires consistent feedback and sufficient interaction history. Start with explicit preferences, then let the agent learn your patterns naturally over time.
+</Tip>

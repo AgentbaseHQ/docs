@@ -1,0 +1,339 @@
+---
+title: "Run Agent"
+api: "POST https://api.agentbase.sh"
+authMethod: "bearer"
+description: "Run an agent with a message and receive a streaming agent response."
+---
+
+### Query Parameters
+
+<ParamField query="session" type="string" optional>
+  The session ID to continue the agent session conversation. If not provided, a
+  new agent session will be created.
+</ParamField>
+
+### Request Body
+
+<ParamField
+  body="message"
+  type="string"
+  required
+  default="Hi there! Greet the user and introduce yourself."
+>
+  The task or message to run the agent with.
+</ParamField>
+
+<ParamField body="system" type="string" optional>
+  A system prompt to provide system information to the agent. The Agents API
+  defaults to the Agentbase default system prompt.
+</ParamField>
+
+<ParamField body="mode" type="string" optional default="fast">
+  The mode of the agent. Can be `flash`, `fast` or `max`. Flash mode is great
+  for simple, one-off tasks. Fast mode is much faster and cheaper, with
+  comparable performance to `max` mode. The Agents API defaults to `fast`.
+</ParamField>
+
+<ParamField body="workflows" type="Workflow[]" optional>
+  A set of declarative workflows for the agent to execute. Each workflow is a
+  DAG (Directed Acyclic Graph) of steps that the agent interprets and executes
+  dynamically. The agent decides how to implement each step based on its
+  description, making this a truly AI-native workflow system rather than a
+  deterministic workflow builder.
+  ```json
+  {
+    "workflows": [
+      {
+        "id": "customer_onboarding",
+        "name": "onboard_new_customer",
+        "description": "Onboard new customers by collecting information and setting up their account",
+        "steps": [
+          {
+            "id": "step_1",
+            "name": "collect_customer_info",
+            "description": "Gather customer name, email, and company details from the conversation",
+            "depends_on": []
+          },
+          {
+            "id": "step_2",
+            "name": "validate_email",
+            "description": "Verify the email address is valid and not already registered in the system",
+            "depends_on": ["step_1"]
+          },
+          {
+            "id": "step_3",
+            "name": "create_account",
+            "description": "Create a new user account with the collected and validated information",
+            "depends_on": ["step_2"]
+          },
+          {
+            "id": "step_4",
+            "name": "send_welcome_email",
+            "description": "Send a welcome email with account details and next steps",
+            "depends_on": ["step_3"]
+          }
+        ]
+      }
+    ]
+  }
+  ```
+
+**Workflow Schema:**
+
+- `id` (string, required): Unique identifier for the workflow
+- `name` (string, required): Name of the workflow
+- `description` (string, required): What the workflow accomplishes
+- `steps` (array, required): Array of step objects
+
+**Step Schema:**
+
+- `id` (string, required): Unique identifier for the step
+- `name` (string, required): Name of the step
+- `description` (string, required): What the step should accomplish - the agent interprets this to decide HOW to execute
+- `depends_on` (string[], required): Array of step IDs that must complete before this step runs. Empty array means the step can run immediately. Steps with no dependencies run in parallel.
+
+**Advanced Step Options:**
+
+```json
+{
+  "steps": [
+    {
+      "id": "step_1",
+      "name": "optional_verification",
+      "description": "Attempt to verify user identity through third-party service",
+      "depends_on": [],
+      "optional": true,
+      "retry_policy": {
+        "max_attempts": 3,
+        "backoff": "exponential"
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "verified": { "type": "boolean" },
+          "confidence_score": { "type": "number" }
+        }
+      }
+    }
+  ]
+}
+```
+
+- `optional` (boolean, optional): Whether the step can be skipped if it fails
+- `retry_policy` (object, optional): Retry configuration for the step
+- `output_schema` (object, optional): JSON schema for expected output validation
+
+</ParamField>
+
+<ParamField body="rules" type="string[]" optional>
+  A set of rules to provide to the agent. Rules are a set of constraints that
+  the agent must follow. Defaults to no rules.
+</ParamField>
+
+<ParamField
+  body="agents"
+  type="{name: string, description: string}[]"
+  optional
+>
+  A set of agent configurations that enables the agent to transfer conversations to other specialized agents. When provided, the main agent will have access to seamless handoffs between agents based on the conversation context.
+
+```json
+{
+  "agents": [
+    {
+      "name": "Support Agent",
+      "description": "Handles customer support inquiries and technical issues"
+    },
+    {
+      "name": "Sales Agent",
+      "description": "Handles sales questions and product inquiries"
+    }
+  ]
+}
+```
+
+This enables multi-agent workflows where specialized agents handle specific types of requests.
+
+</ParamField>
+
+<ParamField
+  body="mcp_servers"
+  type="{serverName: string, serverUrl: string, auth?: object}[]"
+  optional
+>
+  A set of MCP servers to provide to the agent. MCP servers configs are not
+  stored within the agent, so each request must include the MCP servers configs,
+  and you can modify them each time. You need to provide both `serverName` and
+  `serverUrl`. Optionally include `auth` for authentication. We have backward compatibility with the old `/sse` endpoint.
+  ```json
+  {
+    "mcp_servers": [
+      {
+        "serverName": "mcp-server-authless",
+        "serverUrl": "https://mcp-server-authless.com/mcp"
+      },
+      {
+        "serverName": "mcp-server-bearer",
+        "serverUrl": "https://mcp-server-bearer.com/mcp",
+        "auth": {
+          "type": "bearer",
+          "token": "your-bearer-token"
+        }
+      },
+      {
+        "serverName": "mcp-server-oauth",
+        "serverUrl": "https://mcp-server-oauth.com/mcp",
+        "auth": {
+          "type": "oauth",
+          "oauth": {
+            "accessToken": "your-oauth-access-token"
+          }
+        }
+      }
+    ]
+  }
+  ```
+</ParamField>
+
+<ParamField body="background" type="boolean" optional>
+  Whether to run the agent asynchronously on the server. When set to `true`, the
+  agent runs in the background and you can use the `callback` parameter to
+  receive agent message events. Defaults to `false`.
+</ParamField>
+
+<ParamField
+  body="callback"
+  type="{url: string, headers: object}"
+  optional
+>
+  A callback endpoint configuration to send agent message events back to. Use
+  this with `background: true` to receive events at your specified endpoint.
+  ```json
+  {
+    "callback": {
+      "url": "https://your-server.com/webhook",
+      "headers": {
+        "Authorization": "Bearer your-token"
+      }
+    }
+  }
+  ```
+</ParamField>
+
+<ParamField body="datastores" type="{id: string, name: string}[]" optional>
+  A set of datastores to provide to the agent. Datastores are a set of data
+  sources that the agent can utilize. Datastores are either databases or
+  documents as the knowledge base.
+  ```json
+  {
+    "datastores": [
+      { "id": "ds_1234567890abcdef", "name": "my-datastore"}
+    ]
+  }
+  ```
+</ParamField>
+
+<ParamField
+  body="queries"
+  type="{name: string, description: string, query: string}[]"
+  optional
+>
+  A set of custom actions based on datastore (database) queries. Allows you to
+  quickly define actions that the agent can use to query your datastores.
+  ```json
+  {
+    "queries": [
+      {
+        "name": "getUserById",
+        "description": "Fetch user details by their ID",
+        "query": "SELECT * FROM users WHERE id = ?"
+      },
+      {
+        "name": "listActiveRecords",
+        "description": "Get all active records from the database",
+        "query": "SELECT * FROM records WHERE status = 'active'"
+      }
+    ]
+  }
+  ```
+</ParamField>
+
+<ParamField body="streaming_tokens" type="boolean" optional>
+  Whether to stream the agent messages token by token. Defaults to `false`.
+</ParamField>
+
+<ParamField
+  body="schedules"
+  type="{schedule: string | number | Date, message: string}[]"
+  optional
+>
+  A set of scheduled tasks to run the agent with messages at specific times or intervals. Each schedule can be defined using:
+  - A number (seconds from now): `10` runs in 10 seconds
+  - A Date string: `"2025-01-01"` runs at that specific date/time
+  - A cron expression: `"*/10 * * * *"` runs every 10 minutes
+
+```json
+{
+  "schedules": [
+    {
+      "schedule": 10,
+      "message": "Run a task in 10 seconds"
+    },
+    {
+      "schedule": "2025-01-01",
+      "message": "Run a task on New Year's Day"
+    },
+    {
+      "schedule": "*/10 * * * *",
+      "message": "Run a recurring task every 10 minutes"
+    },
+    {
+      "schedule": "*/10 * * * 1",
+      "message": "Run a task every 10 minutes on Mondays"
+    }
+  ]
+}
+```
+
+Each scheduled task will trigger the agent with the specified message at the scheduled time. Returns task IDs that can be used to cancel schedules later.
+
+</ParamField>
+
+<ParamField
+  body="final_output"
+  type="{name: string, strict: boolean, schema: object}"
+  optional
+>
+  Configuration for an extra final output event that processes the entire agent
+  message thread and produces a structured output based on the provided JSON
+  schema.
+  ```json
+  {
+    "final_output": {
+      "name": "task_summary",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "summary": { "type": "string" },
+          "outcome": {
+            "type": "string",
+            "enum": ["success", "partial_success", "failure"]
+          },
+          "next_steps": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Recommended next steps or follow-up actions",
+            "minItems": 3,
+            "maxItems": 3
+          }
+        },
+        "required": ["summary", "outcome", "next_steps"],
+        "additionalProperties": false
+      }
+    }
+  }
+  ```
+</ParamField>
+
+See [Streaming Message Types](/api/message-events) for event details.

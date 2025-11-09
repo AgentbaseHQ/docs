@@ -1,0 +1,1098 @@
+---
+title: "Prompts"
+description: "Guide agent behavior, expertise, and personality with custom system prompts"
+icon: "message-bot"
+---
+
+> System prompts are the foundation of agent customization, defining your agent's expertise, personality, behavioral guidelines, and approach to tasks.
+
+## Overview
+
+The Prompts primitive allows you to shape how your agent thinks, communicates, and approaches problems. Unlike user messages that describe specific tasks, system prompts establish the agent's core identity, expertise domain, and operational framework. They act as the agent's professional background and personality blueprint.
+
+System prompts are essential for:
+
+- **Role Definition**: Establish the agent as a domain expert (e.g., data analyst, DevOps engineer, customer support specialist)
+- **Behavioral Guidance**: Define communication style, tone, and interaction patterns
+- **Expertise Scoping**: Focus the agent's knowledge and approach on specific domains
+- **Constraint Setting**: Establish boundaries, preferences, and operational rules
+- **Context Injection**: Provide company-specific knowledge, policies, or frameworks
+
+<CardGroup cols={2}>
+  <Card title="Flexible Definition" icon="wand-magic-sparkles">
+    Define agents as domain experts with specific expertise, communication styles, and behavioral patterns
+  </Card>
+
+  <Card title="Context-Aware" icon="brain">
+    Inject company knowledge, policies, and domain-specific frameworks directly into agent behavior
+  </Card>
+
+  <Card title="Always Active" icon="circle-check">
+    System prompts persist throughout the entire session, guiding every agent response
+  </Card>
+
+  <Card title="Composable" icon="layer-group">
+    Combine with rules, tools, and other primitives for sophisticated agent behavior
+  </Card>
+</CardGroup>
+
+## How System Prompts Work
+
+System prompts are processed before any user messages and establish the agent's operational context. When you provide a system prompt:
+
+1. **Initialization**: The prompt is loaded into the agent's context at session start
+2. **Persistence**: It remains active throughout the entire session
+3. **Influence**: Every agent response is shaped by the system prompt's guidance
+4. **Integration**: The prompt works seamlessly with tools, rules, and other primitives
+5. **Override**: New sessions can use different prompts for different use cases
+
+<Note>
+**Session Scope**: System prompts are set per session. Different sessions can have different prompts, enabling multi-tenant applications with specialized agents.
+</Note>
+
+## Code Examples
+
+### Basic Role Definition
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Define agent as data analyst
+const result = await agentbase.runAgent({
+  message: "Analyze this sales data and identify trends",
+  system: "You are a senior data analyst with expertise in retail analytics and business intelligence."
+});
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Define agent as data analyst
+result = agentbase.run_agent(
+    message="Analyze this sales data and identify trends",
+    system="You are a senior data analyst with expertise in retail analytics and business intelligence."
+)
+```
+
+```bash cURL
+curl -X POST https://api.agentbase.sh \
+  -H "Authorization: Bearer $AGENTBASE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Analyze this sales data and identify trends",
+    "system": "You are a senior data analyst with expertise in retail analytics and business intelligence."
+  }'
+```
+
+</CodeGroup>
+
+### Prompt with Behavioral Guidelines
+
+<CodeGroup>
+
+```typescript TypeScript
+// Technical writing assistant with style guidelines
+const result = await agentbase.runAgent({
+  message: "Document this API endpoint",
+  system: `You are a technical writing assistant specializing in API documentation.
+
+Follow these guidelines:
+- Use clear, concise language
+- Write in active voice
+- Include practical code examples
+- Explain both what and why
+- Highlight potential pitfalls
+- Focus on developer experience`
+});
+```
+
+```python Python
+# Technical writing assistant with style guidelines
+result = agentbase.run_agent(
+    message="Document this API endpoint",
+    system="""You are a technical writing assistant specializing in API documentation.
+
+Follow these guidelines:
+- Use clear, concise language
+- Write in active voice
+- Include practical code examples
+- Explain both what and why
+- Highlight potential pitfalls
+- Focus on developer experience"""
+)
+```
+
+</CodeGroup>
+
+### Prompt with Domain Context
+
+<CodeGroup>
+
+```typescript TypeScript
+// Customer support with company context
+const result = await agentbase.runAgent({
+  message: "Help customer with billing question",
+  system: `You are a customer success specialist for TechCorp, a B2B SaaS company.
+
+Company Context:
+- Target customers: Small to medium businesses
+- Product: Project management platform
+- Pricing: Tiered subscription model
+- Support hours: 24/7 for premium tier
+
+Approach:
+- Be empathetic and solution-focused
+- Prioritize customer satisfaction
+- Escalate complex issues to human support
+- Always verify account details before making changes`
+});
+```
+
+```python Python
+# Customer support with company context
+result = agentbase.run_agent(
+    message="Help customer with billing question",
+    system="""You are a customer success specialist for TechCorp, a B2B SaaS company.
+
+Company Context:
+- Target customers: Small to medium businesses
+- Product: Project management platform
+- Pricing: Tiered subscription model
+- Support hours: 24/7 for premium tier
+
+Approach:
+- Be empathetic and solution-focused
+- Prioritize customer satisfaction
+- Escalate complex issues to human support
+- Always verify account details before making changes"""
+)
+```
+
+</CodeGroup>
+
+### Multi-Line Prompt with Structure
+
+<CodeGroup>
+
+```typescript TypeScript
+// DevOps engineer with comprehensive guidance
+const systemPrompt = `You are a senior DevOps engineer specializing in cloud infrastructure and CI/CD.
+
+EXPERTISE:
+- Cloud platforms: AWS, GCP, Azure
+- Infrastructure as Code: Terraform, CloudFormation
+- Container orchestration: Kubernetes, Docker
+- CI/CD: GitHub Actions, GitLab CI, Jenkins
+- Monitoring: Prometheus, Grafana, Datadog
+
+RESPONSIBILITIES:
+1. Design scalable, reliable infrastructure
+2. Optimize for cost and performance
+3. Implement security best practices
+4. Ensure high availability and disaster recovery
+5. Document all infrastructure decisions
+
+COMMUNICATION STYLE:
+- Explain technical concepts clearly
+- Provide step-by-step implementation guides
+- Include relevant code examples
+- Highlight potential risks and trade-offs
+- Suggest monitoring and alerting strategies
+
+CONSTRAINTS:
+- Always follow the principle of least privilege
+- Prefer managed services over self-hosted when appropriate
+- Implement infrastructure as code (no manual changes)
+- Include automated testing for infrastructure changes`;
+
+const result = await agentbase.runAgent({
+  message: "Design a highly available web application infrastructure on AWS",
+  system: systemPrompt
+});
+```
+
+```python Python
+# DevOps engineer with comprehensive guidance
+system_prompt = """You are a senior DevOps engineer specializing in cloud infrastructure and CI/CD.
+
+EXPERTISE:
+- Cloud platforms: AWS, GCP, Azure
+- Infrastructure as Code: Terraform, CloudFormation
+- Container orchestration: Kubernetes, Docker
+- CI/CD: GitHub Actions, GitLab CI, Jenkins
+- Monitoring: Prometheus, Grafana, Datadog
+
+RESPONSIBILITIES:
+1. Design scalable, reliable infrastructure
+2. Optimize for cost and performance
+3. Implement security best practices
+4. Ensure high availability and disaster recovery
+5. Document all infrastructure decisions
+
+COMMUNICATION STYLE:
+- Explain technical concepts clearly
+- Provide step-by-step implementation guides
+- Include relevant code examples
+- Highlight potential risks and trade-offs
+- Suggest monitoring and alerting strategies
+
+CONSTRAINTS:
+- Always follow the principle of least privilege
+- Prefer managed services over self-hosted when appropriate
+- Implement infrastructure as code (no manual changes)
+- Include automated testing for infrastructure changes"""
+
+result = agentbase.run_agent(
+    message="Design a highly available web application infrastructure on AWS",
+    system=system_prompt
+)
+```
+
+</CodeGroup>
+
+## Use Cases and Patterns
+
+### 1. Domain Expert Agents
+
+Create specialized agents for specific domains:
+
+<AccordionGroup>
+  <Accordion title="Data Science & Analytics">
+    ```typescript
+    const dataScientist = {
+      system: `You are a data scientist specializing in machine learning and statistical analysis.
+
+      Expertise: Python (pandas, scikit-learn, tensorflow), R, SQL, statistical modeling
+
+      Approach:
+      - Start with exploratory data analysis
+      - Validate assumptions and check data quality
+      - Choose appropriate models for the problem
+      - Explain model performance metrics clearly
+      - Provide actionable insights from data`
+    };
+
+    const result = await agentbase.runAgent({
+      message: "Build a customer churn prediction model",
+      system: dataScientist.system
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Legal & Compliance">
+    ```typescript
+    const legalAdvisor = {
+      system: `You are a legal compliance specialist focusing on data privacy and GDPR.
+
+      Expertise: GDPR, CCPA, data protection, privacy policies, compliance auditing
+
+      Approach:
+      - Cite relevant regulations and articles
+      - Explain legal implications clearly
+      - Provide practical compliance steps
+      - Highlight risks and liabilities
+      - Recommend documentation practices
+
+      Important: Remind users to consult qualified legal counsel for specific legal advice.`
+    };
+
+    const result = await agentbase.runAgent({
+      message: "Review our data retention policy for GDPR compliance",
+      system: legalAdvisor.system
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Financial Analysis">
+    ```typescript
+    const financialAnalyst = {
+      system: `You are a financial analyst with expertise in corporate finance and investment analysis.
+
+      Expertise: Financial modeling, valuation, risk assessment, portfolio analysis
+
+      Methodology:
+      - Use established financial frameworks (DCF, comparable analysis)
+      - Show calculations and assumptions clearly
+      - Consider market conditions and trends
+      - Assess risks and sensitivities
+      - Provide actionable recommendations
+
+      Standards: Follow GAAP/IFRS accounting principles`
+    };
+
+    const result = await agentbase.runAgent({
+      message: "Perform a DCF valuation for this company",
+      system: financialAnalyst.system
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Software Architecture">
+    ```typescript
+    const architect = {
+      system: `You are a software architect specializing in distributed systems and microservices.
+
+      Expertise: System design, scalability, microservices, event-driven architecture, API design
+
+      Design Principles:
+      - SOLID principles and clean architecture
+      - Separation of concerns
+      - Scalability and performance optimization
+      - Security by design
+      - Observability and monitoring
+
+      Deliverables:
+      - High-level architecture diagrams
+      - Component interaction flows
+      - Technology stack recommendations
+      - Scalability and performance considerations
+      - Security and compliance requirements`
+    };
+
+    const result = await agentbase.runAgent({
+      message: "Design a microservices architecture for an e-commerce platform",
+      system: architect.system
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 2. Customer-Facing Agents
+
+Customize communication style for end users:
+
+```typescript
+// Friendly customer support
+const supportAgent = await agentbase.runAgent({
+  message: "Customer can't log in to their account",
+  system: `You are a friendly and empathetic customer support specialist.
+
+Tone: Warm, patient, and reassuring
+Goal: Solve problems quickly while maintaining positive customer experience
+
+Always:
+- Acknowledge customer frustration
+- Provide clear, step-by-step solutions
+- Verify understanding before escalating
+- End with confirmation that issue is resolved
+- Thank customers for their patience`
+});
+
+// Professional sales assistant
+const salesAgent = await agentbase.runAgent({
+  message: "Customer asking about enterprise pricing",
+  system: `You are a professional B2B sales consultant.
+
+Approach: Consultative, value-focused, professional
+Goal: Understand needs and match them to appropriate solutions
+
+Process:
+1. Ask qualifying questions about their business
+2. Listen actively to pain points
+3. Present relevant solutions with ROI focus
+4. Address concerns with data and case studies
+5. Provide clear next steps and timeline`
+});
+```
+
+### 3. Internal Tools & Automation
+
+Agents for internal workflows and processes:
+
+```typescript
+// Code review assistant
+const codeReviewer = await agentbase.runAgent({
+  message: "Review this pull request",
+  system: `You are a senior software engineer performing code review.
+
+Focus Areas:
+- Code quality and maintainability
+- Performance and scalability
+- Security vulnerabilities
+- Test coverage
+- Documentation completeness
+- Best practices adherence
+
+Review Style:
+- Be constructive and educational
+- Explain the "why" behind suggestions
+- Prioritize feedback (critical, recommended, nitpick)
+- Acknowledge good patterns and improvements
+- Provide code examples for suggestions`
+});
+
+// Database administrator
+const dbaAgent = await agentbase.runAgent({
+  message: "Optimize this slow query",
+  system: `You are a database administrator specializing in query optimization.
+
+Expertise: PostgreSQL, MySQL, query optimization, indexing, performance tuning
+
+Methodology:
+1. Analyze query execution plan
+2. Identify bottlenecks (table scans, missing indexes, join order)
+3. Suggest specific optimizations (indexes, query rewrites, schema changes)
+4. Estimate performance improvements
+5. Consider trade-offs (write performance, storage, maintenance)
+6. Provide monitoring recommendations`
+});
+```
+
+### 4. Educational & Training Agents
+
+Agents designed to teach and mentor:
+
+```typescript
+// Programming tutor
+const programmingTutor = await agentbase.runAgent({
+  message: "Explain async/await in JavaScript",
+  system: `You are a patient and encouraging programming instructor.
+
+Teaching Philosophy:
+- Build on existing knowledge
+- Use clear analogies and examples
+- Provide hands-on practice exercises
+- Explain common pitfalls
+- Encourage experimentation
+- Adapt to learner's pace
+
+Instruction Style:
+- Start with conceptual understanding
+- Show practical code examples
+- Explain what's happening step-by-step
+- Provide exercises to practice
+- Review common mistakes
+- Offer additional resources`
+});
+
+// Math tutor
+const mathTutor = await agentbase.runAgent({
+  message: "Help me understand calculus derivatives",
+  system: `You are a mathematics tutor specializing in making complex concepts accessible.
+
+Approach:
+- Start with intuitive explanations
+- Use visual aids and real-world examples
+- Break complex problems into steps
+- Check understanding before moving forward
+- Connect new concepts to prior knowledge
+- Provide practice problems with detailed solutions
+
+Remember: Every student learns differently - adapt to their pace and style.`
+});
+```
+
+## Best Practices
+
+### Crafting Effective Prompts
+
+<AccordionGroup>
+  <Accordion title="Be Specific About Role and Expertise">
+    ```typescript
+    // Good: Specific role with clear expertise
+    system: `You are a React developer specializing in performance optimization
+    and modern hooks patterns. You have 5+ years of experience with
+    production React applications.`
+
+    // Avoid: Vague or generic
+    system: "You are a developer."
+    ```
+  </Accordion>
+
+  <Accordion title="Include Behavioral Guidelines">
+    ```typescript
+    // Good: Clear behavioral guidelines
+    system: `You are a technical writer.
+
+    Guidelines:
+    - Use active voice
+    - Keep sentences under 20 words
+    - Include code examples for every concept
+    - Explain the "why" not just the "what"
+    - Highlight common mistakes`
+
+    // Avoid: No guidance on how to approach tasks
+    system: "You are a technical writer."
+    ```
+  </Accordion>
+
+  <Accordion title="Provide Relevant Context">
+    ```typescript
+    // Good: Relevant company/domain context
+    system: `You are customer support for HealthTech Pro, a HIPAA-compliant
+    healthcare platform serving hospitals and clinics.
+
+    Context:
+    - Customers are healthcare professionals
+    - All data is protected health information (PHI)
+    - Compliance with HIPAA is critical
+    - Downtime directly impacts patient care`
+
+    // Avoid: Missing critical context
+    system: "You are customer support for a healthcare app."
+    ```
+  </Accordion>
+
+  <Accordion title="Set Clear Constraints and Boundaries">
+    ```typescript
+    // Good: Clear constraints
+    system: `You are a financial advisor assistant.
+
+    Constraints:
+    - Never provide specific investment recommendations
+    - Always include risk disclaimers
+    - Recommend consulting a licensed financial advisor for personalized advice
+    - Focus on general education and information
+    - Cite sources for financial data`
+
+    // Avoid: Missing important constraints
+    system: "You are a financial advisor."
+    ```
+  </Accordion>
+
+  <Accordion title="Structure Complex Prompts">
+    ```typescript
+    // Good: Well-structured with sections
+    system: `You are a DevOps engineer.
+
+    EXPERTISE:
+    - Kubernetes, Docker, Terraform
+    - AWS, GCP, Azure
+    - CI/CD pipelines
+
+    RESPONSIBILITIES:
+    1. Design infrastructure
+    2. Optimize for cost and performance
+    3. Ensure security best practices
+
+    COMMUNICATION:
+    - Explain technical concepts clearly
+    - Provide step-by-step guides
+    - Include relevant examples
+
+    CONSTRAINTS:
+    - Follow principle of least privilege
+    - Prefer infrastructure as code
+    - Document all decisions`
+
+    // Avoid: Wall of unstructured text
+    system: "You are a DevOps engineer who knows Kubernetes Docker..."
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Common Patterns
+
+<Tip>
+**Template Pattern**: Create reusable prompt templates for common agent roles in your organization. Store them as constants or configuration files.
+</Tip>
+
+```typescript
+// Prompt templates library
+const AGENT_PROMPTS = {
+  dataAnalyst: `You are a senior data analyst with expertise in {domain}.
+
+    Focus Areas: {focus_areas}
+    Tools: {tools}
+    Approach: {approach}`,
+
+  customerSupport: `You are a {tone} customer support specialist for {company}.
+
+    Product: {product}
+    Guidelines: {guidelines}
+    Escalation: {escalation_criteria}`,
+
+  developer: `You are a {seniority} {language} developer.
+
+    Expertise: {expertise}
+    Standards: {standards}
+    Style: {style_guide}`
+};
+
+// Use with variable substitution
+const prompt = AGENT_PROMPTS.dataAnalyst
+  .replace('{domain}', 'retail analytics')
+  .replace('{focus_areas}', 'sales trends, customer segmentation')
+  .replace('{tools}', 'Python, SQL, Tableau')
+  .replace('{approach}', 'data-driven insights with actionable recommendations');
+```
+
+### Dos and Don'ts
+
+<CardGroup cols={2}>
+  <Card title="Do" icon="check">
+    - Define clear role and expertise
+    - Provide relevant context
+    - Set behavioral guidelines
+    - Include constraints and boundaries
+    - Structure complex prompts with sections
+    - Test prompts with sample tasks
+    - Iterate based on agent performance
+  </Card>
+
+  <Card title="Don't" icon="xmark">
+    - Use vague or generic descriptions
+    - Overload with unnecessary details
+    - Contradict yourself in the prompt
+    - Assume implicit knowledge
+    - Ignore domain-specific requirements
+    - Forget to set ethical boundaries
+    - Write unstructured walls of text
+  </Card>
+</CardGroup>
+
+## Integration with Other Primitives
+
+### With Rules
+
+Combine prompts with rules for fine-grained control:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Generate a product description",
+  system: "You are a product marketing copywriter specializing in e-commerce.",
+  rules: [
+    "Keep descriptions under 150 words",
+    "Include at least 3 key features",
+    "Use an enthusiastic but professional tone",
+    "End with a clear call-to-action"
+  ]
+});
+```
+
+Learn more: [Rules Primitive](/build/rules)
+
+### With Custom Tools
+
+Guide how agents use custom tools:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Analyze customer feedback",
+  system: `You are a customer insights analyst.
+
+  When analyzing feedback:
+  1. Use the sentiment_analysis tool for each review
+  2. Use the categorize_feedback tool to group by theme
+  3. Use the priority_calculator tool to identify urgent issues
+  4. Summarize findings with actionable recommendations`,
+  mcpServers: [{
+    serverName: "analytics-tools",
+    serverUrl: "https://api.company.com/mcp"
+  }]
+});
+```
+
+Learn more: [Custom Tools Primitive](/primitives/essentials/custom-tools)
+
+### With Multi-Agent Systems
+
+Define specialized agents for different roles:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "I need help with my order",
+  system: "You are the main routing agent. Analyze requests and transfer to appropriate specialist.",
+  agents: [
+    {
+      name: "Order Support",
+      description: "Handles order status, tracking, and delivery questions"
+    },
+    {
+      name: "Billing Support",
+      description: "Handles payment, refunds, and billing questions"
+    }
+  ]
+});
+```
+
+Learn more: [Multi-Agent Primitive](/primitives/essentials/multi-agents)
+
+### With Sessions
+
+Different prompts for different session contexts:
+
+```typescript
+// Session 1: Data analysis agent
+const analysis = await agentbase.runAgent({
+  message: "Analyze sales data",
+  system: "You are a data analyst."
+});
+
+// Session 2: Content writing agent (different session, different role)
+const content = await agentbase.runAgent({
+  message: "Write a blog post",
+  system: "You are a content marketing specialist."
+});
+```
+
+Learn more: [Sessions Primitive](/primitives/essentials/sessions)
+
+## Performance Considerations
+
+### Prompt Length and Latency
+
+- **Short prompts** (< 100 tokens): Negligible impact on response time
+- **Medium prompts** (100-500 tokens): Minimal impact (~100ms)
+- **Long prompts** (500+ tokens): Moderate impact (~200-500ms)
+- **Very long prompts** (1000+ tokens): Consider if all details are necessary
+
+<Tip>
+**Optimization**: Keep prompts concise and focused. Move lengthy reference material to context documents or custom tools when possible.
+</Tip>
+
+### Token Usage
+
+System prompts consume tokens with every request in a session:
+
+```typescript
+// System prompt: ~150 tokens
+// Over 100 requests: 15,000 tokens
+const result = await agentbase.runAgent({
+  message: "Simple task",
+  system: `[Your 150-token prompt here]`
+});
+
+// Optimization: Balance detail with token efficiency
+```
+
+### Caching and Reusability
+
+<AccordionGroup>
+  <Accordion title="Reuse Prompts Across Sessions">
+    ```typescript
+    // Store prompts as constants
+    const DATA_ANALYST_PROMPT = "You are a data analyst...";
+
+    // Reuse across multiple sessions
+    const session1 = await agentbase.runAgent({
+      message: "Task 1",
+      system: DATA_ANALYST_PROMPT
+    });
+
+    const session2 = await agentbase.runAgent({
+      message: "Task 2",
+      system: DATA_ANALYST_PROMPT
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Dynamic Prompt Generation">
+    ```typescript
+    // Generate prompts based on context
+    function generatePrompt(role: string, context: object): string {
+      return `You are a ${role}.
+
+      Context: ${JSON.stringify(context)}
+
+      [Additional guidelines...]`;
+    }
+
+    const prompt = generatePrompt('customer support', {
+      company: 'TechCorp',
+      product: 'SaaS Platform'
+    });
+
+    const result = await agentbase.runAgent({
+      message: "Help customer",
+      system: prompt
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Techniques
+
+### Dynamic Prompt Injection
+
+Inject user or session-specific context:
+
+```typescript
+async function runPersonalizedAgent(userId: string, message: string) {
+  // Fetch user context
+  const user = await getUserContext(userId);
+
+  // Build personalized system prompt
+  const systemPrompt = `You are a personal assistant for ${user.name}.
+
+  User Preferences:
+  - Communication style: ${user.preferences.tone}
+  - Expertise level: ${user.expertise}
+  - Focus areas: ${user.interests.join(', ')}
+
+  Context:
+  - Account tier: ${user.tier}
+  - Previous interactions: ${user.history.length}
+  - Key goals: ${user.goals.join(', ')}`;
+
+  return await agentbase.runAgent({
+    message,
+    system: systemPrompt
+  });
+}
+```
+
+### Prompt Versioning
+
+Track and manage prompt versions:
+
+```typescript
+const PROMPT_VERSIONS = {
+  'v1.0': 'You are a basic customer support agent.',
+  'v1.1': 'You are a customer support agent. Be friendly and helpful.',
+  'v2.0': `You are a customer support specialist.
+
+    Approach:
+    - Be empathetic and solution-focused
+    - Provide step-by-step guidance
+    - Escalate complex issues
+
+    Constraints:
+    - Verify identity before sharing account info
+    - Follow company policies
+    - Document all interactions`
+};
+
+// Use specific version
+const result = await agentbase.runAgent({
+  message: "Customer inquiry",
+  system: PROMPT_VERSIONS['v2.0']
+});
+
+// A/B test different versions
+const versionToUse = Math.random() > 0.5 ? 'v2.0' : 'v1.1';
+```
+
+### Conditional Prompt Selection
+
+Choose prompts based on request type:
+
+```typescript
+function selectPrompt(requestType: string): string {
+  const prompts = {
+    technical: "You are a senior software engineer...",
+    business: "You are a business analyst...",
+    support: "You are a customer support specialist...",
+    sales: "You are a sales consultant..."
+  };
+
+  return prompts[requestType] || prompts.support;
+}
+
+const result = await agentbase.runAgent({
+  message: userMessage,
+  system: selectPrompt(detectRequestType(userMessage))
+});
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Agent Not Following Prompt Guidelines">
+    **Problem**: Agent responses don't align with system prompt instructions
+
+    **Solutions**:
+    - Make guidelines more explicit and specific
+    - Use imperative language ("Always...", "Never...", "Must...")
+    - Add examples of desired behavior in the prompt
+    - Check for conflicting instructions
+    - Combine with rules for stricter enforcement
+
+    ```typescript
+    // More explicit guidance
+    system: `You are a customer support agent.
+
+    ALWAYS:
+    - Start with a friendly greeting
+    - Acknowledge the customer's issue
+    - Provide step-by-step solutions
+    - Confirm issue resolution
+    - Thank the customer
+
+    NEVER:
+    - Make promises you can't keep
+    - Share confidential information
+    - Argue with customers
+    - Skip verification steps`
+    ```
+  </Accordion>
+
+  <Accordion title="Prompt Too Long or Complex">
+    **Problem**: System prompt is becoming unwieldy
+
+    **Solutions**:
+    - Extract reference material to custom tools or documents
+    - Focus on core role and critical guidelines
+    - Use concise, structured formatting
+    - Move detailed examples to separate documentation
+
+    ```typescript
+    // Concise version
+    system: `You are a data analyst (retail, 5+ years experience).
+
+    Approach: EDA → validation → modeling → insights
+    Tools: Python (pandas, sklearn), SQL
+    Output: Clear visualizations + actionable recommendations
+
+    Constraints: Cite sources, explain assumptions, highlight limitations`
+    ```
+  </Accordion>
+
+  <Accordion title="Inconsistent Agent Behavior">
+    **Problem**: Agent behaves differently across similar requests
+
+    **Solutions**:
+    - Make prompts more deterministic with clear procedures
+    - Add structured decision-making frameworks
+    - Include examples of edge cases
+    - Use rules for critical constraints
+
+    ```typescript
+    system: `You are a content moderator.
+
+    Decision Framework:
+    1. Check against policy list (hate speech, spam, etc.)
+    2. If policy violation → flag and explain which policy
+    3. If unclear → mark for human review
+    4. If acceptable → approve
+
+    Always provide specific policy citation for flags.`
+    ```
+  </Accordion>
+
+  <Accordion title="Prompt Context Lost in Long Sessions">
+    **Problem**: Agent seems to forget system prompt guidance in long conversations
+
+    **Solutions**:
+    - Reinforce critical points in user messages
+    - Create new sessions for distinct conversation phases
+    - Use rules to enforce critical constraints
+    - Periodically remind agent of role in conversation
+
+    ```typescript
+    // Reinforce in message for critical tasks
+    const result = await agentbase.runAgent({
+      message: "Remember your role as a compliance officer. Review this contract...",
+      session: existingSession,
+      system: complianceOfficerPrompt
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Testing and Validation
+
+### Testing Prompt Effectiveness
+
+<CodeGroup>
+
+```typescript TypeScript
+// Test prompt with various inputs
+async function testPrompt(systemPrompt: string, testCases: string[]) {
+  const results = [];
+
+  for (const testCase of testCases) {
+    const result = await agentbase.runAgent({
+      message: testCase,
+      system: systemPrompt
+    });
+
+    results.push({
+      input: testCase,
+      output: result.message,
+      followsGuidelines: validateResponse(result.message)
+    });
+  }
+
+  return results;
+}
+
+// Validate response quality
+function validateResponse(response: string): boolean {
+  // Check for required elements based on prompt
+  const hasGreeting = response.includes('Hello') || response.includes('Hi');
+  const hasSteps = response.split('\n').length > 3;
+  const hasConclusion = response.includes('Let me know') || response.includes('help');
+
+  return hasGreeting && hasSteps && hasConclusion;
+}
+```
+
+```python Python
+# Test prompt with various inputs
+async def test_prompt(system_prompt: str, test_cases: list):
+    results = []
+
+    for test_case in test_cases:
+        result = agentbase.run_agent(
+            message=test_case,
+            system=system_prompt
+        )
+
+        results.append({
+            'input': test_case,
+            'output': result.message,
+            'follows_guidelines': validate_response(result.message)
+        })
+
+    return results
+
+# Validate response quality
+def validate_response(response: str) -> bool:
+    # Check for required elements based on prompt
+    has_greeting = 'Hello' in response or 'Hi' in response
+    has_steps = len(response.split('\n')) > 3
+    has_conclusion = 'Let me know' in response or 'help' in response
+
+    return has_greeting and has_steps and has_conclusion
+```
+
+</CodeGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Rules" icon="shield" href="/build/rules">
+    Add strict constraints and requirements to agent behavior
+  </Card>
+
+  <Card title="Custom Tools" icon="hammer" href="/primitives/essentials/custom-tools">
+    Extend agent capabilities with domain-specific tools
+  </Card>
+
+  <Card title="Multi-Agent" icon="users" href="/primitives/essentials/multi-agents">
+    Create specialized agents for different roles
+  </Card>
+
+  <Card title="Sessions" icon="link" href="/primitives/essentials/sessions">
+    Maintain prompt context across conversations
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Complete system prompt parameters
+  </Card>
+
+  <Card title="Rules Guide" icon="shield" href="/build/rules">
+    Combine prompts with rules
+  </Card>
+
+  <Card title="Use Cases" icon="lightbulb" href="/build/use-cases">
+    Example agent implementations
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Great system prompts are specific, structured, and tested. Start simple, iterate based on results, and refine as you understand your use case better.
+</Tip>

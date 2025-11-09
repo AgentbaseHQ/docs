@@ -1,0 +1,1234 @@
+---
+title: "Voice"
+description: "Enable natural voice conversations with speech-to-text and text-to-speech capabilities"
+icon: "microphone"
+---
+
+> Voice enables agents to communicate through natural speech, supporting real-time voice conversations, voice commands, and audio-based interactions.
+
+## Overview
+
+The Voice primitive transforms text-based agents into voice-enabled conversational AI systems. With built-in speech-to-text (STT) and text-to-speech (TTS) capabilities, agents can understand spoken language and respond with natural-sounding speech, enabling hands-free interactions and accessibility features.
+
+Voice is essential for:
+
+- **Voice Assistants**: Build Alexa/Siri-style voice interfaces
+- **Phone Systems**: Create AI-powered phone support and IVR systems
+- **Accessibility**: Make applications accessible to visually impaired users
+- **Hands-Free Interactions**: Enable voice commands for hands-free operation
+- **Natural Conversations**: Provide more natural, human-like interactions
+- **Multilingual Support**: Communicate in multiple languages with native accents
+
+<CardGroup cols={2}>
+  <Card title="Real-Time STT" icon="waveform">
+    Convert speech to text in real-time with high accuracy and low latency
+  </Card>
+
+  <Card title="Natural TTS" icon="volume-high">
+    Generate natural-sounding speech in multiple voices, languages, and accents
+  </Card>
+
+  <Card title="Voice Streaming" icon="signal-stream">
+    Stream audio input and output for low-latency conversational experiences
+  </Card>
+
+  <Card title="Voice Customization" icon="sliders">
+    Customize voice characteristics, speed, pitch, and speaking style
+  </Card>
+</CardGroup>
+
+## How Voice Works
+
+When you enable voice for an agent:
+
+1. **Audio Input**: User speaks into microphone or phone
+2. **Speech-to-Text**: Audio is transcribed to text in real-time
+3. **Agent Processing**: Agent processes text and generates response
+4. **Text-to-Speech**: Response is converted to natural speech
+5. **Audio Output**: Generated speech is played to user
+6. **Streaming**: For real-time conversations, audio streams continuously
+
+<Note>
+**Low Latency**: Voice streaming enables natural conversation flow with minimal delay between speaking and response.
+</Note>
+
+## Voice Capabilities
+
+### Speech-to-Text (STT)
+
+Convert spoken words to text:
+
+```typescript
+{
+  type: "speech-to-text",
+  features: {
+    languages: ["en-US", "es-ES", "fr-FR", "de-DE", "ja-JP", ...],
+    accuracy: "high",
+    realtime: true,
+    streaming: true,
+    punctuation: true,
+    profanityFilter: optional
+  }
+}
+```
+
+### Text-to-Speech (TTS)
+
+Generate natural speech from text:
+
+```typescript
+{
+  type: "text-to-speech",
+  voices: {
+    languages: ["en-US", "es-ES", "fr-FR", ...],
+    genders: ["male", "female", "neutral"],
+    styles: ["conversational", "professional", "cheerful", "empathetic"],
+    customization: {
+      speed: 0.5 to 2.0,
+      pitch: -20 to +20,
+      volume: 0 to 100
+    }
+  }
+}
+```
+
+## Code Examples
+
+### Basic Voice Conversation
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Enable voice for agent
+const result = await agentbase.runAgent({
+  message: "Hello, how can I help you today?",
+  voice: {
+    enabled: true,
+    input: {
+      language: "en-US"
+    },
+    output: {
+      voice: "en-US-Neural2-C", // Natural female voice
+      speed: 1.0,
+      pitch: 0
+    }
+  }
+});
+
+// Response includes audio URL
+console.log('Audio URL:', result.audioUrl);
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Enable voice for agent
+result = agentbase.run_agent(
+    message="Hello, how can I help you today?",
+    voice={
+        "enabled": True,
+        "input": {
+            "language": "en-US"
+        },
+        "output": {
+            "voice": "en-US-Neural2-C", # Natural female voice
+            "speed": 1.0,
+            "pitch": 0
+        }
+    }
+)
+
+# Response includes audio URL
+print(f"Audio URL: {result.audio_url}")
+```
+
+</CodeGroup>
+
+### Real-Time Voice Streaming
+
+<CodeGroup>
+
+```typescript TypeScript
+// Establish voice stream connection
+const voiceStream = await agentbase.createVoiceStream({
+  voice: {
+    input: {
+      language: "en-US",
+      streaming: true
+    },
+    output: {
+      voice: "en-US-Neural2-J",
+      streaming: true
+    }
+  },
+  system: "You are a helpful voice assistant. Keep responses concise and natural."
+});
+
+// Handle incoming audio
+voiceStream.on('audio', (audioChunk) => {
+  // Play audio chunk in real-time
+  audioPlayer.play(audioChunk);
+});
+
+// Handle transcriptions
+voiceStream.on('transcript', (text) => {
+  console.log('User said:', text);
+});
+
+// Handle agent responses
+voiceStream.on('response', (text) => {
+  console.log('Agent said:', text);
+});
+
+// Send audio from microphone
+microphone.on('data', (audioData) => {
+  voiceStream.sendAudio(audioData);
+});
+
+// Close stream when done
+voiceStream.close();
+```
+
+```python Python
+# Establish voice stream connection
+voice_stream = agentbase.create_voice_stream(
+    voice={
+        "input": {
+            "language": "en-US",
+            "streaming": True
+        },
+        "output": {
+            "voice": "en-US-Neural2-J",
+            "streaming": True
+        }
+    },
+    system="You are a helpful voice assistant. Keep responses concise and natural."
+)
+
+# Handle incoming audio
+@voice_stream.on('audio')
+def on_audio(audio_chunk):
+    # Play audio chunk in real-time
+    audio_player.play(audio_chunk)
+
+# Handle transcriptions
+@voice_stream.on('transcript')
+def on_transcript(text):
+    print(f"User said: {text}")
+
+# Handle agent responses
+@voice_stream.on('response')
+def on_response(text):
+    print(f"Agent said: {text}")
+
+# Send audio from microphone
+microphone.stream_to(voice_stream)
+
+# Close stream when done
+voice_stream.close()
+```
+
+</CodeGroup>
+
+### Voice with Multiple Languages
+
+<CodeGroup>
+
+```typescript TypeScript
+// Multilingual voice support
+const result = await agentbase.runAgent({
+  message: "Bonjour, comment allez-vous?",
+  voice: {
+    enabled: true,
+    input: {
+      language: "auto-detect", // Automatically detect language
+      supportedLanguages: ["en-US", "fr-FR", "es-ES", "de-DE"]
+    },
+    output: {
+      voice: "fr-FR-Neural2-A", // French voice
+      speed: 1.0
+    }
+  },
+  system: "You are a multilingual assistant. Respond in the same language as the user."
+});
+```
+
+```python Python
+# Multilingual voice support
+result = agentbase.run_agent(
+    message="Bonjour, comment allez-vous?",
+    voice={
+        "enabled": True,
+        "input": {
+            "language": "auto-detect", # Automatically detect language
+            "supported_languages": ["en-US", "fr-FR", "es-ES", "de-DE"]
+        },
+        "output": {
+            "voice": "fr-FR-Neural2-A", # French voice
+            "speed": 1.0
+        }
+    },
+    system="You are a multilingual assistant. Respond in the same language as the user."
+)
+```
+
+</CodeGroup>
+
+### Custom Voice Characteristics
+
+<CodeGroup>
+
+```typescript TypeScript
+// Customize voice output
+const result = await agentbase.runAgent({
+  message: "Explain quantum computing",
+  voice: {
+    enabled: true,
+    output: {
+      voice: "en-US-Neural2-J",
+      speed: 0.9, // Slightly slower for clarity
+      pitch: -2, // Slightly lower pitch
+      style: "professional", // Professional speaking style
+      emphasis: {
+        technical_terms: "strong" // Emphasize technical terms
+      }
+    }
+  },
+  system: "You are a technical educator. Explain complex topics clearly."
+});
+```
+
+```python Python
+# Customize voice output
+result = agentbase.run_agent(
+    message="Explain quantum computing",
+    voice={
+        "enabled": True,
+        "output": {
+            "voice": "en-US-Neural2-J",
+            "speed": 0.9, # Slightly slower for clarity
+            "pitch": -2, # Slightly lower pitch
+            "style": "professional", # Professional speaking style
+            "emphasis": {
+                "technical_terms": "strong" # Emphasize technical terms
+            }
+        }
+    },
+    system="You are a technical educator. Explain complex topics clearly."
+)
+```
+
+</CodeGroup>
+
+### Phone Integration
+
+<CodeGroup>
+
+```typescript TypeScript
+// Integrate with phone systems (Twilio example)
+import twilio from 'twilio';
+
+const client = twilio(accountSid, authToken);
+
+// Handle incoming call
+app.post('/voice/incoming', async (req, res) => {
+  const twiml = new twilio.twiml.VoiceResponse();
+
+  // Create voice stream for this call
+  const voiceStream = await agentbase.createVoiceStream({
+    voice: {
+      input: { language: "en-US" },
+      output: {
+        voice: "en-US-Neural2-C",
+        format: "mulaw", // Phone-compatible format
+        sampleRate: 8000
+      }
+    },
+    system: "You are a customer service agent. Help the caller with their inquiry."
+  });
+
+  // Connect Twilio stream to Agentbase
+  twiml.connect().stream({
+    url: `wss://your-server.com/voice-stream/${voiceStream.id}`
+  });
+
+  res.type('text/xml');
+  res.send(twiml.toString());
+});
+```
+
+```python Python
+# Integrate with phone systems (Twilio example)
+from twilio.twiml.voice_response import VoiceResponse, Connect
+
+@app.post('/voice/incoming')
+async def incoming_call(request):
+    response = VoiceResponse()
+
+    # Create voice stream for this call
+    voice_stream = await agentbase.create_voice_stream(
+        voice={
+            "input": {"language": "en-US"},
+            "output": {
+                "voice": "en-US-Neural2-C",
+                "format": "mulaw", # Phone-compatible format
+                "sample_rate": 8000
+            }
+        },
+        system="You are a customer service agent. Help the caller with their inquiry."
+    )
+
+    # Connect Twilio stream to Agentbase
+    connect = Connect()
+    connect.stream(url=f"wss://your-server.com/voice-stream/{voice_stream.id}")
+    response.append(connect)
+
+    return str(response)
+```
+
+</CodeGroup>
+
+### Voice with Interruption Handling
+
+<CodeGroup>
+
+```typescript TypeScript
+// Handle user interruptions gracefully
+const voiceStream = await agentbase.createVoiceStream({
+  voice: {
+    input: {
+      language: "en-US",
+      vadEnabled: true, // Voice Activity Detection
+      interruptionHandling: "graceful"
+    },
+    output: {
+      voice: "en-US-Neural2-A",
+      interruptible: true // Allow agent to be interrupted
+    }
+  },
+  system: "You are a conversational assistant. If interrupted, acknowledge and address the new question."
+});
+
+voiceStream.on('interruption', (context) => {
+  console.log('User interrupted at:', context.interruptedAt);
+  console.log('New input:', context.newInput);
+  // Agent automatically handles interruption
+});
+```
+
+```python Python
+# Handle user interruptions gracefully
+voice_stream = agentbase.create_voice_stream(
+    voice={
+        "input": {
+            "language": "en-US",
+            "vad_enabled": True, # Voice Activity Detection
+            "interruption_handling": "graceful"
+        },
+        "output": {
+            "voice": "en-US-Neural2-A",
+            "interruptible": True # Allow agent to be interrupted
+        }
+    },
+    system="You are a conversational assistant. If interrupted, acknowledge and address the new question."
+)
+
+@voice_stream.on('interruption')
+def on_interruption(context):
+    print(f"User interrupted at: {context.interrupted_at}")
+    print(f"New input: {context.new_input}")
+    # Agent automatically handles interruption
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Customer Service Phone System
+
+AI-powered phone support:
+
+```typescript
+const phoneAgent = await agentbase.createVoiceStream({
+  voice: {
+    input: {
+      language: "en-US",
+      profanityFilter: true
+    },
+    output: {
+      voice: "en-US-Neural2-C",
+      style: "friendly"
+    }
+  },
+  system: `You are a customer service representative for TechCorp.
+
+  Call Flow:
+  1. Greet the customer warmly
+  2. Ask how you can help
+  3. Listen to their issue
+  4. Provide solution or escalate if needed
+  5. Confirm resolution
+  6. Thank them for calling
+
+  Guidelines:
+  - Be empathetic and patient
+  - Keep responses concise (2-3 sentences)
+  - Confirm understanding before providing solution
+  - Offer to escalate if you cannot help`,
+  mcpServers: [
+    {
+      serverName: "crm-system",
+      serverUrl: "https://api.company.com/crm"
+    }
+  ]
+});
+
+// Handle call flow
+phoneAgent.on('transcript', async (text) => {
+  if (text.toLowerCase().includes('speak to human')) {
+    await phoneAgent.transfer({
+      destination: "human-support",
+      context: phoneAgent.getConversationContext()
+    });
+  }
+});
+```
+
+### 2. Voice-Enabled Personal Assistant
+
+Hands-free assistant for daily tasks:
+
+```typescript
+const assistant = await agentbase.createVoiceStream({
+  voice: {
+    input: {
+      language: "en-US",
+      wakeWord: "Hey Assistant", // Activate on wake word
+      vadEnabled: true
+    },
+    output: {
+      voice: "en-US-Neural2-J",
+      style: "conversational"
+    }
+  },
+  memory: {
+    namespace: `user_${userId}`,
+    enabled: true
+  },
+  system: `You are a personal voice assistant.
+
+  Capabilities:
+  - Set reminders and alarms
+  - Check calendar and schedule meetings
+  - Send messages
+  - Get weather and news
+  - Control smart home devices
+  - Answer questions
+
+  Keep responses brief and natural.`,
+  mcpServers: [
+    { serverName: "calendar", serverUrl: "..." },
+    { serverName: "messaging", serverUrl: "..." },
+    { serverName: "smart-home", serverUrl: "..." }
+  ]
+});
+```
+
+### 3. Language Learning Tutor
+
+Interactive language practice:
+
+```typescript
+const languageTutor = await agentbase.createVoiceStream({
+  voice: {
+    input: {
+      language: "es-ES", // Student speaks Spanish
+      pronunciationFeedback: true
+    },
+    output: {
+      voice: "es-ES-Neural2-A",
+      speed: 0.8, // Slower for learning
+      style: "conversational"
+    }
+  },
+  system: `You are a Spanish language tutor.
+
+  Teaching Approach:
+  - Listen to student's pronunciation
+  - Provide gentle corrections
+  - Use simple vocabulary
+  - Repeat phrases for practice
+  - Encourage and praise progress
+  - Adapt to student's level
+
+  Focus on conversational fluency.`,
+  config: {
+    pronunciationAnalysis: true,
+    vocabularyLevel: "beginner"
+  }
+});
+
+languageTutor.on('pronunciation', (analysis) => {
+  console.log('Pronunciation score:', analysis.score);
+  console.log('Suggestions:', analysis.improvements);
+});
+```
+
+### 4. Healthcare Voice Interface
+
+Accessible medical information:
+
+```typescript
+const healthcareAgent = await agentbase.createVoiceStream({
+  voice: {
+    input: {
+      language: "en-US",
+      medicalTerminology: true
+    },
+    output: {
+      voice: "en-US-Neural2-C",
+      style: "empathetic",
+      speed: 0.9
+    }
+  },
+  system: `You are a healthcare information assistant.
+
+  Guidelines:
+  - Use clear, simple language
+  - Be empathetic and reassuring
+  - Never provide medical diagnosis
+  - Always recommend consulting healthcare provider
+  - Maintain HIPAA compliance
+  - Focus on general health information
+
+  Remind users this is not medical advice.`,
+  rules: [
+    "Never provide specific medical diagnoses",
+    "Always recommend consulting a healthcare provider for medical concerns",
+    "Do not access or share patient health information without authorization"
+  ]
+});
+```
+
+### 5. Voice-Activated Navigation
+
+Hands-free driving assistance:
+
+```typescript
+const navigationAgent = await agentbase.createVoiceStream({
+  voice: {
+    input: {
+      language: "en-US",
+      noiseReduction: true, // Filter road noise
+      vadEnabled: true
+    },
+    output: {
+      voice: "en-US-Neural2-D",
+      volume: "adaptive", // Adjust to ambient noise
+      style: "clear"
+    }
+  },
+  system: `You are a voice navigation assistant.
+
+  Provide:
+  - Clear, timely directions
+  - Traffic updates
+  - Alternate routes if needed
+  - Nearby points of interest
+  - Weather warnings
+
+  Keep instructions brief and precise.
+  Announce turns well in advance.`,
+  mcpServers: [
+    { serverName: "maps", serverUrl: "..." },
+    { serverName: "traffic", serverUrl: "..." }
+  ]
+});
+```
+
+### 6. Conference Room Assistant
+
+Meeting room voice control:
+
+```typescript
+const conferenceAssistant = await agentbase.createVoiceStream({
+  voice: {
+    input: {
+      language: "en-US",
+      multiSpeaker: true, // Identify different speakers
+      vadEnabled: true
+    },
+    output: {
+      voice: "en-US-Neural2-F",
+      style: "professional"
+    }
+  },
+  system: `You are a conference room assistant.
+
+  Functions:
+  - Start/end meetings
+  - Dial participants
+  - Control AV equipment
+  - Take meeting notes
+  - Set reminders
+  - Book follow-up meetings
+
+  Commands should be clear and confirmed.`,
+  mcpServers: [
+    { serverName: "zoom", serverUrl: "..." },
+    { serverName: "calendar", serverUrl: "..." },
+    { serverName: "room-control", serverUrl: "..." }
+  ]
+});
+```
+
+## Best Practices
+
+### Voice Design
+
+<AccordionGroup>
+  <Accordion title="Keep Responses Concise">
+    ```typescript
+    // Good: Brief, conversational responses
+    system: `Keep responses to 1-2 sentences.
+    Be conversational and natural.
+    Avoid long explanations unless asked.`
+
+    // Avoid: Long, verbose responses
+    system: `Provide detailed, comprehensive explanations
+    covering all aspects of the topic...`
+    ```
+  </Accordion>
+
+  <Accordion title="Design for Interruptions">
+    ```typescript
+    // Enable graceful interruption handling
+    voice: {
+      output: {
+        interruptible: true,
+        pauseOnInterruption: true
+      },
+      input: {
+        interruptionHandling: "graceful"
+      }
+    }
+
+    system: `If interrupted:
+    1. Stop speaking immediately
+    2. Acknowledge the interruption
+    3. Address the new question
+    4. Offer to continue previous topic if relevant`
+    ```
+  </Accordion>
+
+  <Accordion title="Use Natural Language">
+    ```typescript
+    // Good: Conversational, natural
+    "Sure, I can help with that. Let me check..."
+    "Great question! The answer is..."
+
+    // Avoid: Robotic, formal
+    "Affirmative. Processing request. Please wait."
+    "Query acknowledged. Retrieving data."
+    ```
+  </Accordion>
+
+  <Accordion title="Provide Audio Feedback">
+    ```typescript
+    // Use audio cues for better UX
+    voiceStream.on('listening', () => {
+      playSound('listening-chime.mp3');
+    });
+
+    voiceStream.on('processing', () => {
+      playSound('thinking.mp3');
+    });
+
+    voiceStream.on('error', () => {
+      playSound('error-tone.mp3');
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Voice Selection
+
+<Tip>
+**Match Voice to Use Case**: Choose voice characteristics that match your application's personality and audience.
+</Tip>
+
+```typescript
+// Customer service: Friendly, warm
+voice: {
+  output: {
+    voice: "en-US-Neural2-C",
+    style: "friendly",
+    pitch: 2
+  }
+}
+
+// Professional assistant: Clear, professional
+voice: {
+  output: {
+    voice: "en-US-Neural2-J",
+    style: "professional",
+    pitch: 0
+  }
+}
+
+// Educational content: Patient, clear
+voice: {
+  output: {
+    voice: "en-US-Neural2-A",
+    style: "conversational",
+    speed: 0.85
+  }
+}
+```
+
+### Error Handling
+
+<Warning>
+**Always Handle Audio Errors**: Network issues, microphone problems, and audio format incompatibilities can disrupt voice interactions.
+</Warning>
+
+```typescript
+voiceStream.on('error', (error) => {
+  switch (error.type) {
+    case 'microphone_access_denied':
+      speakText("I need microphone access to hear you. Please check your settings.");
+      break;
+
+    case 'audio_format_unsupported':
+      console.error('Audio format not supported:', error.format);
+      // Fallback to supported format
+      break;
+
+    case 'network_error':
+      speakText("I'm having trouble connecting. Please check your internet connection.");
+      break;
+
+    case 'transcription_failed':
+      speakText("Sorry, I didn't catch that. Could you repeat?");
+      break;
+
+    default:
+      speakText("Sorry, I'm having technical difficulties. Please try again.");
+  }
+});
+```
+
+### Privacy and Security
+
+```typescript
+// Implement privacy controls
+const voiceConfig = {
+  voice: {
+    input: {
+      recording: {
+        enabled: userConsent, // Only record with consent
+        retention: "session", // Delete after session
+        encryption: true
+      },
+      profanityFilter: true,
+      sensitiveDataRedaction: true // Redact SSN, credit cards, etc.
+    }
+  },
+  privacy: {
+    storeAudio: false, // Don't store audio recordings
+    storeTranscripts: userConsent,
+    anonymizeData: true
+  }
+};
+```
+
+## Integration with Other Primitives
+
+### With Memory
+
+Remember conversation context:
+
+```typescript
+const voiceAgent = await agentbase.createVoiceStream({
+  voice: {
+    enabled: true,
+    output: { voice: "en-US-Neural2-C" }
+  },
+  memory: {
+    namespace: `user_${userId}`,
+    enabled: true
+  },
+  system: `Remember user preferences and past conversations.
+  Reference previous discussions when relevant.`
+});
+
+// Agent recalls: "Last time we spoke about your project deadline..."
+```
+
+Learn more: [Memory Primitive](/primitives/extensions/memory)
+
+### With Custom Tools
+
+Access external services:
+
+```typescript
+const voiceAgent = await agentbase.createVoiceStream({
+  voice: {
+    enabled: true
+  },
+  mcpServers: [
+    {
+      serverName: "calendar",
+      serverUrl: "https://api.company.com/calendar"
+    }
+  ],
+  system: `You can:
+  - Check calendar
+  - Schedule meetings
+  - Set reminders
+
+  Use tools to access user's calendar.`
+});
+```
+
+Learn more: [Custom Tools Primitive](/primitives/essentials/custom-tools)
+
+### With Multi-Agent
+
+Transfer between voice agents:
+
+```typescript
+const result = await agentbase.createVoiceStream({
+  voice: { enabled: true },
+  agents: [
+    {
+      name: "Main Assistant",
+      description: "General assistance and routing"
+    },
+    {
+      name: "Technical Support",
+      description: "Technical troubleshooting",
+      voice: {
+        output: {
+          voice: "en-US-Neural2-J", // Different voice
+          style: "professional"
+        }
+      }
+    },
+    {
+      name: "Billing Support",
+      description: "Billing and payments",
+      voice: {
+        output: {
+          voice: "en-US-Neural2-C",
+          style: "friendly"
+        }
+      }
+    }
+  ]
+});
+
+// Voice changes when transferring between agents
+```
+
+Learn more: [Multi-Agent Primitive](/primitives/essentials/multi-agents)
+
+## Performance Considerations
+
+### Latency Optimization
+
+```typescript
+// Minimize latency for real-time conversations
+const voiceStream = await agentbase.createVoiceStream({
+  voice: {
+    input: {
+      streaming: true,
+      vadEnabled: true, // Detect speech end faster
+      endpointingDelay: 500 // 500ms after speech ends
+    },
+    output: {
+      streaming: true,
+      format: "opus", // Compressed for faster streaming
+      quality: "high" // Balance quality and latency
+    }
+  },
+  config: {
+    responseMode: "streaming", // Stream response as generated
+    thinkingTime: "minimal" // Start responding quickly
+  }
+});
+```
+
+### Bandwidth Management
+
+<Tip>
+**Optimize for Network**: Choose appropriate audio formats and quality based on network conditions.
+</Tip>
+
+```typescript
+// Adaptive quality based on network
+function getVoiceConfig(networkSpeed: string) {
+  const configs = {
+    fast: {
+      format: "opus",
+      sampleRate: 48000,
+      quality: "high"
+    },
+    medium: {
+      format: "opus",
+      sampleRate: 24000,
+      quality: "medium"
+    },
+    slow: {
+      format: "mulaw",
+      sampleRate: 8000,
+      quality: "low"
+    }
+  };
+
+  return configs[networkSpeed];
+}
+
+const voiceConfig = getVoiceConfig(detectedNetworkSpeed);
+```
+
+### Cost Management
+
+```typescript
+// Optimize costs for voice
+const voiceStream = await agentbase.createVoiceStream({
+  voice: {
+    input: {
+      vadEnabled: true, // Only transcribe actual speech
+      silenceDetection: true // Stop transcription during silence
+    },
+    output: {
+      caching: true, // Cache common responses
+      compression: true
+    }
+  },
+  config: {
+    sessionTimeout: 300000, // 5 minute timeout
+    maxSessionDuration: 1800000 // 30 minute max
+  }
+});
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Poor Audio Quality">
+    **Problem**: Voice output sounds robotic or distorted
+
+    **Solutions**:
+    - Increase sample rate (24kHz or 48kHz)
+    - Use neural voices instead of standard
+    - Check network bandwidth
+    - Reduce speed/pitch modifications
+    - Use appropriate audio format for medium
+
+    ```typescript
+    voice: {
+      output: {
+        voice: "en-US-Neural2-C", // Neural voice
+        sampleRate: 48000, // High quality
+        format: "opus", // Good compression
+        bitrate: 128000 // Higher bitrate
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="High Latency">
+    **Problem**: Delay between speaking and response
+
+    **Solutions**:
+    - Enable streaming for input and output
+    - Reduce endpointing delay
+    - Optimize agent response time
+    - Use closer geographic region
+    - Enable voice activity detection
+
+    ```typescript
+    voice: {
+      input: {
+        streaming: true,
+        vadEnabled: true,
+        endpointingDelay: 300 // 300ms
+      },
+      output: {
+        streaming: true,
+        prebuffer: true // Start generating before full input
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Transcription Errors">
+    **Problem**: Speech not transcribed correctly
+
+    **Solutions**:
+    - Specify correct language
+    - Improve audio quality (reduce noise)
+    - Use appropriate dialect
+    - Add custom vocabulary
+    - Enable noise reduction
+
+    ```typescript
+    voice: {
+      input: {
+        language: "en-US",
+        noiseReduction: true,
+        customVocabulary: ["Agentbase", "API", "webhook"],
+        hints: ["technical terms", "product names"]
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Interruption Not Working">
+    **Problem**: Agent continues speaking when interrupted
+
+    **Solutions**:
+    - Enable interruptible output
+    - Configure interruption handling
+    - Reduce VAD sensitivity
+    - Check audio pipeline configuration
+
+    ```typescript
+    voice: {
+      output: {
+        interruptible: true,
+        pauseOnInterruption: true,
+        gracefulStop: true
+      },
+      input: {
+        interruptionHandling: "immediate",
+        vadSensitivity: "high"
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Features
+
+### Emotion Detection
+
+Detect user emotion from voice:
+
+```typescript
+const voiceStream = await agentbase.createVoiceStream({
+  voice: {
+    input: {
+      emotionDetection: true,
+      sentimentAnalysis: true
+    }
+  },
+  system: `Adapt your tone based on user emotion.
+  If user sounds frustrated, be more empathetic.
+  If user sounds happy, match their energy.`
+});
+
+voiceStream.on('emotion', (emotion) => {
+  console.log('Detected emotion:', emotion.type);
+  console.log('Confidence:', emotion.confidence);
+  // Adjust response accordingly
+});
+```
+
+### Voice Biometrics
+
+Identify speakers by voice:
+
+```typescript
+const voiceStream = await agentbase.createVoiceStream({
+  voice: {
+    input: {
+      speakerIdentification: true,
+      voiceprint: userVoiceprint // Pre-enrolled voiceprint
+    }
+  },
+  security: {
+    requireVoiceAuth: true
+  }
+});
+
+voiceStream.on('speaker-identified', (speaker) => {
+  if (speaker.verified) {
+    console.log('Verified user:', speaker.userId);
+  } else {
+    console.log('Unknown speaker');
+  }
+});
+```
+
+### Multi-Party Conversations
+
+Handle multiple speakers:
+
+```typescript
+const voiceStream = await agentbase.createVoiceStream({
+  voice: {
+    input: {
+      multiSpeaker: true,
+      speakerDiarization: true // Separate different speakers
+    }
+  },
+  system: `You are moderating a group conversation.
+  Address speakers by name when identified.
+  Manage turn-taking and keep discussion on track.`
+});
+
+voiceStream.on('speaker-change', (event) => {
+  console.log('Now speaking:', event.speakerId);
+});
+```
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Sessions" icon="link" href="/primitives/essentials/sessions">
+    Maintain voice conversation context
+  </Card>
+
+  <Card title="Memory" icon="brain" href="/primitives/extensions/memory">
+    Remember user preferences and history
+  </Card>
+
+  <Card title="Multi-Agent" icon="users" href="/primitives/essentials/multi-agents">
+    Transfer between voice specialists
+  </Card>
+
+  <Card title="Custom Tools" icon="toolbox" href="/primitives/essentials/custom-tools">
+    Integrate external services in voice flows
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api/voice">
+    Complete voice API documentation
+  </Card>
+
+  <Card title="Voice Design Guide" icon="book" href="/guides/voice-design">
+    Best practices for voice UX
+  </Card>
+
+  <Card title="Examples" icon="lightbulb" href="/examples/voice">
+    Voice integration examples
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Voice interfaces require different design principles than text interfaces. Keep responses concise, design for interruptions, and provide clear audio feedback.
+</Tip>

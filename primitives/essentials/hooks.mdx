@@ -1,0 +1,1178 @@
+---
+title: "Hooks"
+description: "Lifecycle callbacks and event handlers for agent execution monitoring and custom logic"
+icon: "webhook"
+---
+
+> Hooks provide lifecycle callbacks that let you execute custom logic at key points during agent execution, enabling monitoring, logging, validation, and integration with external systems.
+
+## Overview
+
+The Hooks primitive allows you to attach custom code to specific events in the agent lifecycle. Like React hooks or Git hooks, agent hooks let you intercept execution at critical moments to add custom behavior, logging, validation, or integration logic.
+
+Hooks are essential for:
+
+- **Execution Monitoring**: Track agent activity in real-time
+- **Custom Logging**: Send execution data to your logging infrastructure
+- **Validation**: Verify inputs and outputs meet your requirements
+- **Error Handling**: Implement custom error recovery logic
+- **Metrics Collection**: Track performance and usage metrics
+- **External Integration**: Sync agent activity with other systems
+
+<CardGroup cols={2}>
+  <Card title="Lifecycle Events" icon="rotate">
+    Hook into all major agent lifecycle events from start to completion
+  </Card>
+
+  <Card title="Async Support" icon="clock">
+    Hooks can execute async operations without blocking agent execution
+  </Card>
+
+  <Card title="Error Isolation" icon="shield">
+    Hook failures don't crash agent execution - they're logged and isolated
+  </Card>
+
+  <Card title="Flexible Integration" icon="plug">
+    Integrate with any logging, monitoring, or analytics platform
+  </Card>
+</CardGroup>
+
+## How Hooks Work
+
+### Available Hooks
+
+Hooks are triggered at specific points in the agent lifecycle:
+
+1. **`onStart`**: Agent execution begins
+2. **`onThinking`**: Agent is reasoning about the task
+3. **`onToolUse`**: Agent calls a tool
+4. **`onToolResponse`**: Tool returns a response
+5. **`onProgress`**: Progress update (background tasks)
+6. **`onStep`**: Agent completes a step
+7. **`onComplete`**: Agent execution completes successfully
+8. **`onError`**: Error occurs during execution
+9. **`onCancel`**: Execution is cancelled
+
+### Hook Execution
+
+Hooks execute asynchronously:
+
+1. **Event Occurs**: Agent lifecycle event happens
+2. **Hook Triggered**: Registered hook function is called
+3. **Async Execution**: Hook executes (can be async)
+4. **Error Handling**: Hook errors are caught and logged
+5. **Continuation**: Agent execution continues regardless of hook result
+
+<Note>
+**Non-Blocking**: Hooks execute asynchronously and don't block agent execution. Hook failures are logged but don't stop the agent.
+</Note>
+
+## Code Examples
+
+### Basic Hooks
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Define hooks
+const result = await agentbase.runAgent({
+  message: "Analyze sales data",
+  hooks: {
+    onStart: async (event) => {
+      console.log('Agent started:', event.timestamp);
+      await logToDatabase('agent_start', event);
+    },
+
+    onToolUse: async (event) => {
+      console.log(`Tool called: ${event.tool}`);
+      console.log('Input:', event.input);
+    },
+
+    onToolResponse: async (event) => {
+      console.log(`Tool response: ${event.tool}`);
+      console.log('Output:', event.response);
+    },
+
+    onComplete: async (event) => {
+      console.log('Agent completed:', event.message);
+      await sendNotification('Task complete', event.message);
+    },
+
+    onError: async (event) => {
+      console.error('Error occurred:', event.error);
+      await sendAlert('Agent error', event.error);
+    }
+  }
+});
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Define hooks
+async def on_start(event):
+    print(f"Agent started: {event.timestamp}")
+    await log_to_database('agent_start', event)
+
+async def on_tool_use(event):
+    print(f"Tool called: {event.tool}")
+    print(f"Input: {event.input}")
+
+async def on_tool_response(event):
+    print(f"Tool response: {event.tool}")
+    print(f"Output: {event.response}")
+
+async def on_complete(event):
+    print(f"Agent completed: {event.message}")
+    await send_notification('Task complete', event.message)
+
+async def on_error(event):
+    print(f"Error occurred: {event.error}")
+    await send_alert('Agent error', event.error)
+
+# Use hooks
+result = agentbase.run_agent(
+    message="Analyze sales data",
+    hooks={
+        'on_start': on_start,
+        'on_tool_use': on_tool_use,
+        'on_tool_response': on_tool_response,
+        'on_complete': on_complete,
+        'on_error': on_error
+    }
+)
+```
+
+</CodeGroup>
+
+### Logging Hook
+
+<CodeGroup>
+
+```typescript TypeScript
+// Comprehensive logging hook
+class AgentLogger {
+  private sessionId: string;
+  private startTime: number;
+
+  constructor(sessionId: string) {
+    this.sessionId = sessionId;
+    this.startTime = Date.now();
+  }
+
+  createHooks() {
+    return {
+      onStart: async (event: any) => {
+        await this.log('start', {
+          message: event.message,
+          mode: event.mode,
+          timestamp: event.timestamp
+        });
+      },
+
+      onThinking: async (event: any) => {
+        await this.log('thinking', {
+          content: event.content,
+          duration: Date.now() - this.startTime
+        });
+      },
+
+      onToolUse: async (event: any) => {
+        await this.log('tool_use', {
+          tool: event.tool,
+          input: event.input,
+          timestamp: event.timestamp
+        });
+      },
+
+      onToolResponse: async (event: any) => {
+        await this.log('tool_response', {
+          tool: event.tool,
+          response: event.response,
+          duration: event.duration
+        });
+      },
+
+      onStep: async (event: any) => {
+        await this.log('step_complete', {
+          stepNumber: event.stepNumber,
+          totalTime: Date.now() - this.startTime
+        });
+      },
+
+      onComplete: async (event: any) => {
+        await this.log('complete', {
+          message: event.message,
+          totalDuration: Date.now() - this.startTime,
+          success: true
+        });
+      },
+
+      onError: async (event: any) => {
+        await this.log('error', {
+          error: event.error,
+          step: event.step,
+          severity: 'high'
+        });
+      }
+    };
+  }
+
+  async log(eventType: string, data: any) {
+    await sendToLoggingService({
+      sessionId: this.sessionId,
+      eventType,
+      data,
+      timestamp: new Date()
+    });
+  }
+}
+
+// Usage
+const logger = new AgentLogger(sessionId);
+
+const result = await agentbase.runAgent({
+  message: "Process customer data",
+  session: sessionId,
+  hooks: logger.createHooks()
+});
+```
+
+```python Python
+# Comprehensive logging hook
+class AgentLogger:
+    def __init__(self, session_id: str):
+        self.session_id = session_id
+        self.start_time = time.time()
+
+    def create_hooks(self):
+        return {
+            'on_start': self.on_start,
+            'on_thinking': self.on_thinking,
+            'on_tool_use': self.on_tool_use,
+            'on_tool_response': self.on_tool_response,
+            'on_step': self.on_step,
+            'on_complete': self.on_complete,
+            'on_error': self.on_error
+        }
+
+    async def on_start(self, event):
+        await self.log('start', {
+            'message': event.message,
+            'mode': event.mode,
+            'timestamp': event.timestamp
+        })
+
+    async def on_thinking(self, event):
+        await self.log('thinking', {
+            'content': event.content,
+            'duration': time.time() - self.start_time
+        })
+
+    async def on_tool_use(self, event):
+        await self.log('tool_use', {
+            'tool': event.tool,
+            'input': event.input,
+            'timestamp': event.timestamp
+        })
+
+    async def on_tool_response(self, event):
+        await self.log('tool_response', {
+            'tool': event.tool,
+            'response': event.response,
+            'duration': event.duration
+        })
+
+    async def on_step(self, event):
+        await self.log('step_complete', {
+            'step_number': event.step_number,
+            'total_time': time.time() - self.start_time
+        })
+
+    async def on_complete(self, event):
+        await self.log('complete', {
+            'message': event.message,
+            'total_duration': time.time() - self.start_time,
+            'success': True
+        })
+
+    async def on_error(self, event):
+        await self.log('error', {
+            'error': event.error,
+            'step': event.step,
+            'severity': 'high'
+        })
+
+    async def log(self, event_type: str, data: dict):
+        await send_to_logging_service({
+            'session_id': self.session_id,
+            'event_type': event_type,
+            'data': data,
+            'timestamp': datetime.now()
+        })
+
+# Usage
+logger = AgentLogger(session_id)
+
+result = agentbase.run_agent(
+    message="Process customer data",
+    session=session_id,
+    hooks=logger.create_hooks()
+)
+```
+
+</CodeGroup>
+
+### Metrics Collection Hook
+
+<CodeGroup>
+
+```typescript TypeScript
+// Collect and send metrics
+class MetricsCollector {
+  private metrics: Map<string, any> = new Map();
+
+  createHooks() {
+    return {
+      onStart: async () => {
+        this.metrics.set('startTime', Date.now());
+        await this.increment('agent.executions');
+      },
+
+      onToolUse: async (event: any) => {
+        await this.increment(`tools.${event.tool}.calls`);
+      },
+
+      onToolResponse: async (event: any) => {
+        await this.timing(`tools.${event.tool}.duration`, event.duration);
+      },
+
+      onStep: async (event: any) => {
+        await this.increment('agent.steps');
+        const currentStep = this.metrics.get('stepCount') || 0;
+        this.metrics.set('stepCount', currentStep + 1);
+      },
+
+      onComplete: async (event: any) => {
+        const startTime = this.metrics.get('startTime');
+        const duration = Date.now() - startTime;
+
+        await this.timing('agent.execution.duration', duration);
+        await this.increment('agent.executions.success');
+        await this.gauge('agent.steps.total', this.metrics.get('stepCount'));
+      },
+
+      onError: async (event: any) => {
+        await this.increment('agent.executions.error');
+        await this.increment(`agent.errors.${event.errorType}`);
+      }
+    };
+  }
+
+  async increment(metric: string, value: number = 1) {
+    await sendMetric({ type: 'increment', metric, value });
+  }
+
+  async timing(metric: string, value: number) {
+    await sendMetric({ type: 'timing', metric, value });
+  }
+
+  async gauge(metric: string, value: number) {
+    await sendMetric({ type: 'gauge', metric, value });
+  }
+}
+
+// Usage
+const metrics = new MetricsCollector();
+
+const result = await agentbase.runAgent({
+  message: "Generate report",
+  hooks: metrics.createHooks()
+});
+```
+
+</CodeGroup>
+
+### Validation Hook
+
+<CodeGroup>
+
+```typescript TypeScript
+// Validate inputs and outputs
+const validationHooks = {
+  onStart: async (event: any) => {
+    // Validate input message
+    if (!event.message || event.message.length < 10) {
+      throw new Error('Message too short');
+    }
+
+    // Check for prohibited content
+    const prohibited = ['password', 'secret', 'api_key'];
+    if (prohibited.some(word => event.message.toLowerCase().includes(word))) {
+      throw new Error('Message contains prohibited content');
+    }
+  },
+
+  onToolUse: async (event: any) => {
+    // Validate tool parameters
+    if (event.tool === 'database_query') {
+      if (!event.input.query) {
+        throw new Error('Database query missing');
+      }
+
+      // Check for dangerous SQL
+      const dangerous = ['DROP', 'DELETE', 'TRUNCATE'];
+      if (dangerous.some(cmd => event.input.query.includes(cmd))) {
+        throw new Error('Dangerous SQL operation detected');
+      }
+    }
+  },
+
+  onComplete: async (event: any) => {
+    // Validate output
+    if (!event.message || event.message.length === 0) {
+      console.warn('Empty response generated');
+    }
+
+    // Check output length
+    if (event.message.length > 10000) {
+      console.warn('Response exceeds recommended length');
+    }
+  }
+};
+
+const result = await agentbase.runAgent({
+  message: "Query user database",
+  hooks: validationHooks
+});
+```
+
+</CodeGroup>
+
+### External Integration Hook
+
+<CodeGroup>
+
+```typescript TypeScript
+// Integrate with external systems
+class ExternalIntegration {
+  createHooks() {
+    return {
+      onStart: async (event: any) => {
+        // Create ticket in project management system
+        const ticket = await createJiraTicket({
+          title: `Agent Task: ${event.message}`,
+          status: 'in_progress',
+          assignee: 'agent-system'
+        });
+
+        // Store ticket ID for later updates
+        this.ticketId = ticket.id;
+      },
+
+      onProgress: async (event: any) => {
+        // Update ticket with progress
+        await updateJiraTicket(this.ticketId, {
+          progress: event.progress,
+          comment: `Progress: ${event.progress}%`
+        });
+      },
+
+      onComplete: async (event: any) => {
+        // Mark ticket as complete
+        await updateJiraTicket(this.ticketId, {
+          status: 'done',
+          resolution: event.message
+        });
+
+        // Send to Slack
+        await sendSlackMessage({
+          channel: '#agent-completions',
+          text: `Task completed: ${event.message.substring(0, 100)}...`
+        });
+
+        // Update CRM
+        await updateCRM({
+          activityType: 'agent_task',
+          outcome: 'success',
+          details: event.message
+        });
+      },
+
+      onError: async (event: any) => {
+        // Update ticket with error
+        await updateJiraTicket(this.ticketId, {
+          status: 'failed',
+          error: event.error
+        });
+
+        // Alert in Slack
+        await sendSlackMessage({
+          channel: '#agent-errors',
+          text: `⚠️ Agent task failed: ${event.error}`,
+          priority: 'high'
+        });
+
+        // Create PagerDuty incident
+        await createPagerDutyIncident({
+          title: 'Agent Task Failure',
+          description: event.error,
+          severity: 'high'
+        });
+      }
+    };
+  }
+}
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Production Monitoring
+
+Monitor agent health and performance:
+
+<AccordionGroup>
+  <Accordion title="Real-Time Monitoring Dashboard">
+    ```typescript
+    // Stream metrics to monitoring dashboard
+    const monitoringHooks = {
+      onStart: async (event) => {
+        await metrics.increment('agent.starts');
+        await dashboard.updateStatus('running');
+      },
+
+      onThinking: async (event) => {
+        await dashboard.updateActivity('thinking', event.content);
+      },
+
+      onToolUse: async (event) => {
+        await dashboard.addToolCall(event.tool, event.input);
+        await metrics.increment(`tools.${event.tool}`);
+      },
+
+      onStep: async (event) => {
+        await dashboard.updateProgress(event.stepNumber);
+      },
+
+      onComplete: async (event) => {
+        await metrics.increment('agent.completions');
+        await dashboard.updateStatus('complete');
+        await dashboard.setResult(event.message);
+      },
+
+      onError: async (event) => {
+        await metrics.increment('agent.errors');
+        await dashboard.updateStatus('error', event.error);
+        await alerting.sendAlert('Agent error', event);
+      }
+    };
+
+    const result = await agentbase.runAgent({
+      message: userRequest,
+      hooks: monitoringHooks
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Performance Analytics">
+    ```typescript
+    // Track detailed performance metrics
+    class PerformanceTracker {
+      private timings: Map<string, number> = new Map();
+
+      createHooks() {
+        return {
+          onStart: () => {
+            this.timings.set('start', Date.now());
+          },
+
+          onToolUse: (event) => {
+            this.timings.set(`tool_${event.tool}_start`, Date.now());
+          },
+
+          onToolResponse: (event) => {
+            const startKey = `tool_${event.tool}_start`;
+            const start = this.timings.get(startKey);
+            const duration = Date.now() - start;
+
+            analytics.trackToolPerformance({
+              tool: event.tool,
+              duration,
+              success: !event.error
+            });
+          },
+
+          onComplete: (event) => {
+            const totalDuration = Date.now() - this.timings.get('start');
+
+            analytics.trackExecution({
+              duration: totalDuration,
+              steps: event.stepCount,
+              success: true,
+              averageStepDuration: totalDuration / event.stepCount
+            });
+          }
+        };
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 2. Audit Logging
+
+Maintain detailed audit trails:
+
+```typescript
+// Comprehensive audit logging
+class AuditLogger {
+  async createHooks(userId: string, requestId: string) {
+    return {
+      onStart: async (event) => {
+        await auditLog.record({
+          requestId,
+          userId,
+          action: 'agent_start',
+          message: event.message,
+          timestamp: new Date(),
+          ip: event.ip,
+          userAgent: event.userAgent
+        });
+      },
+
+      onToolUse: async (event) => {
+        await auditLog.record({
+          requestId,
+          userId,
+          action: 'tool_call',
+          tool: event.tool,
+          input: sanitize(event.input),  // Remove sensitive data
+          timestamp: new Date()
+        });
+      },
+
+      onComplete: async (event) => {
+        await auditLog.record({
+          requestId,
+          userId,
+          action: 'agent_complete',
+          result: truncate(event.message, 1000),
+          duration: event.duration,
+          timestamp: new Date()
+        });
+      },
+
+      onError: async (event) => {
+        await auditLog.record({
+          requestId,
+          userId,
+          action: 'agent_error',
+          error: event.error,
+          severity: 'error',
+          timestamp: new Date()
+        });
+      }
+    };
+  }
+}
+```
+
+### 3. Cost Tracking
+
+Track and control costs:
+
+```typescript
+// Monitor and limit costs
+class CostController {
+  private totalCost: number = 0;
+  private costLimit: number;
+
+  constructor(costLimit: number) {
+    this.costLimit = costLimit;
+  }
+
+  createHooks() {
+    return {
+      onToolUse: async (event) => {
+        // Estimate tool cost
+        const estimatedCost = this.estimateToolCost(event.tool, event.input);
+
+        if (this.totalCost + estimatedCost > this.costLimit) {
+          throw new Error(`Cost limit exceeded: ${this.costLimit}`);
+        }
+      },
+
+      onStep: async (event) => {
+        // Track actual cost
+        if (event.cost) {
+          this.totalCost += event.cost;
+
+          await costTracking.record({
+            step: event.stepNumber,
+            cost: event.cost,
+            cumulative: this.totalCost
+          });
+
+          if (this.totalCost > this.costLimit * 0.9) {
+            await alerting.warn(`Approaching cost limit: ${this.totalCost}/${this.costLimit}`);
+          }
+        }
+      },
+
+      onComplete: async (event) => {
+        await costTracking.recordTotal({
+          requestId: event.requestId,
+          totalCost: this.totalCost,
+          steps: event.stepCount,
+          avgCostPerStep: this.totalCost / event.stepCount
+        });
+      }
+    };
+  }
+
+  estimateToolCost(tool: string, input: any): number {
+    // Estimate based on tool and input size
+    const baseCosts = {
+      'web_search': 0.01,
+      'database_query': 0.005,
+      'api_call': 0.002
+    };
+
+    return baseCosts[tool] || 0.001;
+  }
+}
+```
+
+### 4. Security and Compliance
+
+Enforce security policies:
+
+```typescript
+// Security monitoring and enforcement
+const securityHooks = {
+  onStart: async (event) => {
+    // Check user permissions
+    const hasPermission = await checkPermission(event.userId, 'use_agent');
+    if (!hasPermission) {
+      throw new Error('Unauthorized');
+    }
+
+    // Log access
+    await securityLog.record({
+      userId: event.userId,
+      action: 'agent_access',
+      resource: event.agentId,
+      timestamp: new Date()
+    });
+  },
+
+  onToolUse: async (event) => {
+    // Check tool permissions
+    const canUseTool = await checkToolPermission(event.userId, event.tool);
+    if (!canUseTool) {
+      throw new Error(`Unauthorized to use tool: ${event.tool}`);
+    }
+
+    // Scan for sensitive data
+    if (containsPII(event.input)) {
+      await securityLog.warn({
+        userId: event.userId,
+        issue: 'PII detected in tool input',
+        tool: event.tool,
+        timestamp: new Date()
+      });
+    }
+  },
+
+  onComplete: async (event) => {
+    // Scan output for sensitive data
+    const sensitiveData = scanForSensitiveData(event.message);
+
+    if (sensitiveData.length > 0) {
+      await securityLog.alert({
+        issue: 'Sensitive data in output',
+        types: sensitiveData,
+        redact: true
+      });
+
+      // Redact sensitive data
+      event.message = redactSensitiveData(event.message, sensitiveData);
+    }
+  }
+};
+```
+
+### 5. User Experience Enhancement
+
+Improve user experience with real-time updates:
+
+```typescript
+// Real-time UI updates
+class UIUpdateHooks {
+  constructor(private websocket: WebSocket) {}
+
+  createHooks() {
+    return {
+      onStart: async () => {
+        this.websocket.send(JSON.stringify({
+          type: 'status',
+          status: 'processing',
+          message: 'Agent is working on your request...'
+        }));
+      },
+
+      onThinking: async (event) => {
+        this.websocket.send(JSON.stringify({
+          type: 'thinking',
+          content: event.content,
+          showToUser: true
+        }));
+      },
+
+      onToolUse: async (event) => {
+        this.websocket.send(JSON.stringify({
+          type: 'activity',
+          message: `Using ${event.tool}...`,
+          icon: getToolIcon(event.tool)
+        }));
+      },
+
+      onProgress: async (event) => {
+        this.websocket.send(JSON.stringify({
+          type: 'progress',
+          progress: event.progress,
+          message: `${event.progress}% complete`
+        }));
+      },
+
+      onStep: async (event) => {
+        this.websocket.send(JSON.stringify({
+          type: 'step',
+          stepNumber: event.stepNumber,
+          message: `Completed step ${event.stepNumber}`
+        }));
+      },
+
+      onComplete: async (event) => {
+        this.websocket.send(JSON.stringify({
+          type: 'complete',
+          message: event.message,
+          success: true
+        }));
+      },
+
+      onError: async (event) => {
+        this.websocket.send(JSON.stringify({
+          type: 'error',
+          error: event.error,
+          userMessage: 'Something went wrong. Please try again.'
+        }));
+      }
+    };
+  }
+}
+```
+
+## Best Practices
+
+### Hook Design
+
+<AccordionGroup>
+  <Accordion title="Keep Hooks Fast">
+    ```typescript
+    // Good: Quick logging, async operations
+    const hooks = {
+      onToolUse: async (event) => {
+        // Fire and forget - don't await
+        sendToLoggingService(event).catch(console.error);
+      }
+    };
+
+    // Avoid: Slow synchronous operations
+    const slowHooks = {
+      onToolUse: async (event) => {
+        // Bad: Blocks execution
+        await heavyProcessing(event);
+      }
+    };
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Errors Gracefully">
+    ```typescript
+    // Robust error handling in hooks
+    const hooks = {
+      onComplete: async (event) => {
+        try {
+          await sendNotification(event);
+        } catch (error) {
+          // Log but don't throw - hook failures shouldn't break agent
+          console.error('Notification failed:', error);
+          await logHookError('onComplete', error);
+        }
+      }
+    };
+    ```
+  </Accordion>
+
+  <Accordion title="Avoid Side Effects">
+    ```typescript
+    // Good: Read-only hooks
+    const hooks = {
+      onToolUse: async (event) => {
+        // Just observe, don't modify
+        await logToolUsage(event);
+      }
+    };
+
+    // Avoid: Modifying event data
+    const badHooks = {
+      onToolUse: async (event) => {
+        // Don't do this - can cause unexpected behavior
+        event.input = modifyInput(event.input);
+      }
+    };
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Performance Optimization
+
+```typescript
+// Optimize hook performance
+class OptimizedHooks {
+  private buffer: any[] = [];
+  private flushInterval: NodeJS.Timeout;
+
+  constructor() {
+    // Batch logging for efficiency
+    this.flushInterval = setInterval(() => {
+      this.flush();
+    }, 5000);  // Flush every 5 seconds
+  }
+
+  createHooks() {
+    return {
+      onToolUse: (event) => {
+        // Buffer events instead of sending immediately
+        this.buffer.push({
+          type: 'tool_use',
+          data: event,
+          timestamp: Date.now()
+        });
+
+        // Flush if buffer gets too large
+        if (this.buffer.length >= 100) {
+          this.flush();
+        }
+      }
+    };
+  }
+
+  async flush() {
+    if (this.buffer.length === 0) return;
+
+    const events = [...this.buffer];
+    this.buffer = [];
+
+    // Send batch
+    await sendBatchToLogging(events).catch(console.error);
+  }
+
+  cleanup() {
+    clearInterval(this.flushInterval);
+    this.flush();
+  }
+}
+```
+
+## Integration with Other Primitives
+
+### With Traces
+
+Hooks complement traces by adding custom logic:
+
+```typescript
+// Combine hooks with traces
+const result = await agentbase.runAgent({
+  message: "Process data",
+  stream: true,  // Get trace events
+  hooks: {
+    onToolUse: async (event) => {
+      // Custom logic triggered by trace events
+      await customToolAnalysis(event);
+    }
+  }
+});
+
+// Process both streams
+for await (const event of result) {
+  // Trace events flow through here
+  // Hooks are called automatically
+}
+```
+
+Learn more: [Traces Primitive](/primitives/essentials/traces)
+
+### With Background Tasks
+
+Monitor long-running background tasks:
+
+```typescript
+const task = await agentbase.runAgent({
+  message: "Long-running analysis",
+  background: true,
+  hooks: {
+    onProgress: async (event) => {
+      // Update UI with progress
+      await updateTaskProgress(taskId, event.progress);
+    },
+    onComplete: async (event) => {
+      // Notify when complete
+      await sendEmail('Task complete', event.message);
+    }
+  }
+});
+```
+
+Learn more: [Background Tasks Primitive](/primitives/essentials/background)
+
+### With Evals
+
+Add custom validation in evals:
+
+```typescript
+// Validation hooks for evals
+await runEvals({
+  testCases,
+  hooks: {
+    onComplete: async (event) => {
+      // Custom validation logic
+      const valid = await customValidation(event.message);
+      if (!valid) {
+        throw new Error('Custom validation failed');
+      }
+    }
+  }
+});
+```
+
+Learn more: [Evals Primitive](/primitives/essentials/evals)
+
+## Performance Considerations
+
+### Hook Overhead
+
+- **Hook Registration**: < 1ms per hook
+- **Hook Execution**: Depends on hook logic (should be < 100ms)
+- **Async Hooks**: Don't block agent execution
+- **Error Handling**: Failed hooks are logged but don't stop execution
+
+### Optimization
+
+```typescript
+// Minimize hook overhead
+const efficientHooks = {
+  onToolUse: async (event) => {
+    // 1. Quick validation
+    if (!shouldLog(event.tool)) return;
+
+    // 2. Fire and forget
+    logAsync(event).catch(console.error);
+  }
+};
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Hook Not Triggering">
+    **Problem**: Hook function not being called
+
+    **Solutions**:
+    - Verify hook name is spelled correctly
+    - Check hook is passed in hooks object
+    - Ensure event actually occurs during execution
+
+    ```typescript
+    // Debug hooks
+    const debugHooks = {
+      onStart: (event) => console.log('START triggered'),
+      onToolUse: (event) => console.log('TOOL USE triggered:', event.tool),
+      onComplete: (event) => console.log('COMPLETE triggered')
+    };
+    ```
+  </Accordion>
+
+  <Accordion title="Hook Errors Breaking Execution">
+    **Problem**: Hook failures stopping agent
+
+    **Solutions**:
+    - Wrap hook logic in try-catch
+    - Log errors instead of throwing
+    - Use error boundaries
+
+    ```typescript
+    const safeHooks = {
+      onToolUse: async (event) => {
+        try {
+          await riskyOperation(event);
+        } catch (error) {
+          console.error('Hook error:', error);
+          // Don't throw - let execution continue
+        }
+      }
+    };
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Traces" icon="bug" href="/primitives/essentials/traces">
+    Event streaming and execution monitoring
+  </Card>
+
+  <Card title="Background Tasks" icon="clock" href="/primitives/essentials/background">
+    Async task lifecycle events
+  </Card>
+
+  <Card title="Evals" icon="check-circle" href="/primitives/essentials/evals">
+    Testing with custom validation hooks
+  </Card>
+
+  <Card title="Versioning" icon="code-branch" href="/primitives/essentials/versioning">
+    Version lifecycle callbacks
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Hook parameters and events
+  </Card>
+
+  <Card title="Event Types" icon="list" href="/deploy/api/message-events">
+    Complete event reference
+  </Card>
+
+  <Card title="Best Practices" icon="star" href="/build/overview">
+    Hook implementation patterns
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Hooks are for observing and reacting to agent execution, not for modifying it. Keep hooks fast, handle errors gracefully, and use async operations wisely.
+</Tip>

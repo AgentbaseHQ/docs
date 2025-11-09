@@ -1,0 +1,837 @@
+---
+title: "Self-Healing"
+description: "Automatic error detection, recovery, and retry mechanisms for resilient agent workflows"
+icon: "shield-heart"
+---
+
+> Self-Healing enables agents to automatically detect, diagnose, and recover from errors, making your workflows robust and resilient without manual intervention.
+
+## Overview
+
+The Self-Healing primitive provides automatic error detection and recovery capabilities that make agent workflows resilient to failures. Instead of failing completely when encountering errors, self-healing agents can detect problems, analyze their cause, attempt fixes, and retry operations automatically.
+
+Self-healing is essential for:
+
+- **Production Reliability**: Recover from transient failures without human intervention
+- **Error Tolerance**: Handle network issues, rate limits, and temporary service outages
+- **Intelligent Retry**: Use smart retry strategies based on error type and context
+- **Automatic Debugging**: Detect and fix common programming and configuration errors
+- **Graceful Degradation**: Provide partial results when complete success isn't possible
+
+<CardGroup cols={2}>
+  <Card title="Automatic Detection" icon="magnifying-glass">
+    Agents detect errors from tool failures, exceptions, and unexpected outputs
+  </Card>
+
+  <Card title="Context-Aware Recovery" icon="brain">
+    Recovery strategies adapt based on error type, context, and previous attempts
+  </Card>
+
+  <Card title="Intelligent Retry Logic" icon="rotate">
+    Exponential backoff, jitter, and adaptive retry policies prevent cascading failures
+  </Card>
+
+  <Card title="Built-In by Default" icon="circle-check">
+    Self-healing is automatically available in all Agentbase agents
+  </Card>
+</CardGroup>
+
+## How Self-Healing Works
+
+### Error Detection
+
+Agents automatically detect errors from multiple sources:
+
+1. **Tool Failures**: Failed commands, API calls, or file operations
+2. **Exception Messages**: Runtime errors and stack traces
+3. **Validation Errors**: Type mismatches, constraint violations
+4. **Timeout Errors**: Operations that exceed time limits
+5. **Rate Limits**: API throttling and quota exceeded errors
+6. **Resource Errors**: Out of memory, disk space, or network issues
+
+### Recovery Process
+
+When an error is detected, agents follow a systematic recovery process:
+
+1. **Error Analysis**: Understand what went wrong and why
+2. **Root Cause Identification**: Determine if error is transient or persistent
+3. **Strategy Selection**: Choose appropriate recovery approach
+4. **Fix Application**: Attempt to resolve the underlying issue
+5. **Retry Operation**: Re-execute the failed operation
+6. **Validation**: Confirm the error is resolved
+7. **Escalation**: If recovery fails, report to user or logging system
+
+<Note>
+**Automatic by Default**: Self-healing happens automatically. Agents detect errors and attempt recovery without requiring special configuration.
+</Note>
+
+## Code Examples
+
+### Basic Error Recovery
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Agent automatically recovers from errors
+const result = await agentbase.runAgent({
+  message: "Download data from https://api.example.com/data and save it",
+  mode: "fast"
+});
+
+// If API is temporarily unavailable, agent will:
+// 1. Detect the connection error
+// 2. Wait briefly (exponential backoff)
+// 3. Retry the request
+// 4. Continue with the task once successful
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Agent automatically recovers from errors
+result = agentbase.run_agent(
+    message="Download data from https://api.example.com/data and save it",
+    mode="fast"
+)
+
+# If API is temporarily unavailable, agent will:
+# 1. Detect the connection error
+# 2. Wait briefly (exponential backoff)
+# 3. Retry the request
+# 4. Continue with the task once successful
+```
+
+</CodeGroup>
+
+### Handling File System Errors
+
+<CodeGroup>
+
+```typescript TypeScript
+// Agent automatically handles missing directories and permissions
+const result = await agentbase.runAgent({
+  message: "Save report to /data/reports/2025/january/report.pdf",
+  mode: "fast"
+});
+
+// Self-healing process:
+// 1. Attempts to write file
+// 2. Detects "directory does not exist" error
+// 3. Creates missing directories: mkdir -p /data/reports/2025/january
+// 4. Retries file write operation
+// 5. Succeeds automatically
+```
+
+```python Python
+# Agent automatically handles missing directories and permissions
+result = agentbase.run_agent(
+    message="Save report to /data/reports/2025/january/report.pdf",
+    mode="fast"
+)
+
+# Self-healing process:
+# 1. Attempts to write file
+# 2. Detects "directory does not exist" error
+# 3. Creates missing directories: mkdir -p /data/reports/2025/january
+# 4. Retries file write operation
+# 5. Succeeds automatically
+```
+
+</CodeGroup>
+
+### Handling API Rate Limits
+
+<CodeGroup>
+
+```typescript TypeScript
+// Agent handles rate limiting intelligently
+const result = await agentbase.runAgent({
+  message: "Fetch user data for IDs 1-1000 from the API",
+  mode: "fast",
+  mcpServers: [{
+    serverName: 'api',
+    serverUrl: 'https://api.company.com/mcp'
+  }]
+});
+
+// Self-healing for rate limits:
+// 1. Makes API requests
+// 2. Receives "429 Too Many Requests" error
+// 3. Parses "Retry-After" header (e.g., 60 seconds)
+// 4. Waits the specified time
+// 5. Resumes requests
+// 6. May also implement batching to reduce request rate
+```
+
+```python Python
+# Agent handles rate limiting intelligently
+result = agentbase.run_agent(
+    message="Fetch user data for IDs 1-1000 from the API",
+    mode="fast",
+    mcp_servers=[{
+        'serverName': 'api',
+        'serverUrl': 'https://api.company.com/mcp'
+    }]
+)
+
+# Self-healing for rate limits:
+# 1. Makes API requests
+# 2. Receives "429 Too Many Requests" error
+# 3. Parses "Retry-After" header (e.g., 60 seconds)
+# 4. Waits the specified time
+# 5. Resumes requests
+# 6. May also implement batching to reduce request rate
+```
+
+</CodeGroup>
+
+### Code Error Recovery
+
+<CodeGroup>
+
+```typescript TypeScript
+// Agent can fix and retry code execution
+const result = await agentbase.runAgent({
+  message: "Create a Python script to analyze data.csv and show statistics",
+  mode: "fast"
+});
+
+// Self-healing for code errors:
+// 1. Writes Python script
+// 2. Runs script, gets "ModuleNotFoundError: No module named 'pandas'"
+// 3. Analyzes error, determines missing dependency
+// 4. Installs pandas: pip install pandas
+// 5. Reruns script successfully
+// 6. Delivers results
+```
+
+```python Python
+# Agent can fix and retry code execution
+result = agentbase.run_agent(
+    message="Create a Python script to analyze data.csv and show statistics",
+    mode="fast"
+)
+
+# Self-healing for code errors:
+# 1. Writes Python script
+# 2. Runs script, gets "ModuleNotFoundError: No module named 'pandas'"
+# 3. Analyzes error, determines missing dependency
+# 4. Installs pandas: pip install pandas
+# 5. Reruns script successfully
+# 6. Delivers results
+```
+
+</CodeGroup>
+
+## Self-Healing Patterns
+
+### Retry with Exponential Backoff
+
+Agents use intelligent retry strategies automatically:
+
+```typescript
+// Agent implements exponential backoff automatically
+const result = await agentbase.runAgent({
+  message: "Scrape data from a website that may be temporarily down",
+  mode: "fast"
+});
+
+// Automatic retry pattern:
+// Attempt 1: Immediate
+// Attempt 2: Wait 1 second
+// Attempt 3: Wait 2 seconds
+// Attempt 4: Wait 4 seconds
+// Attempt 5: Wait 8 seconds
+// Total attempts: 5, then escalate to user
+```
+
+### Circuit Breaker Pattern
+
+Agents detect when a service is consistently failing:
+
+```typescript
+// Agent recognizes repeated failures and adapts strategy
+const result = await agentbase.runAgent({
+  message: "Process data using external API, fallback to local processing if API is down",
+  mode: "fast"
+});
+
+// Circuit breaker logic:
+// 1. Try API: fails
+// 2. Retry API: fails
+// 3. Detect pattern of failures
+// 4. Open circuit breaker (stop trying API)
+// 5. Use fallback strategy (local processing)
+// 6. Periodically test API recovery
+```
+
+### Graceful Degradation
+
+Agents provide partial results when complete success isn't possible:
+
+```typescript
+// Agent delivers what it can despite errors
+const result = await agentbase.runAgent({
+  message: "Download and process data from 10 different sources",
+  mode: "fast"
+});
+
+// Graceful degradation:
+// 1. Attempts all 10 sources
+// 2. 2 sources fail (network timeout)
+// 3. Processes 8 successful sources
+// 4. Reports: "Processed 8/10 sources. Failed: source3, source7"
+// 5. Delivers results from successful sources
+// 6. Logs errors for failed sources
+```
+
+## Use Cases
+
+### 1. Robust Data Pipelines
+
+Handle failures in ETL workflows:
+
+<AccordionGroup>
+  <Accordion title="API Data Integration">
+    ```typescript
+    // Self-healing data pipeline
+    const pipeline = await agentbase.runAgent({
+      message: `
+        Build a data pipeline:
+        1. Fetch data from https://api.source.com/data
+        2. Transform and clean the data
+        3. Upload to https://api.destination.com/data
+
+        Handle any network errors, rate limits, or timeouts automatically.
+      `,
+      mode: "fast"
+    });
+
+    // Agent automatically handles:
+    // - Source API downtime (retry with backoff)
+    // - Rate limiting (wait and resume)
+    // - Destination upload failures (retry with exponential backoff)
+    // - Network timeouts (retry with increased timeout)
+    // - Data validation errors (skip invalid rows, continue processing)
+    ```
+  </Accordion>
+
+  <Accordion title="Web Scraping with Recovery">
+    ```typescript
+    async function robustScraping(urls: string[]) {
+      return await agentbase.runAgent({
+        message: `
+          Scrape content from these URLs: ${urls.join(', ')}
+
+          For each URL:
+          - Handle timeouts by retrying
+          - Handle 404s by logging and continuing
+          - Handle rate limits by waiting
+          - Extract main content even if page structure varies
+        `,
+        mode: "fast"
+      });
+
+      // Self-healing handles:
+      // - Connection timeouts → retry
+      // - 503 errors → exponential backoff
+      // - Rate limits → respect Retry-After
+      // - Missing elements → adapt selector strategy
+      // - Partial page loads → retry or use what's available
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 2. Resilient Automation
+
+Build automation that doesn't break:
+
+```typescript
+async function deploymentAutomation() {
+  return await agentbase.runAgent({
+    message: `
+      Deploy application:
+      1. Run tests
+      2. Build Docker image
+      3. Push to registry
+      4. Deploy to production
+      5. Run health checks
+
+      If any step fails, diagnose and retry. If tests fail, show which tests failed.
+    `,
+    mode: "fast"
+  });
+
+  // Self-healing handles:
+  // - Flaky tests → rerun failed tests
+  // - Docker build failures → clear cache and retry
+  // - Registry push timeout → resume interrupted push
+  // - Deployment rollout issues → rollback and retry
+  // - Health check failures → wait for startup, retry checks
+}
+```
+
+### 3. Long-Running Batch Jobs
+
+Process large datasets reliably:
+
+```typescript
+async function batchProcessing(fileList: string[]) {
+  return await agentbase.runAgent({
+    message: `
+      Process ${fileList.length} files:
+      - Convert each file from JSON to CSV
+      - Validate data format
+      - Upload to S3
+
+      Track progress and handle errors gracefully.
+      If a file fails, log it and continue with others.
+    `,
+    mode: "fast"
+  });
+
+  // Self-healing ensures:
+  // - Individual file failures don't stop entire job
+  // - Progress is tracked and resumed if interrupted
+  // - S3 upload retries on network issues
+  // - Malformed files are logged and skipped
+  // - Final report shows success/failure counts
+}
+```
+
+### 4. External API Integration
+
+Robust integration with unreliable services:
+
+```typescript
+async function weatherDataAggregation() {
+  return await agentbase.runAgent({
+    message: `
+      Collect weather data from 5 different weather APIs.
+      Aggregate the data and calculate average temperatures.
+      Handle API failures gracefully - use data from available APIs.
+    `,
+    mode: "fast",
+    mcpServers: [
+      { serverName: 'weather-api-1', serverUrl: 'https://api1.weather.com/mcp' },
+      { serverName: 'weather-api-2', serverUrl: 'https://api2.weather.com/mcp' },
+      // ... more APIs
+    ]
+  });
+
+  // Self-healing provides:
+  // - Parallel requests with timeout handling
+  // - Retry failed APIs with backoff
+  // - Calculate result from available APIs if some fail
+  // - Report which APIs failed for monitoring
+}
+```
+
+### 5. Database Operations
+
+Resilient database interactions:
+
+```typescript
+async function databaseMigration() {
+  return await agentbase.runAgent({
+    message: `
+      Run database migration:
+      1. Backup current database
+      2. Run migration scripts
+      3. Verify data integrity
+      4. If anything fails, rollback to backup
+    `,
+    mode: "fast"
+  });
+
+  // Self-healing handles:
+  // - Connection timeouts → reconnect and retry
+  // - Lock timeouts → wait and retry
+  // - Constraint violations → rollback transaction
+  // - Disk space issues → cleanup and retry
+  // - Migration errors → automatic rollback
+}
+```
+
+## Best Practices
+
+### Designing for Self-Healing
+
+<AccordionGroup>
+  <Accordion title="Provide Clear Error Context">
+    ```typescript
+    // Good: Clear error handling expectations
+    const result = await agentbase.runAgent({
+      message: `
+        Download data from API.
+
+        Error handling:
+        - Network errors: Retry up to 3 times with exponential backoff
+        - 404 errors: Skip and log the missing resource
+        - 401 errors: Report authentication failure (don't retry)
+        - 500 errors: Retry with backoff
+      `,
+      mode: "fast"
+    });
+
+    // Avoid: Vague instructions
+    const vague = await agentbase.runAgent({
+      message: "Download data from API and handle errors",
+      mode: "fast"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Set Appropriate Retry Limits">
+    ```typescript
+    // Good: Specify retry limits for different error types
+    const result = await agentbase.runAgent({
+      message: `
+        Process data with these retry policies:
+        - Transient errors (network, timeout): Retry up to 5 times
+        - Rate limits: Wait and retry, max 3 attempts
+        - Data validation errors: Skip invalid items, don't retry
+        - Authentication errors: Fail immediately, don't retry
+      `,
+      mode: "fast"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Implement Graceful Degradation">
+    ```typescript
+    // Good: Define acceptable partial success
+    const result = await agentbase.runAgent({
+      message: `
+        Fetch data from 20 sources.
+        Success criteria: At least 15/20 sources must succeed.
+        If fewer than 15 succeed, report error.
+        Always return data from successful sources.
+      `,
+      mode: "fast"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Monitor and Log Recovery">
+    ```typescript
+    // Track self-healing events
+    const result = await agentbase.runAgent({
+      message: `
+        Process data and log all error recovery attempts:
+        - Log when errors occur
+        - Log retry attempts and outcomes
+        - Log when recovery succeeds
+        - Report summary of all recovery events
+      `,
+      mode: "fast",
+      stream: true
+    });
+
+    for await (const event of result) {
+      if (event.type === 'agent_error') {
+        console.log('Error detected:', event.error);
+      }
+      if (event.type === 'agent_tool_use') {
+        console.log('Recovery attempt:', event.tool);
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Error Classification
+
+Help agents distinguish error types:
+
+```typescript
+// Classify errors for appropriate handling
+const result = await agentbase.runAgent({
+  message: `
+    Download and process files.
+
+    Error types:
+
+    RETRYABLE (use exponential backoff):
+    - Network timeouts
+    - Connection refused
+    - 503 Service Unavailable
+    - Rate limit (429)
+
+    NON-RETRYABLE (fail fast):
+    - 401 Unauthorized
+    - 403 Forbidden
+    - 404 Not Found
+    - Invalid configuration
+
+    RECOVERABLE (fix and retry):
+    - Missing dependencies (install them)
+    - Missing directories (create them)
+    - File format errors (convert format)
+  `,
+  mode: "fast"
+});
+```
+
+### Circuit Breaker Configuration
+
+```typescript
+// Implement circuit breaker pattern
+const result = await agentbase.runAgent({
+  message: `
+    Call external API repeatedly.
+
+    Circuit breaker rules:
+    - If 5 consecutive failures occur, open circuit
+    - When circuit is open, use fallback strategy (cached data)
+    - Test circuit recovery every 60 seconds
+    - Close circuit after 3 consecutive successes
+  `,
+  mode: "fast"
+});
+```
+
+## Integration with Other Primitives
+
+### With Traces
+
+Monitor self-healing behavior through traces:
+
+```typescript
+// Track error recovery in traces
+const result = await agentbase.runAgent({
+  message: "Download data with automatic retry on failure",
+  mode: "fast",
+  stream: true
+});
+
+const recoveryEvents = [];
+
+for await (const event of result) {
+  if (event.type === 'agent_error') {
+    recoveryEvents.push({ type: 'error', error: event.error });
+  }
+  if (event.type === 'agent_thinking' && event.content.includes('retry')) {
+    recoveryEvents.push({ type: 'recovery', thinking: event.content });
+  }
+}
+
+console.log('Recovery events:', recoveryEvents);
+```
+
+Learn more: [Traces Primitive](/primitives/essentials/traces)
+
+### With Hooks
+
+Execute custom logic during error recovery:
+
+```typescript
+// Hook into recovery process
+const result = await agentbase.runAgent({
+  message: "Process data with error recovery",
+  mode: "fast",
+  hooks: {
+    onError: async (error) => {
+      // Log to external system
+      await logger.error('Agent error detected', { error });
+    },
+    onRetry: async (attempt) => {
+      // Track retry metrics
+      await metrics.increment('agent.retry', { attempt });
+    }
+  }
+});
+```
+
+Learn more: [Hooks Primitive](/primitives/essentials/hooks)
+
+### With Evals
+
+Test self-healing behavior:
+
+```typescript
+// Eval for error recovery
+describe('Self-Healing', () => {
+  it('should recover from network errors', async () => {
+    // Simulate flaky network
+    const result = await agentbase.runAgent({
+      message: "Download data from unreliable API",
+      mode: "fast"
+    });
+
+    // Verify recovery succeeded
+    expect(result.success).toBe(true);
+    expect(result.content).toContain('data downloaded');
+  });
+
+  it('should handle rate limits gracefully', async () => {
+    const result = await agentbase.runAgent({
+      message: "Make 1000 API requests",
+      mode: "fast"
+    });
+
+    // Should succeed despite rate limits
+    expect(result.success).toBe(true);
+  });
+});
+```
+
+Learn more: [Evals Primitive](/primitives/essentials/evals)
+
+## Performance Considerations
+
+### Retry Overhead
+
+- **Fast Recovery** (1-2 retries): Minimal overhead (< 2 seconds)
+- **Moderate Recovery** (3-5 retries): Moderate overhead (5-15 seconds with backoff)
+- **Extensive Recovery** (> 5 retries): Significant overhead (> 30 seconds)
+
+### Optimizing Recovery Time
+
+```typescript
+// Minimize recovery time
+const result = await agentbase.runAgent({
+  message: `
+    Download data with optimized retry:
+    - First retry: immediate
+    - Second retry: 1 second wait
+    - Third retry: 2 second wait
+    - Max retries: 3
+    - After 3 failures, use cached data if available
+  `,
+  mode: "fast"
+});
+```
+
+### Resource Impact
+
+Self-healing operations consume additional resources:
+
+- **Network**: Retry attempts use bandwidth
+- **API Quotas**: Retries count toward rate limits
+- **Time**: Recovery adds latency to operations
+- **Cost**: Additional API calls may incur costs
+
+Balance reliability with resource usage:
+
+```typescript
+// Balance reliability and resource usage
+const result = await agentbase.runAgent({
+  message: `
+    Download data efficiently:
+    - Use cache when available (avoid unnecessary requests)
+    - Implement aggressive timeout (fail fast on hung connections)
+    - Limit retries to 3 attempts max
+    - Use exponential backoff to avoid overwhelming services
+  `,
+  mode: "fast"
+});
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Recovery Loops">
+    **Problem**: Agent keeps retrying without success
+
+    **Solution**: Set clear retry limits and failure conditions
+
+    ```typescript
+    const result = await agentbase.runAgent({
+      message: `
+        Download data with strict retry limits:
+        - Max 3 retry attempts
+        - If all retries fail, report error and stop
+        - Don't retry on 404 or 401 errors
+      `,
+      mode: "fast"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Excessive Retry Delays">
+    **Problem**: Recovery takes too long due to exponential backoff
+
+    **Solution**: Configure reasonable backoff limits
+
+    ```typescript
+    const result = await agentbase.runAgent({
+      message: `
+        Use moderate backoff strategy:
+        - Wait times: 1s, 2s, 4s (max 4 seconds)
+        - Total max retry time: 10 seconds
+        - After 10 seconds, fail and report
+      `,
+      mode: "fast"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Not Recovering from Fixable Errors">
+    **Problem**: Agent gives up on errors that could be fixed
+
+    **Solution**: Explicitly guide recovery strategies
+
+    ```typescript
+    const result = await agentbase.runAgent({
+      message: `
+        Run Python script with automatic dependency resolution:
+        - If ModuleNotFoundError: install missing package with pip
+        - If SyntaxError: show error and ask for fix
+        - If FileNotFoundError: create missing directories
+        - Retry after fixing each error
+      `,
+      mode: "fast"
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Traces" icon="bug" href="/primitives/essentials/traces">
+    Monitor and debug error recovery
+  </Card>
+
+  <Card title="Hooks" icon="webhook" href="/primitives/essentials/hooks">
+    Custom error handling callbacks
+  </Card>
+
+  <Card title="Evals" icon="check-circle" href="/primitives/essentials/evals">
+    Test self-healing behavior
+  </Card>
+
+  <Card title="Background Tasks" icon="clock" href="/primitives/essentials/background">
+    Resilient long-running operations
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="Error Handling Guide" icon="shield" href="/build/use-cases">
+    Patterns for robust error handling
+  </Card>
+
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Error handling parameters
+  </Card>
+
+  <Card title="Best Practices" icon="star" href="/build/overview">
+    Production reliability patterns
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Self-healing is automatic and built-in. Agents detect and recover from most errors without configuration. Provide clear guidance for complex error scenarios and retry policies.
+</Tip>

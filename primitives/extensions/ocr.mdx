@@ -1,0 +1,1333 @@
+---
+title: "OCR"
+description: "Extract text and data from images, documents, and scanned files"
+icon: "scanner"
+---
+
+> OCR (Optical Character Recognition) enables agents to read and extract text from images, PDFs, scanned documents, screenshots, and handwritten notes, making visual content searchable and actionable.
+
+## Overview
+
+The OCR primitive empowers agents with visual text recognition capabilities, allowing them to process and understand text embedded in images and documents. This transforms unstructured visual content into structured, machine-readable data that agents can analyze, index, and act upon.
+
+OCR is essential for:
+
+- **Document Digitization**: Convert scanned documents and PDFs into editable text
+- **Data Extraction**: Extract structured data from invoices, receipts, and forms
+- **Image Analysis**: Read text from screenshots, photos, and diagrams
+- **Accessibility**: Make visual content accessible and searchable
+- **Automation**: Process documents automatically without manual transcription
+- **Multi-language Support**: Extract text in multiple languages and scripts
+
+<CardGroup cols={2}>
+  <Card title="Image to Text" icon="image">
+    Extract text from images in any format (PNG, JPG, HEIC, WebP)
+  </Card>
+
+  <Card title="PDF Processing" icon="file-pdf">
+    Process multi-page PDFs with text and image content
+  </Card>
+
+  <Card title="Handwriting Recognition" icon="pen">
+    Recognize handwritten text with high accuracy
+  </Card>
+
+  <Card title="Structured Extraction" icon="table">
+    Extract tables, forms, and structured data from documents
+  </Card>
+</CardGroup>
+
+## How OCR Works
+
+When you enable OCR for an agent:
+
+1. **Input**: Agent receives image file, URL, or base64-encoded image data
+2. **Detection**: OCR engine detects text regions in the image
+3. **Recognition**: Advanced ML models recognize characters and words
+4. **Layout Analysis**: Preserves document structure, tables, and formatting
+5. **Post-processing**: Cleans and formats extracted text
+6. **Output**: Returns structured text with confidence scores and coordinates
+
+<Note>
+**Powered by Vision Models**: Agentbase OCR uses state-of-the-art vision models including Claude 3.5 Sonnet and GPT-4 Vision for superior accuracy.
+</Note>
+
+## OCR Capabilities
+
+### Text Extraction
+
+Extract plain text from any image:
+
+```typescript
+{
+  type: "text_extraction",
+  input: "image.jpg",
+  output: "Full text content from the image"
+}
+```
+
+### Structured Data Extraction
+
+Extract specific fields from forms and documents:
+
+```typescript
+{
+  type: "structured_extraction",
+  input: "invoice.pdf",
+  schema: {
+    invoiceNumber: "string",
+    date: "string",
+    total: "number",
+    items: "array"
+  }
+}
+```
+
+### Table Recognition
+
+Extract tables with rows and columns preserved:
+
+```typescript
+{
+  type: "table_extraction",
+  input: "financial_report.pdf",
+  output: [
+    ["Month", "Revenue", "Expenses"],
+    ["January", "$50,000", "$30,000"],
+    ["February", "$55,000", "$32,000"]
+  ]
+}
+```
+
+## Code Examples
+
+### Basic OCR
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+import fs from 'fs';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Extract text from image
+const result = await agentbase.runAgent({
+  message: "Extract all text from this receipt image",
+  files: [{
+    name: "receipt.jpg",
+    data: fs.readFileSync('./receipt.jpg')
+  }],
+  capabilities: {
+    ocr: {
+      enabled: true
+    }
+  }
+});
+
+console.log('Extracted text:', result.text);
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Extract text from image
+with open('./receipt.jpg', 'rb') as f:
+    result = agentbase.run_agent(
+        message="Extract all text from this receipt image",
+        files=[{
+            "name": "receipt.jpg",
+            "data": f.read()
+        }],
+        capabilities={
+            "ocr": {
+                "enabled": True
+            }
+        }
+    )
+
+print(f"Extracted text: {result.text}")
+```
+
+```bash cURL
+# Base64 encode image first
+IMAGE_BASE64=$(base64 -i receipt.jpg)
+
+curl -X POST https://api.agentbase.sh \
+  -H "Authorization: Bearer $AGENTBASE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Extract all text from this receipt image",
+    "files": [{
+      "name": "receipt.jpg",
+      "data": "'$IMAGE_BASE64'"
+    }],
+    "capabilities": {
+      "ocr": {
+        "enabled": true
+      }
+    }
+  }'
+```
+
+</CodeGroup>
+
+### Extract from URL
+
+<CodeGroup>
+
+```typescript TypeScript
+// Process image from URL
+const result = await agentbase.runAgent({
+  message: "Extract text from this document",
+  files: [{
+    url: "https://example.com/document.pdf"
+  }],
+  capabilities: {
+    ocr: {
+      enabled: true,
+      language: "en" // Optional: specify language
+    }
+  }
+});
+```
+
+```python Python
+# Process image from URL
+result = agentbase.run_agent(
+    message="Extract text from this document",
+    files=[{
+        "url": "https://example.com/document.pdf"
+    }],
+    capabilities={
+        "ocr": {
+            "enabled": True,
+            "language": "en"  # Optional: specify language
+        }
+    }
+)
+```
+
+</CodeGroup>
+
+### Structured Data Extraction
+
+<CodeGroup>
+
+```typescript TypeScript
+// Extract structured data from invoice
+const result = await agentbase.runAgent({
+  message: "Extract invoice details from this image",
+  files: [{ url: "https://example.com/invoice.jpg" }],
+  capabilities: {
+    ocr: {
+      enabled: true,
+      extractionSchema: {
+        invoiceNumber: "string",
+        date: "string",
+        vendor: "string",
+        total: "number",
+        items: [{
+          description: "string",
+          quantity: "number",
+          price: "number"
+        }]
+      }
+    }
+  }
+});
+
+console.log('Invoice data:', result.extracted);
+// {
+//   invoiceNumber: "INV-12345",
+//   date: "2024-01-15",
+//   vendor: "Acme Corp",
+//   total: 1250.00,
+//   items: [...]
+// }
+```
+
+```python Python
+# Extract structured data from invoice
+result = agentbase.run_agent(
+    message="Extract invoice details from this image",
+    files=[{"url": "https://example.com/invoice.jpg"}],
+    capabilities={
+        "ocr": {
+            "enabled": True,
+            "extraction_schema": {
+                "invoiceNumber": "string",
+                "date": "string",
+                "vendor": "string",
+                "total": "number",
+                "items": [{
+                    "description": "string",
+                    "quantity": "number",
+                    "price": "number"
+                }]
+            }
+        }
+    }
+)
+
+print(f"Invoice data: {result.extracted}")
+```
+
+</CodeGroup>
+
+### Multi-page PDF Processing
+
+<CodeGroup>
+
+```typescript TypeScript
+// Process multi-page PDF
+const result = await agentbase.runAgent({
+  message: "Extract text from all pages and summarize the document",
+  files: [{
+    name: "contract.pdf",
+    data: fs.readFileSync('./contract.pdf')
+  }],
+  capabilities: {
+    ocr: {
+      enabled: true,
+      pageRange: [1, 10], // Process first 10 pages
+      preserveLayout: true
+    }
+  }
+});
+
+// Access text from individual pages
+result.pages.forEach((page, index) => {
+  console.log(`Page ${index + 1}:`, page.text);
+});
+```
+
+```python Python
+# Process multi-page PDF
+with open('./contract.pdf', 'rb') as f:
+    result = agentbase.run_agent(
+        message="Extract text from all pages and summarize the document",
+        files=[{
+            "name": "contract.pdf",
+            "data": f.read()
+        }],
+        capabilities={
+            "ocr": {
+                "enabled": True,
+                "page_range": [1, 10],  # Process first 10 pages
+                "preserve_layout": True
+            }
+        }
+    )
+
+# Access text from individual pages
+for index, page in enumerate(result.pages):
+    print(f"Page {index + 1}: {page.text}")
+```
+
+</CodeGroup>
+
+### Table Extraction
+
+<CodeGroup>
+
+```typescript TypeScript
+// Extract tables from document
+const result = await agentbase.runAgent({
+  message: "Extract all tables from this financial report",
+  files: [{ url: "https://example.com/report.pdf" }],
+  capabilities: {
+    ocr: {
+      enabled: true,
+      extractTables: true
+    }
+  }
+});
+
+// Access extracted tables
+result.tables.forEach((table, index) => {
+  console.log(`Table ${index + 1}:`);
+  console.log('Headers:', table.headers);
+  console.log('Rows:', table.rows);
+});
+```
+
+```python Python
+# Extract tables from document
+result = agentbase.run_agent(
+    message="Extract all tables from this financial report",
+    files=[{"url": "https://example.com/report.pdf"}],
+    capabilities={
+        "ocr": {
+            "enabled": True,
+            "extract_tables": True
+        }
+    }
+)
+
+# Access extracted tables
+for index, table in enumerate(result.tables):
+    print(f"Table {index + 1}:")
+    print(f"Headers: {table.headers}")
+    print(f"Rows: {table.rows}")
+```
+
+</CodeGroup>
+
+### Handwriting Recognition
+
+<CodeGroup>
+
+```typescript TypeScript
+// Recognize handwritten notes
+const result = await agentbase.runAgent({
+  message: "Convert this handwritten note to text",
+  files: [{
+    name: "note.jpg",
+    data: fs.readFileSync('./handwritten_note.jpg')
+  }],
+  capabilities: {
+    ocr: {
+      enabled: true,
+      handwriting: true
+    }
+  }
+});
+
+console.log('Transcribed text:', result.text);
+console.log('Confidence:', result.confidence);
+```
+
+```python Python
+# Recognize handwritten notes
+with open('./handwritten_note.jpg', 'rb') as f:
+    result = agentbase.run_agent(
+        message="Convert this handwritten note to text",
+        files=[{
+            "name": "note.jpg",
+            "data": f.read()
+        }],
+        capabilities={
+            "ocr": {
+                "enabled": True,
+                "handwriting": True
+            }
+        }
+    )
+
+print(f"Transcribed text: {result.text}")
+print(f"Confidence: {result.confidence}")
+```
+
+</CodeGroup>
+
+### Multi-language OCR
+
+<CodeGroup>
+
+```typescript TypeScript
+// Extract text in multiple languages
+const result = await agentbase.runAgent({
+  message: "Extract text from this multilingual document",
+  files: [{ url: "https://example.com/multilingual.pdf" }],
+  capabilities: {
+    ocr: {
+      enabled: true,
+      languages: ["en", "es", "fr", "zh", "ja"]
+    }
+  }
+});
+
+// Agent automatically detects and extracts text in all languages
+console.log('Extracted text:', result.text);
+console.log('Detected languages:', result.detectedLanguages);
+```
+
+```python Python
+# Extract text in multiple languages
+result = agentbase.run_agent(
+    message="Extract text from this multilingual document",
+    files=[{"url": "https://example.com/multilingual.pdf"}],
+    capabilities={
+        "ocr": {
+            "enabled": True,
+            "languages": ["en", "es", "fr", "zh", "ja"]
+        }
+    }
+)
+
+print(f"Extracted text: {result.text}")
+print(f"Detected languages: {result.detected_languages}")
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Invoice Processing
+
+Automate invoice data extraction and entry:
+
+<CodeGroup>
+
+```typescript TypeScript
+const invoiceProcessor = await agentbase.runAgent({
+  message: "Extract invoice details and validate against purchase order",
+  files: [{ url: invoiceImageUrl }],
+  capabilities: {
+    ocr: {
+      enabled: true,
+      extractionSchema: {
+        invoiceNumber: "string",
+        date: "string",
+        vendor: "string",
+        vendorAddress: "string",
+        total: "number",
+        tax: "number",
+        subtotal: "number",
+        paymentTerms: "string",
+        lineItems: [{
+          description: "string",
+          quantity: "number",
+          unitPrice: "number",
+          total: "number"
+        }]
+      }
+    }
+  },
+  mcpServers: [{
+    serverName: "accounting-system",
+    serverUrl: "https://api.company.com/accounting"
+  }]
+});
+
+// Agent extracts data and can create accounting entry
+console.log('Invoice processed:', invoiceProcessor.extracted);
+```
+
+```python Python
+invoice_processor = agentbase.run_agent(
+    message="Extract invoice details and validate against purchase order",
+    files=[{"url": invoice_image_url}],
+    capabilities={
+        "ocr": {
+            "enabled": True,
+            "extraction_schema": {
+                "invoiceNumber": "string",
+                "date": "string",
+                "vendor": "string",
+                "vendorAddress": "string",
+                "total": "number",
+                "tax": "number",
+                "subtotal": "number",
+                "paymentTerms": "string",
+                "lineItems": [{
+                    "description": "string",
+                    "quantity": "number",
+                    "unitPrice": "number",
+                    "total": "number"
+                }]
+            }
+        }
+    },
+    mcp_servers=[{
+        "server_name": "accounting-system",
+        "server_url": "https://api.company.com/accounting"
+    }]
+)
+
+print(f"Invoice processed: {invoice_processor.extracted}")
+```
+
+</CodeGroup>
+
+### 2. Receipt Management
+
+Build expense tracking from receipt photos:
+
+```typescript
+const expenseTracker = await agentbase.runAgent({
+  message: "Extract expense details from this receipt and categorize it",
+  files: [{ data: receiptImageBuffer }],
+  capabilities: {
+    ocr: {
+      enabled: true,
+      extractionSchema: {
+        merchant: "string",
+        date: "string",
+        total: "number",
+        tax: "number",
+        paymentMethod: "string",
+        items: ["string"]
+      }
+    }
+  },
+  system: `Extract receipt information and categorize the expense.
+
+  Categories: meals, travel, supplies, entertainment, other
+
+  After extraction, determine the appropriate category and save to expense system.`
+});
+
+// Returns structured receipt data with category
+// Agent can automatically create expense report entry
+```
+
+### 3. Identity Verification
+
+Extract and verify ID documents:
+
+```typescript
+const idVerification = await agentbase.runAgent({
+  message: "Extract information from this driver's license and verify it",
+  files: [{ url: licenseImageUrl }],
+  capabilities: {
+    ocr: {
+      enabled: true,
+      extractionSchema: {
+        fullName: "string",
+        licenseNumber: "string",
+        dateOfBirth: "string",
+        expirationDate: "string",
+        address: "string",
+        state: "string"
+      }
+    }
+  },
+  system: `Extract all information from the ID document.
+
+  Validate:
+  - Document is not expired
+  - All text is clearly readable
+  - Photo is present and clear
+  - Format matches expected ID template
+
+  Flag any concerns about document authenticity.`
+});
+
+// Agent extracts data and performs validation checks
+```
+
+### 4. Form Processing
+
+Automate form data extraction:
+
+```typescript
+const formProcessor = await agentbase.runAgent({
+  message: "Extract all fields from this application form",
+  files: [{ url: formPdfUrl }],
+  capabilities: {
+    ocr: {
+      enabled: true,
+      extractTables: true,
+      preserveLayout: true
+    }
+  },
+  system: `Extract all form fields and values.
+
+  For each field:
+  - Identify the field name/label
+  - Extract the filled value
+  - Note if field is empty or unclear
+
+  Organize by form section.`
+});
+
+// Agent extracts structured form data
+// Can validate completeness and format
+```
+
+### 5. Document Digitization
+
+Convert scanned archives to searchable text:
+
+```typescript
+const documentDigitizer = await agentbase.runAgent({
+  message: "Digitize this scanned document archive and create searchable index",
+  files: archivePDFs.map(url => ({ url })),
+  capabilities: {
+    ocr: {
+      enabled: true,
+      pageRange: [1, 1000], // Process up to 1000 pages
+      preserveLayout: true
+    }
+  },
+  datastores: [{
+    id: "ds_document_archive",
+    name: "Document Archive"
+  }],
+  system: `Extract text from all documents.
+
+  For each document:
+  - Extract full text content
+  - Identify document type
+  - Extract metadata (dates, references, etc.)
+  - Index in datastore for searching
+
+  Preserve document structure and formatting.`
+});
+
+// Agent processes documents and makes them searchable
+```
+
+### 6. Business Card Scanner
+
+Extract contact information from business cards:
+
+```typescript
+const cardScanner = await agentbase.runAgent({
+  message: "Extract contact information from this business card",
+  files: [{ data: cardImageBuffer }],
+  capabilities: {
+    ocr: {
+      enabled: true,
+      extractionSchema: {
+        name: "string",
+        title: "string",
+        company: "string",
+        email: "string",
+        phone: "string",
+        website: "string",
+        address: "string"
+      }
+    }
+  },
+  mcpServers: [{
+    serverName: "crm",
+    serverUrl: "https://api.company.com/crm"
+  }],
+  system: `Extract all contact information from the business card.
+
+  Then:
+  - Check if contact already exists in CRM
+  - If new, create contact record
+  - If exists, update information
+  - Add note about when card was scanned`
+});
+
+// Agent extracts data and syncs with CRM
+```
+
+## Best Practices
+
+### Image Quality
+
+<AccordionGroup>
+  <Accordion title="Optimize Image Resolution">
+    ```typescript
+    // Good: High-quality image with clear text
+    capabilities: {
+      ocr: {
+        enabled: true,
+        minResolution: 300 // DPI
+      }
+    }
+
+    // Images should be:
+    // - At least 300 DPI for best results
+    // - Clear and well-lit
+    // - Properly oriented
+    // - Free of blur or motion artifacts
+    ```
+  </Accordion>
+
+  <Accordion title="Preprocessing for Better Results">
+    ```typescript
+    // Enable automatic image enhancement
+    capabilities: {
+      ocr: {
+        enabled: true,
+        preprocessing: {
+          autoRotate: true,
+          deskew: true,
+          enhanceContrast: true,
+          denoise: true
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Large Documents">
+    ```typescript
+    // Process large PDFs efficiently
+    capabilities: {
+      ocr: {
+        enabled: true,
+        pageRange: [1, 50], // Process in batches
+        parallelProcessing: true
+      }
+    }
+
+    // For very large documents, process in chunks
+    async function processBigDocument(pdfUrl: string, totalPages: number) {
+      const batchSize = 50;
+      const results = [];
+
+      for (let i = 0; i < totalPages; i += batchSize) {
+        const result = await agentbase.runAgent({
+          files: [{ url: pdfUrl }],
+          capabilities: {
+            ocr: {
+              enabled: true,
+              pageRange: [i + 1, Math.min(i + batchSize, totalPages)]
+            }
+          }
+        });
+        results.push(result);
+      }
+
+      return results;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Data Extraction Accuracy
+
+<Tip>
+**Use Schemas for Structured Data**: Define extraction schemas to get consistently formatted output and improve accuracy.
+</Tip>
+
+<AccordionGroup>
+  <Accordion title="Define Clear Schemas">
+    ```typescript
+    // Good: Specific schema with types
+    extractionSchema: {
+      invoiceNumber: "string",
+      date: "string", // YYYY-MM-DD format
+      total: "number",
+      currency: "string"
+    }
+
+    // Better: Include validation in prompt
+    message: `Extract invoice data.
+    - Date must be in YYYY-MM-DD format
+    - Total must be numeric only
+    - Currency as 3-letter ISO code (USD, EUR, etc.)`
+    ```
+  </Accordion>
+
+  <Accordion title="Validate Extracted Data">
+    ```typescript
+    // Implement validation layer
+    const result = await agentbase.runAgent({
+      message: "Extract and validate invoice data",
+      files: [{ url: invoiceUrl }],
+      capabilities: { ocr: { enabled: true } },
+      system: `Extract invoice data and validate:
+
+      - Invoice number: alphanumeric, 6-12 characters
+      - Date: valid date, not in future
+      - Total: positive number, matches sum of line items
+      - Vendor: not empty
+
+      Flag any validation errors with specific messages.`
+    });
+
+    if (result.validation.errors.length > 0) {
+      console.log('Validation errors:', result.validation.errors);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Ambiguous Cases">
+    ```typescript
+    // Provide guidance for unclear cases
+    system: `When extracting data:
+
+    - If a field is unclear or illegible, mark as "UNCLEAR"
+    - If multiple interpretations possible, include all
+    - For dates, try multiple formats: MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD
+    - For amounts, specify if unclear whether includes tax
+    - Note confidence level for each extracted field`
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Performance Optimization
+
+<AccordionGroup>
+  <Accordion title="Batch Processing">
+    ```typescript
+    // Process multiple documents efficiently
+    const documents = [
+      { url: "doc1.pdf" },
+      { url: "doc2.pdf" },
+      { url: "doc3.pdf" }
+    ];
+
+    // Process in parallel for speed
+    const results = await Promise.all(
+      documents.map(doc =>
+        agentbase.runAgent({
+          message: "Extract text from document",
+          files: [doc],
+          capabilities: {
+            ocr: { enabled: true }
+          }
+        })
+      )
+    );
+    ```
+  </Accordion>
+
+  <Accordion title="Cache Results">
+    ```typescript
+    // Cache OCR results for frequently accessed documents
+    const cache = new Map();
+
+    async function extractWithCache(documentUrl: string) {
+      if (cache.has(documentUrl)) {
+        return cache.get(documentUrl);
+      }
+
+      const result = await agentbase.runAgent({
+        files: [{ url: documentUrl }],
+        capabilities: {
+          ocr: { enabled: true }
+        }
+      });
+
+      cache.set(documentUrl, result);
+      return result;
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Selective Processing">
+    ```typescript
+    // Only process pages that need OCR
+    capabilities: {
+      ocr: {
+        enabled: true,
+        skipTextPages: true // Skip pages with existing text layer
+      }
+    }
+
+    // Or process specific regions only
+    capabilities: {
+      ocr: {
+        enabled: true,
+        regions: [
+          { x: 0, y: 0, width: 500, height: 200 } // Top section only
+        ]
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Primitives
+
+### With RAG
+
+Index extracted text for semantic search:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Extract text from documents and add to knowledge base",
+  files: documents.map(url => ({ url })),
+  capabilities: {
+    ocr: { enabled: true }
+  },
+  datastores: [{
+    id: "ds_company_docs",
+    name: "Company Documents"
+  }]
+});
+
+// Later, search across OCR'd documents
+const searchResult = await agentbase.runAgent({
+  message: "Find all mentions of Project Phoenix in documents",
+  datastores: [{
+    id: "ds_company_docs",
+    name: "Company Documents"
+  }]
+});
+```
+
+Learn more: [RAG Primitive](/primitives/extensions/rag)
+
+### With Workflow
+
+Automate document processing pipelines:
+
+```typescript
+const documentWorkflow = {
+  name: "document_processing",
+  steps: [
+    {
+      id: "ocr_extraction",
+      type: "agent_task",
+      config: {
+        message: "Extract text from uploaded document",
+        capabilities: {
+          ocr: { enabled: true }
+        }
+      }
+    },
+    {
+      id: "validate_data",
+      type: "agent_task",
+      config: {
+        message: "Validate extracted data against schema"
+      }
+    },
+    {
+      id: "store_in_database",
+      type: "agent_task",
+      config: {
+        message: "Store validated data in database"
+      }
+    }
+  ]
+};
+```
+
+Learn more: [Workflow Primitive](/primitives/extensions/workflow)
+
+### With Custom Tools
+
+Combine OCR with domain-specific tools:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Extract medical record data and update patient file",
+  files: [{ url: medicalRecordUrl }],
+  capabilities: {
+    ocr: {
+      enabled: true,
+      extractionSchema: medicalRecordSchema
+    }
+  },
+  mcpServers: [{
+    serverName: "healthcare-system",
+    serverUrl: "https://api.hospital.com/ehr"
+  }],
+  system: `Extract patient information from medical record.
+
+  Then use healthcare system tools to:
+  - Verify patient identity
+  - Update medical history
+  - Flag any critical findings
+  - Schedule follow-up if needed`
+});
+```
+
+Learn more: [Custom Tools Primitive](/primitives/essentials/custom-tools)
+
+## Performance Considerations
+
+### Processing Speed
+
+- **Single Image**: 1-3 seconds per page
+- **Multi-page PDF**: 2-5 seconds per page (with parallelization)
+- **Handwriting**: 3-6 seconds per page (more complex processing)
+- **Large Documents**: Process in batches for optimal performance
+
+```typescript
+// Optimize processing speed
+capabilities: {
+  ocr: {
+    enabled: true,
+    parallelProcessing: true, // Process pages in parallel
+    maxParallelPages: 10 // Limit concurrent processing
+  }
+}
+```
+
+### Cost Optimization
+
+<Tip>
+**Vision Model Costs**: OCR uses vision models which have different pricing than text-only models. See pricing page for details.
+</Tip>
+
+```typescript
+// Optimize costs by selective processing
+capabilities: {
+  ocr: {
+    enabled: true,
+    skipTextPages: true, // Don't OCR pages with text layer
+    pageRange: [1, 10], // Limit pages if only excerpt needed
+    useStandardModel: true // Use faster/cheaper model for simple text
+  }
+}
+```
+
+### Accuracy vs Speed Tradeoffs
+
+```typescript
+// High accuracy mode (slower, more expensive)
+capabilities: {
+  ocr: {
+    enabled: true,
+    model: "claude-3.5-sonnet",
+    preprocessing: {
+      autoRotate: true,
+      deskew: true,
+      enhanceContrast: true
+    }
+  }
+}
+
+// Fast mode (faster, lower cost, good for clear text)
+capabilities: {
+  ocr: {
+    enabled: true,
+    model: "gpt-4-vision",
+    skipPreprocessing: true
+  }
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Low Accuracy / Incorrect Text">
+    **Problem**: OCR extracts incorrect or garbled text
+
+    **Solutions**:
+    - Verify image quality is at least 300 DPI
+    - Enable preprocessing options (deskew, contrast enhancement)
+    - Check image orientation is correct
+    - Try different OCR models for comparison
+    - For handwriting, ensure handwriting mode is enabled
+
+    ```typescript
+    // Improve accuracy with preprocessing
+    capabilities: {
+      ocr: {
+        enabled: true,
+        preprocessing: {
+          autoRotate: true,
+          deskew: true,
+          enhanceContrast: true,
+          denoise: true
+        },
+        model: "claude-3.5-sonnet" // Use best model
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Tables Not Extracted Correctly">
+    **Problem**: Table structure is lost or malformed
+
+    **Solutions**:
+    - Enable table extraction explicitly
+    - Use preserve layout option
+    - Provide clear instructions about table format
+    - Consider post-processing to validate table structure
+
+    ```typescript
+    capabilities: {
+      ocr: {
+        enabled: true,
+        extractTables: true,
+        preserveLayout: true
+      }
+    }
+
+    message: `Extract tables from this document.
+
+    For each table:
+    - Identify column headers
+    - Preserve row order
+    - Maintain cell alignment
+    - Note any merged cells or special formatting`
+    ```
+  </Accordion>
+
+  <Accordion title="Processing Timeout on Large Files">
+    **Problem**: Large PDFs timeout before completion
+
+    **Solutions**:
+    - Process in smaller page ranges
+    - Use parallel processing
+    - Increase timeout limits
+    - Consider breaking into separate jobs
+
+    ```typescript
+    // Process large document in batches
+    async function processLargeDocument(url: string) {
+      const totalPages = 500;
+      const batchSize = 50;
+      const results = [];
+
+      for (let i = 0; i < totalPages; i += batchSize) {
+        const result = await agentbase.runAgent({
+          files: [{ url }],
+          capabilities: {
+            ocr: {
+              enabled: true,
+              pageRange: [i + 1, i + batchSize],
+              parallelProcessing: true
+            }
+          },
+          timeout: 120000 // 2 minutes per batch
+        });
+        results.push(result);
+      }
+
+      return results;
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Structured Data Extraction Inconsistent">
+    **Problem**: Extracted data doesn't match expected schema
+
+    **Solutions**:
+    - Define very specific extraction schema
+    - Provide examples in prompt
+    - Add validation instructions
+    - Use stricter typing and format requirements
+
+    ```typescript
+    const result = await agentbase.runAgent({
+      message: `Extract invoice data following this exact schema.
+
+      Example output:
+      {
+        "invoiceNumber": "INV-12345",
+        "date": "2024-01-15",
+        "total": 1250.00
+      }
+
+      Rules:
+      - Date must be YYYY-MM-DD format
+      - Total must be number with 2 decimal places
+      - Invoice number must include "INV-" prefix`,
+      capabilities: {
+        ocr: {
+          enabled: true,
+          extractionSchema: {
+            invoiceNumber: "string",
+            date: "string",
+            total: "number"
+          }
+        }
+      }
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Patterns
+
+### Document Classification
+
+Classify documents before extraction:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Identify document type and extract relevant data",
+  files: [{ url: documentUrl }],
+  capabilities: {
+    ocr: { enabled: true }
+  },
+  system: `First, classify the document type:
+  - Invoice
+  - Receipt
+  - Contract
+  - Form
+  - Letter
+  - Other
+
+  Based on type, extract appropriate fields using the correct schema.`
+});
+
+// Agent adapts extraction based on document type
+```
+
+### Quality Confidence Scoring
+
+Track extraction confidence:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Extract data and provide confidence scores",
+  files: [{ url: documentUrl }],
+  capabilities: {
+    ocr: { enabled: true }
+  },
+  system: `Extract data and for each field provide:
+  - Extracted value
+  - Confidence score (0-1)
+  - Reasoning for low confidence if < 0.7
+
+  Flag fields needing human review if confidence < 0.5`
+});
+
+// Review low-confidence extractions manually
+if (result.lowConfidenceFields.length > 0) {
+  // Send for human review
+}
+```
+
+### Multi-document Correlation
+
+Extract and correlate data across documents:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Extract data from all invoices and create summary report",
+  files: invoiceFiles,
+  capabilities: {
+    ocr: { enabled: true }
+  },
+  system: `Extract data from all invoices.
+
+  Then create summary:
+  - Total amount across all invoices
+  - Group by vendor
+  - Identify any duplicates
+  - Flag discrepancies or unusual amounts
+  - Calculate payment due dates`
+});
+```
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="RAG" icon="book" href="/primitives/extensions/rag">
+    Index extracted text for semantic search
+  </Card>
+
+  <Card title="Workflow" icon="diagram-project" href="/primitives/extensions/workflow">
+    Automate document processing pipelines
+  </Card>
+
+  <Card title="Custom Tools" icon="toolbox" href="/primitives/essentials/custom-tools">
+    Integrate with document management systems
+  </Card>
+
+  <Card title="File System" icon="folder" href="/primitives/environment/file-system">
+    Read and write processed documents
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api/ocr">
+    Complete OCR API documentation
+  </Card>
+
+  <Card title="Supported Formats" icon="file" href="/guides/ocr-formats">
+    List of supported image and document formats
+  </Card>
+
+  <Card title="Best Practices" icon="star" href="/guides/ocr-best-practices">
+    OCR optimization and accuracy tips
+  </Card>
+</CardGroup>
+
+<Tip>
+**Pro Tip**: For best results, combine OCR with clear extraction instructions and validation logic. The agent can verify extracted data and flag inconsistencies automatically.
+</Tip>

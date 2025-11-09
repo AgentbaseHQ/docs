@@ -1,0 +1,1285 @@
+---
+title: "Integrations"
+description: "Connect agents to external services, APIs, and third-party platforms"
+icon: "plug"
+---
+
+> Integrations enable agents to interact with external services, APIs, and platforms seamlessly, extending their capabilities to work with your existing tools and systems.
+
+## Overview
+
+The Integrations primitive provides a unified interface for agents to connect with external services, from SaaS platforms to custom APIs. Rather than building custom connectors for each service, Agentbase provides pre-built integrations and a framework for creating custom ones.
+
+Integrations are essential for:
+
+- **Service Connectivity**: Connect to popular platforms like Slack, GitHub, Salesforce, etc.
+- **API Access**: Interact with any REST API or web service
+- **OAuth Management**: Handle authentication flows automatically
+- **Rate Limiting**: Built-in rate limit handling and retry logic
+- **Error Handling**: Graceful degradation when services are unavailable
+- **Data Synchronization**: Keep data in sync across multiple systems
+
+<CardGroup cols={2}>
+  <Card title="Pre-built Connectors" icon="puzzle-piece">
+    200+ ready-to-use integrations for popular services
+  </Card>
+
+  <Card title="Custom Integrations" icon="code">
+    Build custom connectors for any API or service
+  </Card>
+
+  <Card title="OAuth Support" icon="key">
+    Automatic OAuth 2.0 flow handling with token refresh
+  </Card>
+
+  <Card title="Webhook Support" icon="webhook">
+    Receive real-time events from external services
+  </Card>
+</CardGroup>
+
+## How Integrations Work
+
+When you enable integrations for an agent:
+
+1. **Authentication**: Agent authenticates with service using API keys or OAuth
+2. **Discovery**: Agent discovers available actions and endpoints
+3. **Execution**: Agent calls service APIs to perform actions
+4. **Response Handling**: Processes responses and handles errors
+5. **State Management**: Maintains connection state and credentials
+6. **Rate Limiting**: Automatically throttles requests within service limits
+
+<Note>
+**Secure Credentials**: API keys and OAuth tokens are encrypted at rest and never exposed in logs or responses.
+</Note>
+
+## Pre-built Integrations
+
+### Communication Platforms
+
+```typescript
+{
+  integrations: {
+    slack: { enabled: true },
+    discord: { enabled: true },
+    teams: { enabled: true },
+    telegram: { enabled: true }
+  }
+}
+```
+
+### Developer Tools
+
+```typescript
+{
+  integrations: {
+    github: { enabled: true },
+    gitlab: { enabled: true },
+    jira: { enabled: true },
+    linear: { enabled: true }
+  }
+}
+```
+
+### CRM & Sales
+
+```typescript
+{
+  integrations: {
+    salesforce: { enabled: true },
+    hubspot: { enabled: true },
+    pipedrive: { enabled: true },
+    zendesk: { enabled: true }
+  }
+}
+```
+
+## Code Examples
+
+### Basic Integration
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Use Slack integration
+const result = await agentbase.runAgent({
+  message: "Send a message to #general channel about today's standup",
+  integrations: {
+    slack: {
+      enabled: true,
+      credentials: {
+        token: process.env.SLACK_TOKEN
+      }
+    }
+  }
+});
+
+// Agent automatically uses Slack API to send message
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Use Slack integration
+result = agentbase.run_agent(
+    message="Send a message to #general channel about today's standup",
+    integrations={
+        "slack": {
+            "enabled": True,
+            "credentials": {
+                "token": os.environ['SLACK_TOKEN']
+            }
+        }
+    }
+)
+
+# Agent automatically uses Slack API to send message
+```
+
+</CodeGroup>
+
+### OAuth Integration
+
+<CodeGroup>
+
+```typescript TypeScript
+// Configure OAuth integration
+const result = await agentbase.runAgent({
+  message: "Create a new GitHub issue for the bug I mentioned",
+  integrations: {
+    github: {
+      enabled: true,
+      oauth: {
+        clientId: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
+        redirectUri: "https://yourapp.com/oauth/callback",
+        scopes: ["repo", "issues"]
+      }
+    }
+  },
+  userId: "user_123" // Link OAuth token to user
+});
+
+// Agent handles OAuth flow and uses authenticated API
+```
+
+```python Python
+# Configure OAuth integration
+result = agentbase.run_agent(
+    message="Create a new GitHub issue for the bug I mentioned",
+    integrations={
+        "github": {
+            "enabled": True,
+            "oauth": {
+                "client_id": os.environ['GITHUB_CLIENT_ID'],
+                "client_secret": os.environ['GITHUB_CLIENT_SECRET'],
+                "redirect_uri": "https://yourapp.com/oauth/callback",
+                "scopes": ["repo", "issues"]
+            }
+        }
+    },
+    user_id="user_123"  # Link OAuth token to user
+)
+```
+
+</CodeGroup>
+
+### Multiple Integrations
+
+<CodeGroup>
+
+```typescript TypeScript
+// Use multiple integrations together
+const result = await agentbase.runAgent({
+  message: "When a GitHub issue is created, notify the team in Slack and create a Jira ticket",
+  integrations: {
+    github: {
+      enabled: true,
+      credentials: { token: process.env.GITHUB_TOKEN }
+    },
+    slack: {
+      enabled: true,
+      credentials: { token: process.env.SLACK_TOKEN }
+    },
+    jira: {
+      enabled: true,
+      credentials: {
+        email: process.env.JIRA_EMAIL,
+        apiToken: process.env.JIRA_TOKEN,
+        domain: "yourcompany.atlassian.net"
+      }
+    }
+  }
+});
+
+// Agent coordinates across all three services
+```
+
+```python Python
+# Use multiple integrations together
+result = agentbase.run_agent(
+    message="When a GitHub issue is created, notify the team in Slack and create a Jira ticket",
+    integrations={
+        "github": {
+            "enabled": True,
+            "credentials": {"token": os.environ['GITHUB_TOKEN']}
+        },
+        "slack": {
+            "enabled": True,
+            "credentials": {"token": os.environ['SLACK_TOKEN']}
+        },
+        "jira": {
+            "enabled": True,
+            "credentials": {
+                "email": os.environ['JIRA_EMAIL'],
+                "api_token": os.environ['JIRA_TOKEN'],
+                "domain": "yourcompany.atlassian.net"
+            }
+        }
+    }
+)
+```
+
+</CodeGroup>
+
+### Custom API Integration
+
+<CodeGroup>
+
+```typescript TypeScript
+// Integrate with custom API
+const result = await agentbase.runAgent({
+  message: "Get customer data from our internal API",
+  integrations: {
+    custom: {
+      name: "company-api",
+      baseUrl: "https://api.company.com",
+      authentication: {
+        type: "bearer",
+        token: process.env.COMPANY_API_KEY
+      },
+      endpoints: [
+        {
+          name: "get_customer",
+          method: "GET",
+          path: "/customers/:id",
+          description: "Get customer by ID"
+        },
+        {
+          name: "update_customer",
+          method: "PUT",
+          path: "/customers/:id",
+          description: "Update customer information"
+        }
+      ]
+    }
+  }
+});
+
+// Agent can call your custom API
+```
+
+```python Python
+# Integrate with custom API
+result = agentbase.run_agent(
+    message="Get customer data from our internal API",
+    integrations={
+        "custom": {
+            "name": "company-api",
+            "base_url": "https://api.company.com",
+            "authentication": {
+                "type": "bearer",
+                "token": os.environ['COMPANY_API_KEY']
+            },
+            "endpoints": [
+                {
+                    "name": "get_customer",
+                    "method": "GET",
+                    "path": "/customers/:id",
+                    "description": "Get customer by ID"
+                },
+                {
+                    "name": "update_customer",
+                    "method": "PUT",
+                    "path": "/customers/:id",
+                    "description": "Update customer information"
+                }
+            ]
+        }
+    }
+)
+```
+
+</CodeGroup>
+
+### Webhook Integration
+
+<CodeGroup>
+
+```typescript TypeScript
+// Set up webhook to receive events
+const webhook = await agentbase.createWebhook({
+  integration: "stripe",
+  events: ["payment_intent.succeeded", "invoice.paid"],
+  url: "https://yourapp.com/webhooks/stripe",
+  secret: process.env.STRIPE_WEBHOOK_SECRET
+});
+
+// Handle webhook events with agent
+app.post('/webhooks/stripe', async (req, res) => {
+  const event = req.body;
+
+  const result = await agentbase.runAgent({
+    message: `Process Stripe ${event.type} event`,
+    context: {
+      event: event.data.object
+    },
+    integrations: {
+      stripe: {
+        enabled: true,
+        credentials: { apiKey: process.env.STRIPE_API_KEY }
+      },
+      slack: {
+        enabled: true,
+        credentials: { token: process.env.SLACK_TOKEN }
+      }
+    },
+    system: `Process the Stripe event:
+    - Update customer record
+    - Send confirmation email
+    - Notify team in Slack
+    - Update analytics`
+  });
+
+  res.json({ received: true });
+});
+```
+
+```python Python
+# Set up webhook to receive events
+webhook = agentbase.create_webhook(
+    integration="stripe",
+    events=["payment_intent.succeeded", "invoice.paid"],
+    url="https://yourapp.com/webhooks/stripe",
+    secret=os.environ['STRIPE_WEBHOOK_SECRET']
+)
+
+# Handle webhook events with agent
+@app.post('/webhooks/stripe')
+async def handle_stripe_webhook(request):
+    event = await request.json()
+
+    result = agentbase.run_agent(
+        message=f"Process Stripe {event['type']} event",
+        context={
+            "event": event['data']['object']
+        },
+        integrations={
+            "stripe": {
+                "enabled": True,
+                "credentials": {"api_key": os.environ['STRIPE_API_KEY']}
+            },
+            "slack": {
+                "enabled": True,
+                "credentials": {"token": os.environ['SLACK_TOKEN']}
+            }
+        },
+        system="""Process the Stripe event:
+        - Update customer record
+        - Send confirmation email
+        - Notify team in Slack
+        - Update analytics"""
+    )
+
+    return {"received": True}
+```
+
+</CodeGroup>
+
+### Integration with Rate Limiting
+
+<CodeGroup>
+
+```typescript TypeScript
+// Configure rate limiting for integration
+const result = await agentbase.runAgent({
+  message: "Fetch data from external API",
+  integrations: {
+    custom: {
+      name: "external-api",
+      baseUrl: "https://api.external.com",
+      rateLimit: {
+        requestsPerSecond: 10,
+        requestsPerMinute: 100,
+        retryAfter: true, // Respect Retry-After header
+        backoff: "exponential"
+      },
+      credentials: {
+        apiKey: process.env.EXTERNAL_API_KEY
+      }
+    }
+  }
+});
+
+// Agent automatically throttles requests
+```
+
+```python Python
+# Configure rate limiting for integration
+result = agentbase.run_agent(
+    message="Fetch data from external API",
+    integrations={
+        "custom": {
+            "name": "external-api",
+            "base_url": "https://api.external.com",
+            "rate_limit": {
+                "requests_per_second": 10,
+                "requests_per_minute": 100,
+                "retry_after": True,  # Respect Retry-After header
+                "backoff": "exponential"
+            },
+            "credentials": {
+                "api_key": os.environ['EXTERNAL_API_KEY']
+            }
+        }
+    }
+)
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Customer Support Automation
+
+Integrate support tools for automated ticket handling:
+
+<CodeGroup>
+
+```typescript TypeScript
+const supportAgent = await agentbase.runAgent({
+  message: "Handle new support ticket",
+  context: {
+    ticket: ticketData
+  },
+  integrations: {
+    zendesk: {
+      enabled: true,
+      credentials: {
+        email: process.env.ZENDESK_EMAIL,
+        apiToken: process.env.ZENDESK_TOKEN,
+        subdomain: "yourcompany"
+      }
+    },
+    slack: {
+      enabled: true,
+      credentials: { token: process.env.SLACK_TOKEN }
+    },
+    salesforce: {
+      enabled: true,
+      credentials: {
+        instanceUrl: process.env.SF_INSTANCE_URL,
+        accessToken: process.env.SF_ACCESS_TOKEN
+      }
+    }
+  },
+  system: `Handle support ticket:
+
+  1. Classify ticket urgency and category
+  2. Look up customer in Salesforce
+  3. If high priority, notify team in Slack
+  4. Provide initial response in Zendesk
+  5. Create case in Salesforce if needed`
+});
+```
+
+```python Python
+support_agent = agentbase.run_agent(
+    message="Handle new support ticket",
+    context={
+        "ticket": ticket_data
+    },
+    integrations={
+        "zendesk": {
+            "enabled": True,
+            "credentials": {
+                "email": os.environ['ZENDESK_EMAIL'],
+                "api_token": os.environ['ZENDESK_TOKEN'],
+                "subdomain": "yourcompany"
+            }
+        },
+        "slack": {
+            "enabled": True,
+            "credentials": {"token": os.environ['SLACK_TOKEN']}
+        },
+        "salesforce": {
+            "enabled": True,
+            "credentials": {
+                "instance_url": os.environ['SF_INSTANCE_URL'],
+                "access_token": os.environ['SF_ACCESS_TOKEN']
+            }
+        }
+    },
+    system="""Handle support ticket:
+
+    1. Classify ticket urgency and category
+    2. Look up customer in Salesforce
+    3. If high priority, notify team in Slack
+    4. Provide initial response in Zendesk
+    5. Create case in Salesforce if needed"""
+)
+```
+
+</CodeGroup>
+
+### 2. DevOps Automation
+
+Automate development workflows:
+
+```typescript
+const devopsAgent = await agentbase.runAgent({
+  message: "Deploy new version to production",
+  integrations: {
+    github: {
+      enabled: true,
+      credentials: { token: process.env.GITHUB_TOKEN }
+    },
+    slack: {
+      enabled: true,
+      credentials: { token: process.env.SLACK_TOKEN }
+    },
+    datadog: {
+      enabled: true,
+      credentials: {
+        apiKey: process.env.DATADOG_API_KEY,
+        appKey: process.env.DATADOG_APP_KEY
+      }
+    },
+    pagerduty: {
+      enabled: true,
+      credentials: { apiKey: process.env.PAGERDUTY_KEY }
+    }
+  },
+  system: `Deploy to production:
+
+  1. Create GitHub release from tag
+  2. Announce deployment in Slack
+  3. Monitor Datadog for errors (30 min window)
+  4. If error rate > 5%, rollback and page on-call
+  5. If successful, update deployment docs`
+});
+```
+
+### 3. Sales Pipeline Management
+
+Sync leads across CRM and communication platforms:
+
+```typescript
+const salesAgent = await agentbase.runAgent({
+  message: "New lead from website form",
+  context: {
+    lead: leadData
+  },
+  integrations: {
+    hubspot: {
+      enabled: true,
+      credentials: { apiKey: process.env.HUBSPOT_KEY }
+    },
+    slack: {
+      enabled: true,
+      credentials: { token: process.env.SLACK_TOKEN }
+    },
+    calendly: {
+      enabled: true,
+      credentials: { apiKey: process.env.CALENDLY_KEY }
+    }
+  },
+  system: `Process new lead:
+
+  1. Create contact in HubSpot
+  2. Enrich with company data
+  3. Score lead based on criteria
+  4. If qualified, notify sales team in Slack
+  5. Send personalized email with Calendly link
+  6. Update lead status to "contacted"`
+});
+```
+
+### 4. Financial Reconciliation
+
+Integrate accounting and payment systems:
+
+```typescript
+const financeAgent = await agentbase.runAgent({
+  message: "Reconcile today's transactions",
+  integrations: {
+    stripe: {
+      enabled: true,
+      credentials: { apiKey: process.env.STRIPE_KEY }
+    },
+    quickbooks: {
+      enabled: true,
+      oauth: {
+        accessToken: process.env.QB_ACCESS_TOKEN,
+        refreshToken: process.env.QB_REFRESH_TOKEN,
+        realmId: process.env.QB_REALM_ID
+      }
+    },
+    slack: {
+      enabled: true,
+      credentials: { token: process.env.SLACK_TOKEN }
+    }
+  },
+  system: `Reconcile transactions:
+
+  1. Fetch today's Stripe transactions
+  2. Match with QuickBooks invoices
+  3. Create journal entries for matched items
+  4. Flag unmatched transactions
+  5. Send reconciliation report to #finance Slack channel
+  6. If discrepancies > $100, alert accounting team`
+});
+```
+
+### 5. Content Distribution
+
+Publish content across multiple platforms:
+
+```typescript
+const contentAgent = await agentbase.runAgent({
+  message: "Publish this blog post across all channels",
+  context: {
+    blogPost: {
+      title: "Product Update: New Features",
+      content: "...",
+      image: "https://..."
+    }
+  },
+  integrations: {
+    wordpress: {
+      enabled: true,
+      credentials: {
+        url: "https://blog.company.com",
+        username: process.env.WP_USER,
+        password: process.env.WP_PASS
+      }
+    },
+    twitter: {
+      enabled: true,
+      oauth: { /* Twitter OAuth */ }
+    },
+    linkedin: {
+      enabled: true,
+      oauth: { /* LinkedIn OAuth */ }
+    },
+    mailchimp: {
+      enabled: true,
+      credentials: { apiKey: process.env.MAILCHIMP_KEY }
+    }
+  },
+  system: `Publish content:
+
+  1. Post full article to WordPress blog
+  2. Create Twitter thread with key points
+  3. Share on LinkedIn company page
+  4. Send newsletter via Mailchimp
+  5. Track engagement across platforms`
+});
+```
+
+### 6. HR Onboarding
+
+Automate employee onboarding across systems:
+
+```typescript
+const hrAgent = await agentbase.runAgent({
+  message: "Onboard new employee",
+  context: {
+    employee: newHireData
+  },
+  integrations: {
+    bamboohr: {
+      enabled: true,
+      credentials: {
+        subdomain: "company",
+        apiKey: process.env.BAMBOO_KEY
+      }
+    },
+    gsuite: {
+      enabled: true,
+      oauth: { /* Google OAuth */ }
+    },
+    slack: {
+      enabled: true,
+      credentials: { token: process.env.SLACK_TOKEN }
+    },
+    github: {
+      enabled: true,
+      credentials: { token: process.env.GITHUB_TOKEN }
+    }
+  },
+  system: `Onboard employee:
+
+  1. Create BambooHR profile
+  2. Create Google Workspace account
+  3. Add to Slack workspace
+  4. Invite to GitHub organization
+  5. Send welcome email with credentials
+  6. Create onboarding checklist
+  7. Notify team of new hire`
+});
+```
+
+## Best Practices
+
+### Credential Management
+
+<Warning>
+**Never Hardcode Credentials**: Always use environment variables or secure vaults for API keys and secrets.
+</Warning>
+
+<AccordionGroup>
+  <Accordion title="Use Environment Variables">
+    ```typescript
+    // Good: Environment variables
+    integrations: {
+      slack: {
+        enabled: true,
+        credentials: {
+          token: process.env.SLACK_TOKEN
+        }
+      }
+    }
+
+    // Bad: Hardcoded credentials
+    integrations: {
+      slack: {
+        enabled: true,
+        credentials: {
+          token: "xoxb-1234567890-..." // NEVER DO THIS
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Use User-Scoped OAuth">
+    ```typescript
+    // Link OAuth tokens to specific users
+    const result = await agentbase.runAgent({
+      message: "Access my GitHub repos",
+      userId: currentUser.id, // Important for OAuth
+      integrations: {
+        github: {
+          enabled: true,
+          oauth: {
+            clientId: process.env.GITHUB_CLIENT_ID,
+            clientSecret: process.env.GITHUB_CLIENT_SECRET,
+            scopes: ["repo"]
+          }
+        }
+      }
+    });
+
+    // Agent uses user's OAuth token, not a shared service token
+    ```
+  </Accordion>
+
+  <Accordion title="Rotate API Keys Regularly">
+    ```typescript
+    // Implement key rotation
+    async function rotateApiKeys() {
+      // Generate new API key
+      const newKey = await generateNewKey();
+
+      // Update in secure storage
+      await updateSecureStorage("API_KEY", newKey);
+
+      // Revoke old key after grace period
+      setTimeout(() => {
+        revokeOldKey();
+      }, 24 * 60 * 60 * 1000); // 24 hours
+    }
+
+    // Run monthly
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Error Handling
+
+<Tip>
+**Graceful Degradation**: Design integrations to fail gracefully when services are unavailable.
+</Tip>
+
+<AccordionGroup>
+  <Accordion title="Handle Service Outages">
+    ```typescript
+    const result = await agentbase.runAgent({
+      message: "Send notification to team",
+      integrations: {
+        slack: {
+          enabled: true,
+          credentials: { token: process.env.SLACK_TOKEN },
+          fallback: "email" // Fallback to email if Slack fails
+        }
+      },
+      system: `Send team notification.
+
+      If Slack is unavailable:
+      - Fall back to email
+      - Log the failure
+      - Retry Slack after 5 minutes`
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Implement Retry Logic">
+    ```typescript
+    integrations: {
+      external_api: {
+        enabled: true,
+        retry: {
+          maxAttempts: 3,
+          backoff: "exponential",
+          initialDelay: 1000,
+          maxDelay: 10000,
+          retryableErrors: [429, 500, 502, 503, 504]
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Monitor Integration Health">
+    ```typescript
+    // Track integration success rates
+    async function monitorIntegrations() {
+      const metrics = await agentbase.getIntegrationMetrics({
+        timeRange: "24h"
+      });
+
+      metrics.forEach(integration => {
+        if (integration.errorRate > 0.05) {
+          // Alert if error rate > 5%
+          sendAlert(`${integration.name} error rate: ${integration.errorRate}`);
+        }
+      });
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Performance Optimization
+
+<AccordionGroup>
+  <Accordion title="Cache Integration Responses">
+    ```typescript
+    integrations: {
+      external_api: {
+        enabled: true,
+        caching: {
+          enabled: true,
+          ttl: 3600, // Cache for 1 hour
+          keyGenerator: (request) => {
+            // Custom cache key based on request
+            return `${request.endpoint}-${request.params.id}`;
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Batch API Requests">
+    ```typescript
+    // Batch multiple requests for efficiency
+    const result = await agentbase.runAgent({
+      message: "Update 100 customer records",
+      integrations: {
+        salesforce: {
+          enabled: true,
+          batching: {
+            enabled: true,
+            batchSize: 25, // Salesforce limit
+            delayBetweenBatches: 1000
+          }
+        }
+      }
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Use Webhooks Instead of Polling">
+    ```typescript
+    // Good: Event-driven with webhooks
+    await agentbase.createWebhook({
+      integration: "stripe",
+      events: ["payment_intent.succeeded"]
+    });
+
+    // Avoid: Constant polling
+    setInterval(async () => {
+      // Don't poll for new payments every minute
+      const payments = await checkForNewPayments();
+    }, 60000);
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Primitives
+
+### With Workflow
+
+Orchestrate multi-service workflows:
+
+```typescript
+const workflow = {
+  name: "lead_qualification",
+  steps: [
+    {
+      id: "enrich_lead",
+      type: "agent_task",
+      config: {
+        message: "Enrich lead data from external sources",
+        integrations: { clearbit: { enabled: true } }
+      }
+    },
+    {
+      id: "create_crm_record",
+      type: "agent_task",
+      config: {
+        message: "Create HubSpot contact",
+        integrations: { hubspot: { enabled: true } }
+      }
+    },
+    {
+      id: "notify_sales",
+      type: "agent_task",
+      config: {
+        message: "Notify sales team in Slack",
+        integrations: { slack: { enabled: true } }
+      }
+    }
+  ]
+};
+```
+
+Learn more: [Workflow Primitive](/primitives/extensions/workflow)
+
+### With Custom Tools
+
+Combine integrations with custom tools:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Process customer order",
+  integrations: {
+    stripe: { enabled: true },
+    shopify: { enabled: true }
+  },
+  mcpServers: [{
+    serverName: "inventory-system",
+    serverUrl: "https://api.company.com/inventory"
+  }]
+});
+
+// Agent can use Stripe, Shopify, and custom inventory tools
+```
+
+Learn more: [Custom Tools Primitive](/primitives/essentials/custom-tools)
+
+### With Memory
+
+Remember integration preferences:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Send update to team",
+  memory: {
+    namespace: `user_${userId}`,
+    enabled: true
+  },
+  integrations: {
+    slack: { enabled: true },
+    teams: { enabled: true }
+  }
+});
+
+// Agent remembers user prefers Slack over Teams
+```
+
+Learn more: [Memory Primitive](/primitives/extensions/memory)
+
+## Performance Considerations
+
+### Rate Limiting
+
+- **API Limits**: Respect third-party API rate limits
+- **Automatic Throttling**: Agentbase handles rate limiting automatically
+- **Burst Protection**: Prevents exceeding burst limits
+- **Cost Management**: Track API usage to manage costs
+
+```typescript
+// Monitor rate limit usage
+const usage = await agentbase.getIntegrationUsage({
+  integration: "github",
+  timeRange: "1h"
+});
+
+console.log('Requests used:', usage.requestsUsed);
+console.log('Requests remaining:', usage.requestsRemaining);
+console.log('Reset time:', usage.resetTime);
+```
+
+### Connection Pooling
+
+- **Persistent Connections**: Reuse connections across requests
+- **Connection Limits**: Configure max concurrent connections
+- **Timeout Management**: Set appropriate timeouts
+
+```typescript
+integrations: {
+  database: {
+    enabled: true,
+    pool: {
+      min: 2,
+      max: 10,
+      acquireTimeout: 30000,
+      idleTimeout: 10000
+    }
+  }
+}
+```
+
+### Cost Optimization
+
+<Tip>
+**Monitor Integration Costs**: Track API usage to optimize costs and avoid unexpected bills.
+</Tip>
+
+```typescript
+// Set usage limits
+integrations: {
+  openai: {
+    enabled: true,
+    limits: {
+      maxRequestsPerDay: 1000,
+      maxCostPerDay: 50.00, // USD
+      alertThreshold: 0.8 // Alert at 80% of limit
+    }
+  }
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Authentication Failures">
+    **Problem**: Integration fails with auth errors
+
+    **Solutions**:
+    - Verify API key is correct and not expired
+    - Check OAuth token hasn't been revoked
+    - Ensure correct scopes are granted
+    - Verify service isn't experiencing outages
+    - Check for IP whitelist restrictions
+
+    ```typescript
+    // Debug authentication
+    const result = await agentbase.testIntegration({
+      integration: "salesforce",
+      credentials: {
+        instanceUrl: process.env.SF_INSTANCE_URL,
+        accessToken: process.env.SF_ACCESS_TOKEN
+      }
+    });
+
+    if (!result.success) {
+      console.error('Auth error:', result.error);
+      console.log('Suggestion:', result.suggestion);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Rate Limit Exceeded">
+    **Problem**: Getting rate limit errors from service
+
+    **Solutions**:
+    - Enable automatic retry with backoff
+    - Reduce request frequency
+    - Implement request batching
+    - Use caching to reduce API calls
+    - Consider upgrading service tier
+
+    ```typescript
+    integrations: {
+      api: {
+        enabled: true,
+        rateLimit: {
+          requestsPerSecond: 5, // Reduce from 10
+          backoff: "exponential",
+          maxRetries: 5
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Integration Timeout">
+    **Problem**: Requests timing out before completion
+
+    **Solutions**:
+    - Increase timeout limit
+    - Check network connectivity
+    - Verify service isn't slow/degraded
+    - Consider breaking into smaller requests
+    - Use background processing for long operations
+
+    ```typescript
+    integrations: {
+      slow_api: {
+        enabled: true,
+        timeout: 60000, // Increase to 60 seconds
+        retry: {
+          maxAttempts: 2,
+          retryableErrors: [408, 504] // Timeout errors
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Webhook Not Receiving Events">
+    **Problem**: Webhooks configured but events not arriving
+
+    **Solutions**:
+    - Verify webhook URL is publicly accessible
+    - Check webhook secret matches
+    - Ensure correct events are subscribed
+    - Verify firewall/security rules
+    - Check service webhook logs
+
+    ```typescript
+    // Test webhook endpoint
+    const test = await agentbase.testWebhook({
+      url: "https://yourapp.com/webhook",
+      integration: "stripe"
+    });
+
+    console.log('Webhook test:', test.success);
+    console.log('Response:', test.response);
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Patterns
+
+### Circuit Breaker Pattern
+
+Prevent cascading failures:
+
+```typescript
+integrations: {
+  external_api: {
+    enabled: true,
+    circuitBreaker: {
+      enabled: true,
+      failureThreshold: 5, // Open after 5 failures
+      timeout: 60000, // Try again after 60s
+      monitoringPeriod: 10000 // Monitor 10s window
+    }
+  }
+}
+```
+
+### Saga Pattern for Distributed Transactions
+
+Coordinate multi-service transactions:
+
+```typescript
+const saga = {
+  steps: [
+    {
+      action: "reserve_inventory",
+      compensation: "release_inventory"
+    },
+    {
+      action: "charge_payment",
+      compensation: "refund_payment"
+    },
+    {
+      action: "create_shipment",
+      compensation: "cancel_shipment"
+    }
+  ]
+};
+
+// If any step fails, run compensations in reverse
+```
+
+### Integration Health Checks
+
+Monitor integration availability:
+
+```typescript
+// Periodic health checks
+setInterval(async () => {
+  const health = await agentbase.checkIntegrationHealth({
+    integrations: ["stripe", "salesforce", "slack"]
+  });
+
+  health.forEach(integration => {
+    if (integration.status !== "healthy") {
+      sendAlert(`${integration.name} is ${integration.status}`);
+    }
+  });
+}, 60000); // Check every minute
+```
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Custom Tools" icon="toolbox" href="/primitives/essentials/custom-tools">
+    Build custom MCP tools for specialized integrations
+  </Card>
+
+  <Card title="Workflow" icon="diagram-project" href="/primitives/extensions/workflow">
+    Orchestrate multi-integration workflows
+  </Card>
+
+  <Card title="Authentication" icon="key" href="/primitives/extensions/authentication">
+    Advanced OAuth and auth management
+  </Card>
+
+  <Card title="Data Connectors" icon="database" href="/primitives/extensions/data-connectors">
+    Connect to databases and data sources
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api/integrations">
+    Complete integrations API documentation
+  </Card>
+
+  <Card title="Available Integrations" icon="puzzle-piece" href="/integrations/catalog">
+    Browse 200+ pre-built integrations
+  </Card>
+
+  <Card title="Custom Integration Guide" icon="book" href="/guides/custom-integrations">
+    Build your own integrations
+  </Card>
+</CardGroup>
+
+<Tip>
+**Pro Tip**: Start with pre-built integrations when available, then extend with custom tools for specific needs. This gives you the best of both worlds - quick setup and full customization.
+</Tip>

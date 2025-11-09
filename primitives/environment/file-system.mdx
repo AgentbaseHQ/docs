@@ -1,0 +1,924 @@
+---
+title: "File System"
+description: "Persistent file storage and management for agent workflows"
+icon: "folder"
+---
+
+> Agent file systems provide persistent, isolated storage that survives across sessions, enabling complex workflows with data persistence and file management.
+
+## Overview
+
+The File System primitive gives agents the ability to create, read, write, and manage files within their execution environment. Each agent session has access to a complete Linux file system with persistent storage, allowing agents to:
+
+- **Store Data**: Save files, datasets, configurations, and artifacts
+- **Process Files**: Read, modify, and transform file contents
+- **Organize Content**: Create directory structures and manage file hierarchies
+- **Persist State**: Maintain files across multiple requests in the same session
+- **Generate Outputs**: Create reports, code files, images, and other deliverables
+
+<CardGroup cols={2}>
+  <Card title="Full Read/Write Access" icon="pen">
+    Complete file system operations - create, read, update, delete files and directories
+  </Card>
+
+  <Card title="10GB Storage" icon="hard-drive">
+    Each session gets 10GB of persistent disk space
+  </Card>
+
+  <Card title="Session Persistence" icon="database">
+    Files remain available across all requests in the same session
+  </Card>
+
+  <Card title="Automatic Management" icon="wand-magic-sparkles">
+    Agents handle file operations automatically based on your instructions
+  </Card>
+</CardGroup>
+
+## How File Systems Work
+
+Agents use specialized tools to interact with the file system:
+
+### Core File Tools
+
+<AccordionGroup>
+  <Accordion title="str_replace_editor - File Creation and Editing">
+    The primary tool for file operations. Provides:
+
+    - **Create**: Create new files with content
+    - **View**: Read file contents
+    - **Edit**: Modify files using find-and-replace
+    - **Insert**: Add content at specific locations
+    - **Undo**: Revert recent changes
+
+    ```typescript
+    // Agent automatically uses str_replace_editor
+    const result = await agentbase.runAgent({
+      message: "Create a file called config.json with database settings"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="bash - File Operations">
+    Shell commands for file manipulation:
+
+    - **Copy**: `cp source dest`
+    - **Move**: `mv source dest`
+    - **Delete**: `rm file`
+    - **List**: `ls -la`
+    - **Permissions**: `chmod`, `chown`
+
+    ```typescript
+    const result = await agentbase.runAgent({
+      message: "Copy all .txt files to the backup folder"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="glob - File Search by Pattern">
+    Find files matching patterns:
+
+    - Pattern matching: `*.js`, `**/*.ts`
+    - Recursive search: `**/test/*.py`
+    - Multiple patterns: `{*.json,*.yaml}`
+
+    ```typescript
+    const result = await agentbase.runAgent({
+      message: "Find all Python files in the project"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="grep - Content Search">
+    Search for text within files:
+
+    - Regex patterns: `grep "pattern" file`
+    - Recursive search: `grep -r "pattern" .`
+    - Case-insensitive: `grep -i "pattern"`
+
+    ```typescript
+    const result = await agentbase.runAgent({
+      message: "Find all TODO comments in the codebase"
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## File System Architecture
+
+### Directory Structure
+
+The default working directory is `/home/pointer`:
+
+```
+/home/pointer/          # Default working directory
+├── .cache/             # Cache directory
+├── .config/            # Configuration files
+├── .local/             # User-local data
+└── [your files]        # Created by agent
+```
+
+### Storage Hierarchy
+
+```mermaid
+graph TB
+    A[Session] --> B[File System]
+    B --> C[/home/pointer]
+    C --> D[User Files]
+    C --> E[Installed Packages]
+    C --> F[Generated Outputs]
+    D --> G[Persistent Storage]
+    E --> G
+    F --> G
+    G --> H[10GB Limit]
+```
+
+## Code Examples
+
+### Creating Files
+
+<CodeGroup>
+
+```typescript TypeScript
+// Create a single file
+const result = await agentbase.runAgent({
+  message: "Create a file called hello.py with a simple hello world program"
+});
+
+// Create multiple files
+const multi = await agentbase.runAgent({
+  message: "Create a React project structure with App.js, index.js, and package.json"
+});
+
+// Create file with specific content
+const config = await agentbase.runAgent({
+  message: `Create config.json with this content:
+  {
+    "apiKey": "xxx",
+    "endpoint": "https://api.example.com"
+  }`
+});
+```
+
+```python Python
+# Create a single file
+result = agentbase.run_agent(
+    message="Create a file called hello.py with a simple hello world program"
+)
+
+# Create multiple files
+multi = agentbase.run_agent(
+    message="Create a React project structure with App.js, index.js, and package.json"
+)
+
+# Create file with specific content
+config = agentbase.run_agent(
+    message="""Create config.json with this content:
+    {
+        "apiKey": "xxx",
+        "endpoint": "https://api.example.com"
+    }"""
+)
+```
+
+</CodeGroup>
+
+### Reading Files
+
+<CodeGroup>
+
+```typescript TypeScript
+// Read file contents
+const read = await agentbase.runAgent({
+  message: "Read the contents of data.csv and summarize it"
+});
+
+// Read multiple files
+const readMulti = await agentbase.runAgent({
+  message: "Read all .md files in the docs folder and create a table of contents"
+});
+
+// Read and process
+const process = await agentbase.runAgent({
+  message: "Read config.json and validate all required fields are present"
+});
+```
+
+```python Python
+# Read file contents
+read = agentbase.run_agent(
+    message="Read the contents of data.csv and summarize it"
+)
+
+# Read multiple files
+read_multi = agentbase.run_agent(
+    message="Read all .md files in the docs folder and create a table of contents"
+)
+
+# Read and process
+process = agentbase.run_agent(
+    message="Read config.json and validate all required fields are present"
+)
+```
+
+</CodeGroup>
+
+### Modifying Files
+
+<CodeGroup>
+
+```typescript TypeScript
+// Edit existing file
+const edit = await agentbase.runAgent({
+  message: "Update the version number in package.json to 2.0.0",
+  session: existingSession
+});
+
+// Find and replace
+const replace = await agentbase.runAgent({
+  message: "Replace all instances of 'oldFunction' with 'newFunction' in src/utils.js",
+  session: existingSession
+});
+
+// Append to file
+const append = await agentbase.runAgent({
+  message: "Add a new route to routes.js for the profile page",
+  session: existingSession
+});
+```
+
+```python Python
+# Edit existing file
+edit = agentbase.run_agent(
+    message="Update the version number in package.json to 2.0.0",
+    session=existing_session
+)
+
+# Find and replace
+replace = agentbase.run_agent(
+    message="Replace all instances of 'oldFunction' with 'newFunction' in src/utils.js",
+    session=existing_session
+)
+
+# Append to file
+append = agentbase.run_agent(
+    message="Add a new route to routes.js for the profile page",
+    session=existing_session
+)
+```
+
+</CodeGroup>
+
+### File Organization
+
+<CodeGroup>
+
+```typescript TypeScript
+// Create directory structure
+const structure = await agentbase.runAgent({
+  message: "Create folders for src, tests, and docs"
+});
+
+// Move files
+const organize = await agentbase.runAgent({
+  message: "Move all .js files to the src folder",
+  session: structure.session
+});
+
+// Copy with organization
+const backup = await agentbase.runAgent({
+  message: "Create a backup folder and copy all important files there",
+  session: structure.session
+});
+```
+
+```python Python
+# Create directory structure
+structure = agentbase.run_agent(
+    message="Create folders for src, tests, and docs"
+)
+
+# Move files
+organize = agentbase.run_agent(
+    message="Move all .js files to the src folder",
+    session=structure.session
+)
+
+# Copy with organization
+backup = agentbase.run_agent(
+    message="Create a backup folder and copy all important files there",
+    session=structure.session
+)
+```
+
+</CodeGroup>
+
+### Searching Files
+
+<CodeGroup>
+
+```typescript TypeScript
+// Find files by pattern
+const find = await agentbase.runAgent({
+  message: "Find all TypeScript files in the project"
+});
+
+// Search content
+const search = await agentbase.runAgent({
+  message: "Search for all files containing 'API_KEY'"
+});
+
+// Complex search
+const complexSearch = await agentbase.runAgent({
+  message: "Find all Python test files that import the requests library"
+});
+```
+
+```python Python
+# Find files by pattern
+find = agentbase.run_agent(
+    message="Find all TypeScript files in the project"
+)
+
+# Search content
+search = agentbase.run_agent(
+    message="Search for all files containing 'API_KEY'"
+)
+
+# Complex search
+complex_search = agentbase.run_agent(
+    message="Find all Python test files that import the requests library"
+)
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Code Generation and Management
+
+Generate complete projects with proper file organization:
+
+```typescript
+const project = await agentbase.runAgent({
+  message: `Create a FastAPI project with:
+  - main.py with basic setup
+  - requirements.txt with dependencies
+  - .env.example for configuration
+  - README.md with setup instructions
+  - tests/test_main.py with sample tests`
+});
+
+// All files persist in the session
+```
+
+### 2. Data Processing Workflows
+
+Process data files and generate reports:
+
+```typescript
+// Step 1: Upload data (in practice, you'd create the file)
+const upload = await agentbase.runAgent({
+  message: "Create a sample sales_data.csv with 100 rows of sales data"
+});
+
+// Step 2: Process
+const process = await agentbase.runAgent({
+  message: "Analyze sales_data.csv and create a summary report as report.md",
+  session: upload.session
+});
+
+// Step 3: Visualize
+const viz = await agentbase.runAgent({
+  message: "Create a Python script to visualize the data and save charts as images",
+  session: upload.session
+});
+
+// All files (CSV, report, scripts, charts) persist
+```
+
+### 3. Configuration Management
+
+Manage configuration files across environments:
+
+```typescript
+const config = await agentbase.runAgent({
+  message: `Create configuration files for dev, staging, and prod environments:
+  - config/dev.json
+  - config/staging.json
+  - config/prod.json
+  Each should have appropriate API endpoints and settings`
+});
+
+// Later, update configs
+const update = await agentbase.runAgent({
+  message: "Update the prod config to use the new API endpoint",
+  session: config.session
+});
+```
+
+### 4. Documentation Generation
+
+Generate and maintain documentation:
+
+```typescript
+const docs = await agentbase.runAgent({
+  message: `Read all Python files in src/ and generate API documentation:
+  - docs/api.md with function signatures
+  - docs/examples.md with usage examples
+  - docs/index.md as main entry point`
+});
+```
+
+### 5. File Transformations
+
+Convert between file formats:
+
+```typescript
+const transform = await agentbase.runAgent({
+  message: "Convert data.json to CSV format and save as data.csv"
+});
+
+const convert = await agentbase.runAgent({
+  message: "Read all markdown files and convert them to HTML",
+  session: transform.session
+});
+```
+
+## Best Practices
+
+### File Naming and Organization
+
+<AccordionGroup>
+  <Accordion title="Use Descriptive Names">
+    ```typescript
+    // Good: Clear, descriptive names
+    const result = await agentbase.runAgent({
+      message: "Create customer_analysis_report.md"
+    });
+
+    // Avoid: Generic or unclear names
+    const result = await agentbase.runAgent({
+      message: "Create file1.txt"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Organize into Directories">
+    ```typescript
+    // Good: Organized structure
+    const result = await agentbase.runAgent({
+      message: `Create organized structure:
+      - src/ for source code
+      - tests/ for test files
+      - docs/ for documentation
+      - data/ for data files`
+    });
+
+    // Avoid: Everything in root
+    const result = await agentbase.runAgent({
+      message: "Create 20 files in the main folder"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Follow Conventions">
+    ```typescript
+    // Good: Follow standard conventions
+    const result = await agentbase.runAgent({
+      message: `Create Python project:
+      - __init__.py
+      - setup.py
+      - requirements.txt
+      - README.md`
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Session Management
+
+<Tip>
+**Persist Files Across Requests**: Always use the same session ID when working with files that need to persist across multiple agent requests.
+</Tip>
+
+```typescript
+// Create files in first request
+const create = await agentbase.runAgent({
+  message: "Create data.json and processor.py"
+});
+
+// Access files in subsequent requests
+const process = await agentbase.runAgent({
+  message: "Run processor.py on data.json",
+  session: create.session  // Critical!
+});
+```
+
+### Storage Management
+
+Monitor and manage your 10GB storage limit:
+
+```typescript
+// Check disk usage
+const check = await agentbase.runAgent({
+  message: "Check disk usage and list the largest files"
+});
+
+// Clean up when needed
+const cleanup = await agentbase.runAgent({
+  message: "Delete temporary files and cache folders",
+  session: check.session
+});
+```
+
+### Error Handling
+
+Handle file-related errors gracefully:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: `Read config.json. If it doesn't exist, create a default one with:
+  {
+    "apiKey": "",
+    "endpoint": "https://api.example.com"
+  }`
+});
+```
+
+## Integration with Other Primitives
+
+### With Sandbox
+
+Files exist within the sandbox environment:
+
+```typescript
+// Files are isolated per sandbox/session
+const session1 = await agentbase.runAgent({
+  message: "Create secret.txt with password"
+});
+
+const session2 = await agentbase.runAgent({
+  message: "Create secret.txt with different password"
+});
+
+// Each session has its own secret.txt
+```
+
+Learn more: [Sandbox Primitive](/primitives/environment/sandbox)
+
+### With Computer
+
+Use bash commands for advanced file operations:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Use bash to find all files larger than 1MB and compress them"
+});
+```
+
+Learn more: [Computer Primitive](/primitives/environment/computer)
+
+### With Browser
+
+Save web content to files:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Navigate to example.com, extract the data, and save it to data.json"
+});
+```
+
+Learn more: [Browser Primitive](/primitives/environment/browser)
+
+### With Custom Tools
+
+Create files as tool outputs:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Use the weather API to get forecasts and save to forecast.json"
+});
+```
+
+Learn more: [Custom Tools](/primitives/essentials/custom-tools)
+
+## Performance Considerations
+
+### File Size Limits
+
+- **Individual Files**: No strict limit, but large files consume storage quota
+- **Total Storage**: 10GB per session
+- **Read Performance**: Files under 10MB read instantly
+- **Write Performance**: Optimized for files under 100MB
+
+### Optimization Tips
+
+<CardGroup cols={2}>
+  <Card title="Batch Operations" icon="layer-group">
+    Group file operations together to reduce overhead
+  </Card>
+
+  <Card title="Stream Large Files" icon="stream">
+    Process large files in chunks rather than loading entirely
+  </Card>
+
+  <Card title="Clean Temporary Files" icon="broom">
+    Remove temp files after processing to free space
+  </Card>
+
+  <Card title="Compress Archives" icon="file-zipper">
+    Compress large datasets to save storage
+  </Card>
+</CardGroup>
+
+### Performance Example
+
+```typescript
+// Efficient: Process large file in chunks
+const efficient = await agentbase.runAgent({
+  message: "Read large_data.csv in chunks of 1000 rows and process each chunk"
+});
+
+// Inefficient: Loading entire large file
+const inefficient = await agentbase.runAgent({
+  message: "Load all of large_data.csv into memory and process"
+});
+```
+
+## Common File Operations
+
+### Working with Different File Types
+
+<AccordionGroup>
+  <Accordion title="JSON Files">
+    ```typescript
+    // Create JSON
+    const create = await agentbase.runAgent({
+      message: 'Create data.json with {"users": [], "settings": {}}'
+    });
+
+    // Read and modify JSON
+    const modify = await agentbase.runAgent({
+      message: "Add a new user to data.json",
+      session: create.session
+    });
+
+    // Validate JSON
+    const validate = await agentbase.runAgent({
+      message: "Validate that data.json is valid JSON",
+      session: create.session
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="CSV Files">
+    ```typescript
+    // Create CSV
+    const csv = await agentbase.runAgent({
+      message: "Create sales.csv with columns: date, product, amount"
+    });
+
+    // Process CSV
+    const process = await agentbase.runAgent({
+      message: "Read sales.csv and calculate total sales by product",
+      session: csv.session
+    });
+
+    // Convert CSV
+    const convert = await agentbase.runAgent({
+      message: "Convert sales.csv to JSON format",
+      session: csv.session
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Text Files">
+    ```typescript
+    // Create and write
+    const write = await agentbase.runAgent({
+      message: "Create notes.txt with a list of tasks"
+    });
+
+    // Read and search
+    const search = await agentbase.runAgent({
+      message: "Search notes.txt for tasks containing 'urgent'",
+      session: write.session
+    });
+
+    // Append
+    const append = await agentbase.runAgent({
+      message: "Add a new task to notes.txt",
+      session: write.session
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Code Files">
+    ```typescript
+    // Create source files
+    const code = await agentbase.runAgent({
+      message: "Create a Python module utils.py with helper functions"
+    });
+
+    // Modify code
+    const modify = await agentbase.runAgent({
+      message: "Add error handling to all functions in utils.py",
+      session: code.session
+    });
+
+    // Test code
+    const test = await agentbase.runAgent({
+      message: "Create test_utils.py to test the functions",
+      session: code.session
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Binary Files">
+    ```typescript
+    // Download and save
+    const download = await agentbase.runAgent({
+      message: "Download image from URL and save as logo.png"
+    });
+
+    // Process binary
+    const process = await agentbase.runAgent({
+      message: "Resize logo.png to 200x200 pixels",
+      session: download.session
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Patterns
+
+### Multi-File Workflows
+
+```typescript
+// Complex project setup
+const project = await agentbase.runAgent({
+  message: `Create a full-stack project:
+
+  Backend (backend/):
+  - app.py with Flask setup
+  - requirements.txt
+  - config.py
+  - models/user.py
+  - routes/api.py
+
+  Frontend (frontend/):
+  - index.html
+  - style.css
+  - app.js
+  - package.json
+
+  Root:
+  - README.md
+  - .gitignore
+  - docker-compose.yml`
+});
+```
+
+### Incremental File Building
+
+```typescript
+// Start with base
+const base = await agentbase.runAgent({
+  message: "Create base.py with common utilities"
+});
+
+// Add features incrementally
+const feature1 = await agentbase.runAgent({
+  message: "Add logging functionality to base.py",
+  session: base.session
+});
+
+const feature2 = await agentbase.runAgent({
+  message: "Add configuration loading to base.py",
+  session: base.session
+});
+
+const feature3 = await agentbase.runAgent({
+  message: "Add error handling decorators to base.py",
+  session: base.session
+});
+```
+
+### File-Based State Management
+
+```typescript
+// Use files to track state
+const init = await agentbase.runAgent({
+  message: "Create state.json to track workflow progress: {step: 1, completed: []}"
+});
+
+// Update state after each step
+const step2 = await agentbase.runAgent({
+  message: "Complete step 1, update state.json to step 2",
+  session: init.session
+});
+
+const step3 = await agentbase.runAgent({
+  message: "Complete step 2, update state.json to step 3",
+  session: init.session
+});
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="File Not Found">
+    **Problem**: Agent cannot find a file
+
+    **Solutions**:
+    - Verify you're using the correct session ID
+    - Check file path and name (Linux is case-sensitive)
+    - List directory contents to confirm file exists
+
+    ```typescript
+    const check = await agentbase.runAgent({
+      message: "List all files in the current directory and show their paths",
+      session: yourSession
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Permission Denied">
+    **Problem**: Cannot read or write file
+
+    **Solution**: Files should be in `/home/pointer` directory with proper permissions
+
+    ```typescript
+    const fix = await agentbase.runAgent({
+      message: "Check file permissions and fix any permission issues"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Disk Space Full">
+    **Problem**: Reached 10GB storage limit
+
+    **Solutions**:
+    - Clean up temporary files
+    - Compress large files
+    - Start a new session if needed
+
+    ```typescript
+    const cleanup = await agentbase.runAgent({
+      message: "Show disk usage, identify large files, and remove unnecessary ones"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="File Corruption">
+    **Problem**: File contents appear corrupted
+
+    **Solution**: Verify file encoding and format
+
+    ```typescript
+    const verify = await agentbase.runAgent({
+      message: "Check the encoding and format of data.json and repair if needed"
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Sandbox" icon="box" href="/primitives/environment/sandbox">
+    Isolated execution environment for files
+  </Card>
+
+  <Card title="Computer" icon="desktop" href="/primitives/environment/computer">
+    Shell access for advanced file operations
+  </Card>
+
+  <Card title="Sessions" icon="link" href="/primitives/essentials/sessions">
+    Session persistence for file continuity
+  </Card>
+
+  <Card title="Persistence" icon="database" href="/build/persistence">
+    Understanding data persistence
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="File Tools Reference" icon="hammer" href="/build/tools">
+    Complete tool documentation
+  </Card>
+
+  <Card title="API Examples" icon="code" href="/api/example">
+    File operation examples
+  </Card>
+
+  <Card title="Best Practices" icon="star" href="/build/overview">
+    Production file management
+  </Card>
+</CardGroup>
+
+<Note>
+**File Persistence**: Files persist within a session until the session expires or is deleted. For long-term storage, consider downloading files or using external storage solutions.
+</Note>

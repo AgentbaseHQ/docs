@@ -1,0 +1,1191 @@
+---
+title: "Parallelization"
+description: "Execute multiple agent tasks concurrently for improved performance and scalability"
+icon: "arrows-split-up-and-left"
+---
+
+> Parallelization enables concurrent execution of multiple agent tasks, dramatically improving performance for independent operations and complex workflows.
+
+## Overview
+
+The Parallelization primitive allows you to run multiple agent requests simultaneously rather than sequentially. By executing independent tasks in parallel, you can significantly reduce total execution time, improve resource utilization, and build more responsive applications.
+
+Parallelization is essential for:
+
+- **Performance Optimization**: Reduce total execution time by running tasks concurrently
+- **Scalable Workflows**: Handle high-throughput scenarios with parallel processing
+- **Independent Operations**: Execute unrelated tasks simultaneously
+- **Data Processing**: Process multiple data items or files in parallel
+- **Multi-Source Aggregation**: Gather information from multiple sources simultaneously
+
+<CardGroup cols={2}>
+  <Card title="Concurrent Execution" icon="gauge-high">
+    Run multiple agent requests at the same time instead of waiting for each to complete
+  </Card>
+
+  <Card title="Independent Sessions" icon="layer-group">
+    Each parallel task runs in its own isolated session with independent state
+  </Card>
+
+  <Card title="Flexible Coordination" icon="shuffle">
+    Combine parallel execution with sequential workflows for complex patterns
+  </Card>
+
+  <Card title="Result Aggregation" icon="table-list">
+    Collect and combine results from all parallel tasks
+  </Card>
+</CardGroup>
+
+## How Parallelization Works
+
+When you execute multiple agent requests in parallel:
+
+1. **Dispatch**: All requests are sent simultaneously
+2. **Parallel Execution**: Each agent task runs independently in its own session
+3. **Isolation**: Tasks don't share state or interfere with each other
+4. **Completion**: Tasks complete at their own pace based on complexity
+5. **Aggregation**: Results are collected and can be combined as needed
+
+<Note>
+**Independence Requirement**: Parallelized tasks should be independent - they shouldn't depend on each other's results. For dependent tasks, use sequential execution or workflows.
+</Note>
+
+## Code Examples
+
+### Basic Parallel Execution
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Execute multiple independent tasks in parallel
+const results = await Promise.all([
+  agentbase.runAgent({
+    message: "Research artificial intelligence trends in 2024"
+  }),
+  agentbase.runAgent({
+    message: "Research machine learning applications in healthcare"
+  }),
+  agentbase.runAgent({
+    message: "Research natural language processing advances"
+  })
+]);
+
+// All three research tasks run simultaneously
+console.log('Task 1:', results[0].message);
+console.log('Task 2:', results[1].message);
+console.log('Task 3:', results[2].message);
+
+// Time saved: ~3x faster than sequential execution
+```
+
+```python Python
+import asyncio
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Execute multiple independent tasks in parallel
+async def parallel_research():
+    results = await asyncio.gather(
+        agentbase.run_agent_async(
+            message="Research artificial intelligence trends in 2024"
+        ),
+        agentbase.run_agent_async(
+            message="Research machine learning applications in healthcare"
+        ),
+        agentbase.run_agent_async(
+            message="Research natural language processing advances"
+        )
+    )
+
+    # All three research tasks run simultaneously
+    print('Task 1:', results[0].message)
+    print('Task 2:', results[1].message)
+    print('Task 3:', results[2].message)
+
+# Run the parallel tasks
+asyncio.run(parallel_research())
+```
+
+</CodeGroup>
+
+### Parallel Data Processing
+
+<CodeGroup>
+
+```typescript TypeScript
+// Process multiple files in parallel
+const files = [
+  'sales_q1.csv',
+  'sales_q2.csv',
+  'sales_q3.csv',
+  'sales_q4.csv'
+];
+
+const analyses = await Promise.all(
+  files.map(file =>
+    agentbase.runAgent({
+      message: `Analyze ${file} and generate summary statistics`
+    })
+  )
+);
+
+// All files processed simultaneously
+console.log('All quarterly analyses completed');
+console.log(analyses.map((a, i) => `${files[i]}: ${a.message}`));
+```
+
+```python Python
+# Process multiple files in parallel
+files = [
+    'sales_q1.csv',
+    'sales_q2.csv',
+    'sales_q3.csv',
+    'sales_q4.csv'
+]
+
+async def process_files():
+    analyses = await asyncio.gather(
+        *[agentbase.run_agent_async(
+            message=f"Analyze {file} and generate summary statistics"
+        ) for file in files]
+    )
+
+    # All files processed simultaneously
+    print('All quarterly analyses completed')
+    for i, analysis in enumerate(analyses):
+        print(f'{files[i]}: {analysis.message}')
+
+asyncio.run(process_files())
+```
+
+</CodeGroup>
+
+### Parallel Web Scraping
+
+<CodeGroup>
+
+```typescript TypeScript
+// Scrape multiple websites in parallel
+const websites = [
+  'https://example.com/products',
+  'https://competitor.com/catalog',
+  'https://market.com/listings'
+];
+
+const scrapedData = await Promise.all(
+  websites.map(url =>
+    agentbase.runAgent({
+      message: `Navigate to ${url} and extract all product names and prices`
+    })
+  )
+);
+
+// Combine results
+const allProducts = scrapedData.flatMap((result, i) => ({
+  source: websites[i],
+  data: result.message
+}));
+```
+
+```python Python
+# Scrape multiple websites in parallel
+websites = [
+    'https://example.com/products',
+    'https://competitor.com/catalog',
+    'https://market.com/listings'
+]
+
+async def scrape_websites():
+    scraped_data = await asyncio.gather(
+        *[agentbase.run_agent_async(
+            message=f"Navigate to {url} and extract all product names and prices"
+        ) for url in websites]
+    )
+
+    # Combine results
+    all_products = []
+    for i, result in enumerate(scraped_data):
+        all_products.append({
+            'source': websites[i],
+            'data': result.message
+        })
+
+    return all_products
+
+asyncio.run(scrape_websites())
+```
+
+</CodeGroup>
+
+### Parallel with Different Modes
+
+<CodeGroup>
+
+```typescript TypeScript
+// Use different modes for different task complexities
+const results = await Promise.all([
+  // Simple calculation - flash mode
+  agentbase.runAgent({
+    message: "Calculate 15% of 2000",
+    mode: "flash"
+  }),
+  // Standard analysis - fast mode
+  agentbase.runAgent({
+    message: "Analyze this dataset and find trends",
+    mode: "fast"
+  }),
+  // Complex reasoning - max mode
+  agentbase.runAgent({
+    message: "Design a comprehensive system architecture",
+    mode: "max"
+  })
+]);
+
+// Each uses appropriate resources for the task
+```
+
+```python Python
+# Use different modes for different task complexities
+async def mixed_mode_parallel():
+    results = await asyncio.gather(
+        # Simple calculation - flash mode
+        agentbase.run_agent_async(
+            message="Calculate 15% of 2000",
+            mode="flash"
+        ),
+        # Standard analysis - fast mode
+        agentbase.run_agent_async(
+            message="Analyze this dataset and find trends",
+            mode="fast"
+        ),
+        # Complex reasoning - max mode
+        agentbase.run_agent_async(
+            message="Design a comprehensive system architecture",
+            mode="max"
+        )
+    )
+
+    return results
+
+asyncio.run(mixed_mode_parallel())
+```
+
+</CodeGroup>
+
+### Result Aggregation
+
+<CodeGroup>
+
+```typescript TypeScript
+// Parallel tasks with result aggregation
+const cities = ['New York', 'London', 'Tokyo', 'Sydney'];
+
+const weatherData = await Promise.all(
+  cities.map(city =>
+    agentbase.runAgent({
+      message: `Get current weather for ${city}`
+    })
+  )
+);
+
+// Aggregate results
+const summary = await agentbase.runAgent({
+  message: `Here is weather data from multiple cities:
+  ${weatherData.map((w, i) => `${cities[i]}: ${w.message}`).join('\n')}
+
+  Create a summary report comparing weather across all cities.`
+});
+
+console.log('Global weather summary:', summary.message);
+```
+
+```python Python
+# Parallel tasks with result aggregation
+cities = ['New York', 'London', 'Tokyo', 'Sydney']
+
+async def aggregate_weather():
+    weather_data = await asyncio.gather(
+        *[agentbase.run_agent_async(
+            message=f"Get current weather for {city}"
+        ) for city in cities]
+    )
+
+    # Aggregate results
+    weather_summary = '\n'.join([
+        f"{cities[i]}: {w.message}"
+        for i, w in enumerate(weather_data)
+    ])
+
+    summary = await agentbase.run_agent_async(
+        message=f"""Here is weather data from multiple cities:
+        {weather_summary}
+
+        Create a summary report comparing weather across all cities."""
+    )
+
+    print('Global weather summary:', summary.message)
+
+asyncio.run(aggregate_weather())
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Batch Data Processing
+
+Process large datasets by splitting them across parallel agents:
+
+```typescript
+async function batchDataProcessing(records: any[]) {
+  const batchSize = 100;
+  const batches = [];
+
+  // Split into batches
+  for (let i = 0; i < records.length; i += batchSize) {
+    batches.push(records.slice(i, i + batchSize));
+  }
+
+  // Process all batches in parallel
+  const results = await Promise.all(
+    batches.map((batch, index) =>
+      agentbase.runAgent({
+        message: `Process this batch of ${batch.length} records:
+        ${JSON.stringify(batch)}
+
+        For each record:
+        1. Validate data format
+        2. Enrich with additional info
+        3. Calculate derived fields
+        4. Return processed results`,
+        system: `You are a data processing agent handling batch ${index + 1}`
+      })
+    )
+  );
+
+  // Combine results
+  const allProcessedRecords = results.flatMap(r =>
+    JSON.parse(r.message)
+  );
+
+  return allProcessedRecords;
+}
+
+// Process 1000 records in 10 parallel batches
+const processed = await batchDataProcessing(largeDataset);
+```
+
+### 2. Multi-Source Research
+
+Gather information from multiple sources simultaneously:
+
+```typescript
+async function comprehensiveResearch(topic: string) {
+  // Research different aspects in parallel
+  const [
+    academicResearch,
+    industryTrends,
+    competitorAnalysis,
+    marketData,
+    technicalSpecs
+  ] = await Promise.all([
+    agentbase.runAgent({
+      message: `Research academic papers and studies about ${topic}`,
+      system: "You are an academic research specialist"
+    }),
+    agentbase.runAgent({
+      message: `Research industry trends and developments in ${topic}`,
+      system: "You are an industry analyst"
+    }),
+    agentbase.runAgent({
+      message: `Analyze competitors and their approaches to ${topic}`,
+      system: "You are a competitive intelligence analyst"
+    }),
+    agentbase.runAgent({
+      message: `Gather market size, growth rates, and forecasts for ${topic}`,
+      system: "You are a market research analyst"
+    }),
+    agentbase.runAgent({
+      message: `Research technical specifications and requirements for ${topic}`,
+      system: "You are a technical analyst"
+    })
+  ]);
+
+  // Synthesize all research
+  const synthesis = await agentbase.runAgent({
+    message: `Synthesize comprehensive research report from multiple sources:
+
+    Academic Research:
+    ${academicResearch.message}
+
+    Industry Trends:
+    ${industryTrends.message}
+
+    Competitor Analysis:
+    ${competitorAnalysis.message}
+
+    Market Data:
+    ${marketData.message}
+
+    Technical Specifications:
+    ${technicalSpecs.message}
+
+    Create an executive summary highlighting key insights from all sources.`,
+    system: "You are a research synthesis specialist"
+  });
+
+  return synthesis;
+}
+```
+
+### 3. Content Generation at Scale
+
+Generate multiple content pieces in parallel:
+
+```typescript
+async function contentCampaign(products: string[]) {
+  // Generate content for all products simultaneously
+  const contentPieces = await Promise.all(
+    products.map(product =>
+      Promise.all([
+        // Product description
+        agentbase.runAgent({
+          message: `Write a compelling product description for ${product}`,
+          system: "You are a product copywriter"
+        }),
+        // SEO metadata
+        agentbase.runAgent({
+          message: `Generate SEO-optimized title, meta description, and keywords for ${product}`,
+          system: "You are an SEO specialist"
+        }),
+        // Social media posts
+        agentbase.runAgent({
+          message: `Create 3 social media posts promoting ${product} for Twitter, LinkedIn, and Instagram`,
+          system: "You are a social media content creator"
+        }),
+        // Email campaign
+        agentbase.runAgent({
+          message: `Write a promotional email for ${product}`,
+          system: "You are an email marketing specialist"
+        })
+      ])
+    )
+  );
+
+  // Organize results by product
+  const campaign = products.map((product, i) => ({
+    product,
+    description: contentPieces[i][0].message,
+    seo: contentPieces[i][1].message,
+    social: contentPieces[i][2].message,
+    email: contentPieces[i][3].message
+  }));
+
+  return campaign;
+}
+
+// Generate complete marketing campaign for 10 products
+const campaign = await contentCampaign(productList);
+```
+
+### 4. Testing and Validation
+
+Run parallel test scenarios:
+
+```typescript
+async function parallelTesting(apiEndpoint: string) {
+  const testScenarios = [
+    { name: 'Happy Path', data: validData },
+    { name: 'Missing Fields', data: incompleteData },
+    { name: 'Invalid Format', data: malformedData },
+    { name: 'Boundary Values', data: edgeCaseData },
+    { name: 'Large Payload', data: largeData },
+    { name: 'Special Characters', data: specialCharsData }
+  ];
+
+  // Run all test scenarios in parallel
+  const results = await Promise.all(
+    testScenarios.map(scenario =>
+      agentbase.runAgent({
+        message: `Test the API endpoint ${apiEndpoint} with this scenario:
+        Scenario: ${scenario.name}
+        Data: ${JSON.stringify(scenario.data)}
+
+        1. Send request to endpoint
+        2. Capture response
+        3. Validate response format
+        4. Check status code
+        5. Verify data integrity
+        6. Report results`,
+        system: "You are an API testing specialist"
+      })
+    )
+  );
+
+  // Summarize test results
+  const summary = await agentbase.runAgent({
+    message: `Test Results Summary:
+    ${results.map((r, i) => `
+      ${testScenarios[i].name}:
+      ${r.message}
+    `).join('\n')}
+
+    Create a comprehensive test report with pass/fail status for each scenario.`
+  });
+
+  return summary;
+}
+```
+
+### 5. Multi-Language Translation
+
+Translate content to multiple languages simultaneously:
+
+```typescript
+async function multiLanguageTranslation(content: string) {
+  const languages = [
+    'Spanish',
+    'French',
+    'German',
+    'Italian',
+    'Portuguese',
+    'Japanese',
+    'Chinese',
+    'Korean',
+    'Arabic',
+    'Russian'
+  ];
+
+  // Translate to all languages in parallel
+  const translations = await Promise.all(
+    languages.map(language =>
+      agentbase.runAgent({
+        message: `Translate the following content to ${language}:
+
+        ${content}
+
+        Ensure:
+        - Natural, fluent translation
+        - Cultural appropriateness
+        - Maintain tone and style
+        - Preserve formatting`,
+        system: `You are a professional ${language} translator`
+      })
+    )
+  );
+
+  // Return translations
+  return languages.reduce((acc, lang, i) => {
+    acc[lang] = translations[i].message;
+    return acc;
+  }, {} as Record<string, string>);
+}
+
+// Translate to 10 languages simultaneously
+const allTranslations = await multiLanguageTranslation(originalContent);
+```
+
+### 6. Distributed Analysis
+
+Analyze different dimensions of data in parallel:
+
+```typescript
+async function distributedAnalysis(dataset: any) {
+  // Analyze different aspects in parallel
+  const [
+    statistical,
+    temporal,
+    categorical,
+    correlational,
+    outliers,
+    trends
+  ] = await Promise.all([
+    agentbase.runAgent({
+      message: `Perform statistical analysis: mean, median, mode, std dev, quartiles`,
+      system: "You are a statistical analyst"
+    }),
+    agentbase.runAgent({
+      message: `Analyze temporal patterns: seasonality, cycles, time-based trends`,
+      system: "You are a time series analyst"
+    }),
+    agentbase.runAgent({
+      message: `Analyze categorical distributions and frequencies`,
+      system: "You are a categorical data analyst"
+    }),
+    agentbase.runAgent({
+      message: `Identify correlations between variables`,
+      system: "You are a correlation analyst"
+    }),
+    agentbase.runAgent({
+      message: `Detect outliers and anomalies`,
+      system: "You are an anomaly detection specialist"
+    }),
+    agentbase.runAgent({
+      message: `Identify long-term trends and patterns`,
+      system: "You are a trend analysis specialist"
+    })
+  ]);
+
+  // Compile comprehensive report
+  const report = await agentbase.runAgent({
+    message: `Compile comprehensive data analysis report from:
+
+    Statistical Analysis: ${statistical.message}
+    Temporal Patterns: ${temporal.message}
+    Categorical Analysis: ${categorical.message}
+    Correlations: ${correlational.message}
+    Outliers: ${outliers.message}
+    Trends: ${trends.message}
+
+    Create executive summary with key findings and recommendations.`
+  });
+
+  return report;
+}
+```
+
+## Best Practices
+
+### Task Independence
+
+<AccordionGroup>
+  <Accordion title="Ensure Tasks Are Independent">
+    ```typescript
+    // Good: Independent tasks that can run in parallel
+    const results = await Promise.all([
+      agentbase.runAgent({ message: "Analyze dataset A" }),
+      agentbase.runAgent({ message: "Analyze dataset B" }),
+      agentbase.runAgent({ message: "Analyze dataset C" })
+    ]);
+    // Each analysis is independent
+
+    // Avoid: Dependent tasks in parallel
+    const badResults = await Promise.all([
+      agentbase.runAgent({ message: "Download file" }),
+      agentbase.runAgent({ message: "Process the downloaded file" })
+      // Second task needs first to complete!
+    ]);
+
+    // Instead, run dependent tasks sequentially
+    const step1 = await agentbase.runAgent({ message: "Download file" });
+    const step2 = await agentbase.runAgent({
+      message: "Process the file",
+      session: step1.session
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Batch Similar Operations">
+    ```typescript
+    // Good: Batch similar operations for parallel execution
+    const urls = [/* list of 100 URLs */];
+
+    const results = await Promise.all(
+      urls.map(url =>
+        agentbase.runAgent({
+          message: `Scrape ${url} and extract key data`
+        })
+      )
+    );
+
+    // Each URL scraped in parallel
+
+    // Avoid: Processing one at a time
+    for (const url of urls) {
+      await agentbase.runAgent({
+        message: `Scrape ${url}`
+      });
+      // Sequential = slow!
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Resource Management
+
+<Tip>
+**Concurrency Limits**: While Agentbase can handle many parallel requests, consider implementing concurrency limits for very large batches to avoid overwhelming your application.
+</Tip>
+
+```typescript
+// Implement concurrency control for large batches
+async function parallelWithConcurrencyLimit<T>(
+  items: T[],
+  limit: number,
+  handler: (item: T) => Promise<any>
+): Promise<any[]> {
+  const results: any[] = [];
+  const executing: Promise<any>[] = [];
+
+  for (const item of items) {
+    const promise = handler(item).then(result => {
+      results.push(result);
+      executing.splice(executing.indexOf(promise), 1);
+    });
+
+    executing.push(promise);
+
+    if (executing.length >= limit) {
+      await Promise.race(executing);
+    }
+  }
+
+  await Promise.all(executing);
+  return results;
+}
+
+// Process 1000 items with max 10 concurrent
+const results = await parallelWithConcurrencyLimit(
+  items,
+  10,
+  item => agentbase.runAgent({ message: `Process ${item}` })
+);
+```
+
+### Error Handling
+
+<AccordionGroup>
+  <Accordion title="Handle Partial Failures">
+    ```typescript
+    // Use Promise.allSettled for graceful failure handling
+    const results = await Promise.allSettled([
+      agentbase.runAgent({ message: "Task 1" }),
+      agentbase.runAgent({ message: "Task 2" }),
+      agentbase.runAgent({ message: "Task 3" })
+    ]);
+
+    // Process results and failures separately
+    const successful = results
+      .filter(r => r.status === 'fulfilled')
+      .map(r => r.value);
+
+    const failed = results
+      .filter(r => r.status === 'rejected')
+      .map(r => r.reason);
+
+    console.log(`${successful.length} tasks succeeded`);
+    console.log(`${failed.length} tasks failed`);
+
+    // Continue with successful results
+    ```
+  </Accordion>
+
+  <Accordion title="Implement Retry Logic">
+    ```typescript
+    async function retryableParallel<T>(
+      tasks: (() => Promise<T>)[],
+      maxRetries: number = 3
+    ): Promise<T[]> {
+      const results = await Promise.allSettled(tasks.map(t => t()));
+
+      // Retry failed tasks
+      const retries: Promise<T>[] = [];
+      const finalResults: T[] = [];
+
+      for (let i = 0; i < results.length; i++) {
+        if (results[i].status === 'fulfilled') {
+          finalResults[i] = (results[i] as PromiseFulfilledResult<T>).value;
+        } else {
+          // Retry failed tasks
+          retries.push(
+            retryWithBackoff(tasks[i], maxRetries)
+              .then(result => {
+                finalResults[i] = result;
+              })
+          );
+        }
+      }
+
+      await Promise.all(retries);
+      return finalResults;
+    }
+
+    async function retryWithBackoff<T>(
+      fn: () => Promise<T>,
+      maxRetries: number
+    ): Promise<T> {
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          return await fn();
+        } catch (error) {
+          if (i === maxRetries - 1) throw error;
+          await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+        }
+      }
+      throw new Error('Max retries exceeded');
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Performance Optimization
+
+<CardGroup cols={2}>
+  <Card title="Batch Appropriately" icon="layer-group">
+    Group tasks into reasonable batch sizes (10-50 per batch)
+  </Card>
+
+  <Card title="Use Right Mode" icon="gauge">
+    Match agent mode to task complexity for optimal resource use
+  </Card>
+
+  <Card title="Monitor Resources" icon="chart-line">
+    Track performance metrics to optimize batch sizes
+  </Card>
+
+  <Card title="Cancel Unnecessary" icon="xmark">
+    Cancel remaining tasks if you have enough results
+  </Card>
+</CardGroup>
+
+```typescript
+// Implement early termination
+async function findFirstValid(items: string[]) {
+  const controller = new AbortController();
+
+  const promises = items.map(item =>
+    agentbase.runAgent({
+      message: `Validate ${item}`,
+      signal: controller.signal
+    })
+  );
+
+  try {
+    // Race for first valid result
+    const result = await Promise.race(promises);
+
+    // Cancel remaining requests
+    controller.abort();
+
+    return result;
+  } catch (error) {
+    controller.abort();
+    throw error;
+  }
+}
+```
+
+## Integration with Other Primitives
+
+### With Multi-Agent
+
+Parallelize across different agent specialists:
+
+```typescript
+const results = await Promise.all([
+  agentbase.runAgent({
+    message: "Research topic A",
+    agents: [{ name: "Research Specialist A", description: "Expert in A" }]
+  }),
+  agentbase.runAgent({
+    message: "Research topic B",
+    agents: [{ name: "Research Specialist B", description: "Expert in B" }]
+  })
+]);
+
+// Different specialists working in parallel
+```
+
+Learn more: [Multi-Agent Primitive](/primitives/essentials/multi-agents)
+
+### With Custom Tools
+
+Parallel tool execution:
+
+```typescript
+const results = await Promise.all([
+  agentbase.runAgent({
+    message: "Fetch customer data",
+    mcpServers: [{ serverName: "crm", serverUrl: "..." }]
+  }),
+  agentbase.runAgent({
+    message: "Fetch order data",
+    mcpServers: [{ serverName: "orders", serverUrl: "..." }]
+  }),
+  agentbase.runAgent({
+    message: "Fetch analytics data",
+    mcpServers: [{ serverName: "analytics", serverUrl: "..." }]
+  })
+]);
+
+// Multiple data sources accessed in parallel
+```
+
+Learn more: [Custom Tools Primitive](/primitives/essentials/custom-tools)
+
+### With Sessions
+
+Each parallel task gets its own session:
+
+```typescript
+// Parallel tasks with independent sessions
+const tasks = await Promise.all([
+  agentbase.runAgent({ message: "Task 1" }),
+  agentbase.runAgent({ message: "Task 2" }),
+  agentbase.runAgent({ message: "Task 3" })
+]);
+
+// Each has unique session ID
+console.log('Session IDs:', tasks.map(t => t.session));
+
+// Can continue each independently
+await agentbase.runAgent({
+  message: "Continue task 1",
+  session: tasks[0].session
+});
+```
+
+Learn more: [Sessions Primitive](/primitives/essentials/sessions)
+
+## Performance Considerations
+
+### Speedup Calculation
+
+Theoretical speedup with parallel execution:
+
+```
+Sequential Time: T1 + T2 + T3 + ... + Tn
+Parallel Time: max(T1, T2, T3, ..., Tn)
+Speedup: (T1 + T2 + ... + Tn) / max(T1, T2, ..., Tn)
+```
+
+Example:
+```typescript
+// Sequential: 30 seconds total
+await task1(); // 10s
+await task2(); // 10s
+await task3(); // 10s
+
+// Parallel: 10 seconds total (limited by longest task)
+await Promise.all([
+  task1(), // 10s
+  task2(), // 10s
+  task3()  // 10s
+]);
+
+// Speedup: 30s / 10s = 3x faster
+```
+
+### Optimal Batch Sizing
+
+Find the sweet spot for your use case:
+
+- **Too Small** (1-5 tasks): Underutilizes parallelization
+- **Optimal** (10-50 tasks): Good balance of throughput and manageability
+- **Too Large** (100+ tasks): May overwhelm system, consider batching
+
+```typescript
+// Test different batch sizes
+async function findOptimalBatchSize(items: any[]) {
+  const batchSizes = [10, 25, 50, 100];
+
+  for (const size of batchSizes) {
+    const start = Date.now();
+
+    const batches = [];
+    for (let i = 0; i < items.length; i += size) {
+      batches.push(items.slice(i, i + size));
+    }
+
+    await Promise.all(
+      batches.map(batch =>
+        agentbase.runAgent({
+          message: `Process batch of ${batch.length} items`
+        })
+      )
+    );
+
+    const duration = Date.now() - start;
+    console.log(`Batch size ${size}: ${duration}ms`);
+  }
+}
+```
+
+### Memory Considerations
+
+Monitor memory usage with large parallel operations:
+
+```typescript
+// Streaming results instead of collecting all in memory
+async function* parallelStream(items: any[]) {
+  const batchSize = 10;
+
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const results = await Promise.all(
+      batch.map(item =>
+        agentbase.runAgent({ message: `Process ${item}` })
+      )
+    );
+
+    for (const result of results) {
+      yield result;
+    }
+  }
+}
+
+// Process results as they come
+for await (const result of parallelStream(largeDataset)) {
+  // Process result immediately
+  await saveToDatabase(result);
+  // Don't keep all results in memory
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Some Tasks Failing">
+    **Problem**: Some parallel tasks fail while others succeed
+
+    **Solution**: Use Promise.allSettled and handle failures gracefully
+
+    ```typescript
+    const results = await Promise.allSettled(tasks);
+
+    const successful = results
+      .filter(r => r.status === 'fulfilled')
+      .map(r => r.value);
+
+    const failed = results
+      .filter(r => r.status === 'rejected')
+      .map((r, i) => ({
+        index: i,
+        error: r.reason
+      }));
+
+    // Retry failed tasks
+    const retried = await Promise.all(
+      failed.map(f => tasks[f.index]())
+    );
+
+    return [...successful, ...retried];
+    ```
+  </Accordion>
+
+  <Accordion title="Slower Than Expected">
+    **Problem**: Parallel execution not as fast as expected
+
+    **Possible Causes**:
+    - Tasks aren't actually independent
+    - Too many tasks overwhelming system
+    - One slow task bottlenecking others
+
+    **Solutions**:
+    - Verify task independence
+    - Implement concurrency limits
+    - Identify and optimize slow tasks
+    - Consider different batch sizes
+  </Accordion>
+
+  <Accordion title="Memory Issues">
+    **Problem**: Running out of memory with large parallel batches
+
+    **Solution**: Implement streaming or chunked processing
+
+    ```typescript
+    // Process in chunks
+    async function chunkedParallel(items: any[], chunkSize: number = 50) {
+      const results = [];
+
+      for (let i = 0; i < items.length; i += chunkSize) {
+        const chunk = items.slice(i, i + chunkSize);
+
+        const chunkResults = await Promise.all(
+          chunk.map(item =>
+            agentbase.runAgent({ message: `Process ${item}` })
+          )
+        );
+
+        results.push(...chunkResults);
+
+        // Optionally process results immediately
+        await processResults(chunkResults);
+      }
+
+      return results;
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Dependent Task Issues">
+    **Problem**: Task depends on results from another parallel task
+
+    **Solution**: Use sequential execution or workflow patterns
+
+    ```typescript
+    // Wrong: Parallel execution of dependent tasks
+    const [data, processed] = await Promise.all([
+      agentbase.runAgent({ message: "Fetch data" }),
+      agentbase.runAgent({ message: "Process data" })
+      // Can't process before fetching!
+    ]);
+
+    // Correct: Sequential for dependencies
+    const data = await agentbase.runAgent({ message: "Fetch data" });
+    const processed = await agentbase.runAgent({
+      message: "Process data",
+      session: data.session
+    });
+
+    // Or: Use workflows for complex dependencies
+    const result = await agentbase.runAgent({
+      message: "Complete workflow",
+      workflows: [{
+        id: "data-workflow",
+        steps: [
+          { id: "fetch", description: "Fetch data", depends_on: [] },
+          { id: "process", description: "Process data", depends_on: ["fetch"] }
+        ]
+      }]
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Workflows" icon="diagram-project" href="/api/run-agent">
+    Structured DAGs for complex task dependencies
+  </Card>
+
+  <Card title="Multi-Agent" icon="users" href="/primitives/essentials/multi-agents">
+    Coordinate multiple specialized agents
+  </Card>
+
+  <Card title="Sessions" icon="link" href="/primitives/essentials/sessions">
+    Each parallel task gets its own session
+  </Card>
+
+  <Card title="Custom Tools" icon="toolbox" href="/primitives/essentials/custom-tools">
+    Parallel tool execution across tasks
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Complete API documentation
+  </Card>
+
+  <Card title="Performance Guide" icon="gauge-high" href="/improve/performance">
+    Optimization best practices
+  </Card>
+
+  <Card title="Use Cases" icon="lightbulb" href="/build/use-cases">
+    Parallel execution examples
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Parallelization is most effective for independent tasks of similar complexity. Use it to dramatically reduce execution time for batch operations, multi-source data gathering, and scalable processing.
+</Tip>

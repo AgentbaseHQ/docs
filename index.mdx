@@ -1,58 +1,366 @@
 ---
 title: Welcome to Agentbase
-# description: "The Serverless Agent Platform"
 ---
 
 ## The Serverless Agent Platform
 
-Agentbase provides a fully functioning platform for agentic applications. We manage critical infrastructure and provide persistent, stateful environments, agents.
+Agentbase provides a fully managed platform for building and deploying production-grade AI agents. Focus on what your agents do - we handle all the infrastructure, scaling, and complexity.
 
 <CardGroup cols={2}>
-  <Card title="Quick Start" icon="rocket" href="/api/quickstart">
-    Get started with Agentbase in minutes
+  <Card title="Build Agents" icon="hammer" href="/build/overview">
+    Create powerful agents with zero infrastructure setup
   </Card>
-  <Card title="Introduction" icon="code" href="/introduction">
-    Integrate Agentbase into your applications
+  <Card title="Deploy to Production" icon="rocket" href="/deploy/overview">
+    Launch agents with automatic scaling and 99.9% uptime
+  </Card>
+  <Card title="Improve & Optimize" icon="chart-line" href="/improve/overview">
+    Monitor performance, reduce costs, and enhance quality
+  </Card>
+  <Card title="Agent Primitives" icon="cubes" href="/primitives/overview">
+    Understand the building blocks that power your agents
   </Card>
 </CardGroup>
 
 ## What Makes Agentbase Special
 
-Every API call comes with a general-purpose agent that handles tools, prompts, and capabilities automatically - no framework required. You can easily customize the agent with your own tools and capabilities through the API.
+Every API call comes with a fully functional agent that handles tools, prompts, and capabilities automatically - no framework required.
 
 <CardGroup cols={2}>
-  <Card title="Zero Setup" icon="cloud" href="/introduction">
-    The agent requires no setup and is ready to use out of the box. All
-    infrastructure and agentic capabilities are managed.
+  <Card title="Zero Setup" icon="bolt">
+    Launch your first agent in 30 seconds with `npm create agentbase@latest`
   </Card>
-  <Card title="Fully Customizable" icon="robot" href="/introduction">
-    The agent is fully customizable. You can easily customize the agent with
-    your own tools and capabilities through the API.
+
+  <Card title="Anti-Framework" icon="ban">
+    No frameworks to learn - Agentbase provides everything you need out of the box
   </Card>
-  <Card
-    title="Persistent Environment"
-    icon="computer"
-    href="/introduction"
-  >
-    The agent is running in a persistent environment with a computer. You can
-    easily pause and resume the agent's execution through the API.
+
+  <Card title="Persistent Environments" icon="server">
+    Each agent gets a full Linux environment with browser, file system, and tools
   </Card>
-  <Card title="Infinite Scale" icon="infinity" href="/introduction">
-    The agent can be scaled to any number of concurrent sessions. You can run an
-    agent for each user or for each task.
+
+  <Card title="Infinite Scale" icon="infinity">
+    Automatic scaling from 1 to 1000s of concurrent agents
+  </Card>
+
+  <Card title="Simple Pricing" icon="dollar-sign">
+    Pay per action, not per token - predictable costs that scale with value
+  </Card>
+
+  <Card title="Production Ready" icon="shield-check">
+    Enterprise-grade reliability with built-in security and monitoring
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+Get your first agent running in 2 minutes:
+
+<CodeGroup>
+```bash Install & Run
+# Create your agent project
+npm create agentbase@latest
+
+# Navigate and start
+cd my-agent
+npm run dev
+```
+
+```typescript Use in Code
+import Agentbase from "@agentbase/sdk";
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+const result = await agentbase.runAgent({
+  message: "Analyze data.csv and create a summary report",
+  mode: "fast"
+});
+
+console.log(result.content);
+```
+
+```python Use in Python
+from agentbase import Agentbase
+
+client = Agentbase(api_key=os.environ.get("AGENTBASE_API_KEY"))
+
+result = client.run_agent(
+    message="Analyze data.csv and create a summary report",
+    mode="fast"
+)
+
+print(result.content)
+```
+
+```bash cURL
+curl -X POST https://api.agentbase.sh/run-agent \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Analyze data.csv and create a summary report",
+    "mode": "fast"
+  }'
+```
+</CodeGroup>
+
+<Card title="Full Quickstart Guide" icon="rocket" href="/build/quickstart">
+  See the complete quickstart with examples and explanations
+</Card>
+
+## Build with Agentbase
+
+Create powerful agents using our comprehensive primitives:
+
+### Environment
+
+The execution environment where agents operate:
+
+<CardGroup cols={2}>
+  <Card title="Sandbox" icon="box" href="/primitives/environment/sandbox">
+    Isolated, secure execution for each agent
+  </Card>
+  <Card title="File System" icon="folder" href="/primitives/environment/file-system">
+    Persistent file storage and management
+  </Card>
+  <Card title="Computer" icon="desktop" href="/primitives/environment/computer">
+    Full Linux environment with shell access
+  </Card>
+  <Card title="Browser" icon="browser" href="/primitives/environment/browser">
+    Web automation and interaction
+  </Card>
+</CardGroup>
+
+### Essentials
+
+Core capabilities that power agent functionality:
+
+<CardGroup cols={3}>
+  <Card title="Prompts" icon="message" href="/primitives/essentials/prompts">
+    System prompts and instructions
+  </Card>
+  <Card title="Custom Tools" icon="wrench" href="/primitives/essentials/custom-tools">
+    Extend with your own capabilities
+  </Card>
+  <Card title="Sessions" icon="messages" href="/primitives/essentials/sessions">
+    Persistent conversations
+  </Card>
+  <Card title="Multi-Agents" icon="users" href="/primitives/essentials/multi-agents">
+    Coordinate multiple agents
+  </Card>
+  <Card title="Parallelization" icon="chart-network" href="/primitives/essentials/parallelization">
+    Concurrent execution
+  </Card>
+  <Card title="Self-Healing" icon="heart-pulse" href="/primitives/essentials/self-healing">
+    Automatic error recovery
+  </Card>
+</CardGroup>
+
+<Card title="View All Essentials" icon="list" href="/primitives/overview">
+  Explore all 15 essential primitives →
+</Card>
+
+### Extensions
+
+Advanced features for specialized use cases:
+
+<CardGroup cols={3}>
+  <Card title="Memory" icon="brain" href="/primitives/extensions/memory">
+    Long-term memory and recall
+  </Card>
+  <Card title="RAG" icon="database" href="/primitives/extensions/rag">
+    Retrieval-augmented generation
+  </Card>
+  <Card title="Web Search" icon="magnifying-glass" href="/primitives/extensions/web-search">
+    Real-time web search
+  </Card>
+  <Card title="Voice" icon="microphone" href="/primitives/extensions/voice">
+    Voice interaction
+  </Card>
+  <Card title="MCP" icon="plug" href="/primitives/extensions/mcp">
+    Model Context Protocol
+  </Card>
+  <Card title="Workflow" icon="diagram-project" href="/primitives/extensions/workflow">
+    Complex workflows
+  </Card>
+</CardGroup>
+
+<Card title="View All Extensions" icon="puzzle-piece" href="/primitives/overview">
+  Explore all 18 extension primitives →
+</Card>
+
+## What You Can Build
+
+Agentbase agents handle a wide variety of tasks:
+
+<Tabs>
+  <Tab title="Development">
+    **Code & Development Tasks**
+    - Write, test, and debug code
+    - Create REST APIs and services
+    - Generate unit tests
+    - Review and refactor code
+    - Automate DevOps workflows
+
+    ```typescript
+    const result = await agentbase.runAgent({
+      message: "Create a REST API with authentication and user management",
+      mode: "fast"
+    });
+    ```
+  </Tab>
+
+  <Tab title="Research">
+    **Research & Analysis**
+    - Competitive intelligence
+    - Market research
+    - Data analysis and visualization
+    - Report generation
+    - Literature reviews
+
+    ```typescript
+    const result = await agentbase.runAgent({
+      message: "Research our top 3 competitors and create a comparison report",
+      mode: "fast"
+    });
+    ```
+  </Tab>
+
+  <Tab title="Automation">
+    **Browser & Web Automation**
+    - Web scraping and crawling
+    - Form filling and testing
+    - Price monitoring
+    - Lead generation
+    - Content aggregation
+
+    ```typescript
+    const result = await agentbase.runAgent({
+      message: "Monitor competitor pricing and alert if prices change",
+      mode: "fast"
+    });
+    ```
+  </Tab>
+
+  <Tab title="Data">
+    **Data Processing**
+    - ETL pipelines
+    - Data transformation
+    - CSV/JSON processing
+    - Report generation
+    - Database operations
+
+    ```typescript
+    const result = await agentbase.runAgent({
+      message: "Process these CSV files and generate a summary report",
+      mode: "fast"
+    });
+    ```
+  </Tab>
+</Tabs>
+
+<Card title="See More Use Cases" icon="lightbulb" href="/build/use-cases">
+  Explore comprehensive use cases and patterns →
+</Card>
+
+## Pricing
+
+Simple, predictable pricing that scales with value:
+
+| Mode | Cost per Step | Best For |
+|------|---------------|----------|
+| **Flash** | $0.01 | Simple tasks, quick responses |
+| **Fast** | $0.05 | Most production use cases |
+| **Max** | $0.20 | Complex reasoning, critical tasks |
+
+<Tip>
+  Sign up with your work email to get **free credits automatically**!
+</Tip>
+
+<Card title="View Full Pricing" icon="dollar-sign" href="/pricing">
+  See detailed pricing and plans →
+</Card>
+
+## Deploy to Production
+
+Launch your agents with confidence:
+
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="code" href="/deploy/api/run-agent">
+    Complete API documentation with examples
+  </Card>
+
+  <Card title="TypeScript SDK" icon="js" href="/deploy/sdk/typescript">
+    Type-safe integration for Node.js apps
+  </Card>
+
+  <Card title="Python SDK" icon="python" href="/deploy/sdk/python">
+    Native Python client library
+  </Card>
+
+  <Card title="Authentication" icon="key" href="/deploy/authentication">
+    Secure your API integration
+  </Card>
+</CardGroup>
+
+## Improve & Optimize
+
+Monitor and enhance your agents in production:
+
+<CardGroup cols={2}>
+  <Card title="Cost Tracking" icon="dollar" href="/improve/cost-tracking">
+    Monitor and optimize agent costs
+  </Card>
+
+  <Card title="Performance" icon="gauge" href="/improve/performance">
+    Improve speed and efficiency
+  </Card>
+
+  <Card title="Traces" icon="bug" href="/improve/traces">
+    Debug with execution traces
+  </Card>
+
+  <Card title="Evals" icon="check-circle" href="/improve/evals">
+    Ensure consistent quality
   </Card>
 </CardGroup>
 
 ## Ready to Get Started?
 
-Pick your preferred way to interact with Agentbase's AI agent:
-
 <CardGroup cols={1}>
   <Card
-    title="Try the Web App"
-    icon="external-link"
-    href="https://www.agentbase.sh"
+    title="Try the Quickstart"
+    icon="rocket"
+    href="/build/quickstart"
   >
-    Open the web app and start chatting with the agent
+    Get your first agent running in 2 minutes
+  </Card>
+
+  <Card
+    title="Explore the Web App"
+    icon="external-link"
+    href="https://base.agentbase.sh/sign-up"
+  >
+    Sign up and test agents in your browser
+  </Card>
+</CardGroup>
+
+## Need Help?
+
+<CardGroup cols={2}>
+  <Card title="Join Discord" icon="discord" href="https://discord.com/invite/KFtqf7j9fs">
+    Get support from our community
+  </Card>
+
+  <Card title="Contact Support" icon="headset" href="/contact-support">
+    Reach out to our team
+  </Card>
+
+  <Card title="View Pricing" icon="dollar-sign" href="/pricing">
+    See plans and pricing details
+  </Card>
+
+  <Card title="Read the Docs" icon="book" href="/build/overview">
+    Explore comprehensive documentation
   </Card>
 </CardGroup>

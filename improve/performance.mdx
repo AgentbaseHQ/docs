@@ -1,0 +1,420 @@
+---
+title: "Performance Optimization"
+description: "Optimize agent performance for speed and efficiency"
+icon: "gauge"
+---
+
+## Overview
+
+Agent performance directly impacts user experience and costs. This guide covers strategies to optimize agent speed, reduce latency, and improve efficiency.
+
+## Key Performance Metrics
+
+<CardGroup cols={3}>
+  <Card title="Response Time" icon="clock">
+    Time from request to first/complete response
+
+    **Typical:** 2-15 seconds
+    **Target:** < 10 seconds for most tasks
+  </Card>
+
+  <Card title="Steps per Task" icon="list-ol">
+    Number of reasoning cycles to complete
+
+    **Typical:** 2-8 steps
+    **Target:** Minimize while maintaining quality
+  </Card>
+
+  <Card title="Success Rate" icon="check">
+    Percentage of successfully completed tasks
+
+    **Target:** > 95%
+  </Card>
+</CardGroup>
+
+## Optimization Strategies
+
+### 1. Choose the Right Mode
+
+Different modes offer different performance characteristics:
+
+<Tabs>
+  <Tab title="Flash Mode">
+    **Performance:** Fastest, most efficient
+    **Cost:** $0.01 per step
+    **Best for:**
+    - Simple queries
+    - Quick lookups
+    - Straightforward tasks
+    - High-volume operations
+
+    ```typescript
+    // Fast response for simple task
+    const result = await agentbase.runAgent({
+      message: "What's 2+2?",
+      mode: "flash"
+    });
+    ```
+
+    **Typical response time:** 1-3 seconds
+  </Tab>
+
+  <Tab title="Fast Mode">
+    **Performance:** Balanced
+    **Cost:** $0.05 per step
+    **Best for:**
+    - Most production use cases
+    - Multi-step workflows
+    - Tool usage
+    - Data processing
+
+    ```typescript
+    // Balanced performance
+    const result = await agentbase.runAgent({
+      message: "Analyze this CSV and create a summary",
+      mode: "fast"
+    });
+    ```
+
+    **Typical response time:** 3-10 seconds
+  </Tab>
+
+  <Tab title="Max Mode">
+    **Performance:** Most capable, slower
+    **Cost:** $0.20 per step
+    **Best for:**
+    - Complex reasoning
+    - Critical decisions
+    - Multi-agent coordination
+    - Detailed analysis
+
+    ```typescript
+    // Thorough but slower
+    const result = await agentbase.runAgent({
+      message: "Design a complete system architecture",
+      mode: "max"
+    });
+    ```
+
+    **Typical response time:** 10-30 seconds
+  </Tab>
+</Tabs>
+
+### 2. Optimize Prompts
+
+Clear, specific prompts reduce unnecessary steps:
+
+<CodeGroup>
+```typescript Vague Prompt
+// ❌ May require multiple clarification steps
+const result = await agentbase.runAgent({
+  message: "Check the website",
+  mode: "fast"
+});
+// Potential steps: 5-8
+// Time: 8-15 seconds
+```
+
+```typescript Specific Prompt
+// ✅ Clear instructions, fewer steps
+const result = await agentbase.runAgent({
+  message: "Visit example.com and extract the pricing table from the /pricing page",
+  mode: "fast"
+});
+// Potential steps: 2-3
+// Time: 4-6 seconds
+```
+</CodeGroup>
+
+**Prompt optimization tips:**
+- Be specific about the desired output format
+- Include all necessary context upfront
+- Specify constraints and requirements clearly
+- Avoid ambiguous language
+
+### 3. Use Streaming for Better UX
+
+Enable streaming to show progress and reduce perceived latency:
+
+```typescript
+const stream = await agentbase.runAgent({
+  message: "Process this large dataset",
+  mode: "fast",
+  stream: true
+});
+
+for await (const event of stream) {
+  switch (event.type) {
+    case 'agent_thinking':
+      updateUI('Agent is thinking...');
+      break;
+    case 'agent_tool_use':
+      updateUI(`Using tool: ${event.tool}`);
+      break;
+    case 'agent_output':
+      updateUI(`Output: ${event.content}`);
+      break;
+  }
+}
+```
+
+**Benefits:**
+- Users see progress in real-time
+- Reduced perceived latency
+- Better error handling
+- Ability to cancel long-running tasks
+
+### 4. Implement Caching
+
+Cache common or expensive operations:
+
+```typescript
+import { LRUCache } from 'lru-cache';
+
+const cache = new LRUCache({
+  max: 500,
+  ttl: 1000 * 60 * 60 // 1 hour
+});
+
+async function runAgentWithCache(message: string, mode: string) {
+  const cacheKey = `${message}:${mode}`;
+
+  // Check cache first
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    console.log('Cache hit');
+    return cached;
+  }
+
+  // Run agent if not cached
+  const result = await agentbase.runAgent({
+    message,
+    mode
+  });
+
+  // Store in cache
+  cache.set(cacheKey, result);
+  return result;
+}
+```
+
+**When to cache:**
+- Frequently requested information
+- Expensive computations
+- Stable data (doesn't change often)
+- Common workflows
+
+**When NOT to cache:**
+- Real-time data
+- User-specific information
+- Time-sensitive results
+
+### 5. Session Reuse
+
+Reuse sessions when context is relevant:
+
+```typescript
+// First request creates session
+const result1 = await agentbase.runAgent({
+  message: "Analyze data.csv",
+  mode: "fast"
+});
+
+// Subsequent requests reuse context
+const result2 = await agentbase.runAgent({
+  message: "Now calculate the average",
+  session: result1.session,
+  mode: "fast"
+});
+```
+
+**Benefits:**
+- Faster subsequent requests (context already loaded)
+- Better understanding of context
+- More efficient resource usage
+
+**Considerations:**
+- Sessions consume resources
+- Clear sessions when done
+- Don't reuse unrelated sessions
+
+### 6. Parallel Execution
+
+Run independent tasks in parallel:
+
+```typescript
+// ❌ Sequential - slow
+const result1 = await agentbase.runAgent({
+  message: "Analyze file1.csv",
+  mode: "fast"
+});
+const result2 = await agentbase.runAgent({
+  message: "Analyze file2.csv",
+  mode: "fast"
+});
+// Total time: 8-12 seconds
+
+// ✅ Parallel - fast
+const [result1, result2] = await Promise.all([
+  agentbase.runAgent({
+    message: "Analyze file1.csv",
+    mode: "fast"
+  }),
+  agentbase.runAgent({
+    message: "Analyze file2.csv",
+    mode: "fast"
+  })
+]);
+// Total time: 4-6 seconds
+```
+
+**Use parallel execution for:**
+- Independent data processing
+- Multiple file operations
+- Separate analysis tasks
+- Batch operations
+
+## Monitoring Performance
+
+Track performance metrics in production:
+
+```typescript
+class PerformanceMonitor {
+  private metrics = {
+    totalRequests: 0,
+    totalDuration: 0,
+    totalSteps: 0,
+    errors: 0
+  };
+
+  async monitorAgent(message: string, mode: string) {
+    const startTime = Date.now();
+    let steps = 0;
+
+    try {
+      const result = await agentbase.runAgent({
+        message,
+        mode,
+        stream: true
+      });
+
+      for await (const event of result) {
+        if (event.type === 'agent_step') {
+          steps++;
+        }
+      }
+
+      const duration = Date.now() - startTime;
+
+      // Update metrics
+      this.metrics.totalRequests++;
+      this.metrics.totalDuration += duration;
+      this.metrics.totalSteps += steps;
+
+      // Log slow requests
+      if (duration > 15000) {
+        console.warn('Slow request detected', {
+          message,
+          duration,
+          steps
+        });
+      }
+
+      return result;
+    } catch (error) {
+      this.metrics.errors++;
+      throw error;
+    }
+  }
+
+  getMetrics() {
+    return {
+      ...this.metrics,
+      avgDuration: this.metrics.totalDuration / this.metrics.totalRequests,
+      avgSteps: this.metrics.totalSteps / this.metrics.totalRequests,
+      errorRate: this.metrics.errors / this.metrics.totalRequests
+    };
+  }
+}
+```
+
+## Performance Benchmarks
+
+Typical performance by task type:
+
+| Task Type | Mode | Avg Steps | Avg Time | Example |
+|-----------|------|-----------|----------|---------|
+| Simple query | Flash | 1-2 | 1-3s | "What's the date?" |
+| Data lookup | Flash/Fast | 2-3 | 2-5s | "Find user by ID" |
+| File processing | Fast | 3-5 | 4-8s | "Parse CSV file" |
+| Web scraping | Fast | 4-6 | 6-12s | "Extract pricing data" |
+| Code generation | Fast/Max | 5-8 | 8-15s | "Create REST API" |
+| Complex analysis | Max | 8-15 | 15-30s | "Design architecture" |
+
+## Common Performance Issues
+
+<AccordionGroup>
+  <Accordion title="Slow Response Times" icon="hourglass">
+    **Symptoms:** Requests taking longer than expected
+
+    **Common causes:**
+    - Using Max mode for simple tasks
+    - Vague prompts requiring clarification
+    - Large context in sessions
+    - Network latency
+
+    **Solutions:**
+    - Switch to Flash mode for simple tasks
+    - Optimize prompts for clarity
+    - Clear unnecessary sessions
+    - Use streaming for better UX
+  </Accordion>
+
+  <Accordion title="Too Many Steps" icon="stairs">
+    **Symptoms:** Tasks taking more steps than necessary
+
+    **Common causes:**
+    - Ambiguous instructions
+    - Missing context
+    - Inefficient tool usage
+
+    **Solutions:**
+    - Provide specific, clear prompts
+    - Include all necessary context
+    - Review trace logs to identify inefficiencies
+  </Accordion>
+
+  <Accordion title="High Error Rates" icon="exclamation-triangle">
+    **Symptoms:** Frequent task failures
+
+    **Common causes:**
+    - Invalid inputs
+    - Resource limitations
+    - Network issues
+
+    **Solutions:**
+    - Validate inputs before sending
+    - Implement retry logic
+    - Monitor error patterns
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Cost Tracking" icon="dollar" href="/improve/cost-tracking">
+    Optimize costs alongside performance
+  </Card>
+
+  <Card title="Traces" icon="bug" href="/improve/traces">
+    Debug performance issues with traces
+  </Card>
+
+  <Card title="Agent Modes" icon="gauge" href="/build/agent-modes">
+    Learn more about Flash, Fast, and Max modes
+  </Card>
+
+  <Card title="System Prompts" icon="message" href="/build/system-prompts">
+    Optimize agent behavior with better prompts
+  </Card>
+</CardGroup>

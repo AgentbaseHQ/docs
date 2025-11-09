@@ -36,61 +36,154 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Introduction",
+        "tab": "Build",
         "groups": [
           {
             "group": "Getting Started",
             "tag": "NEW",
-            "pages": ["getting-started/overview", "getting-started/quickstart", "getting-started/common-use-cases"]
-          },
-          {
-            "group": "Build with Agentbase",
             "pages": [
-              "introduction", 
-              "pricing",
-              "build/agent-modes",
-              "build/persistence",
-              "build/agent-computer",
-              "build/cost-tracking",
-              "build/system-prompts",
-              "build/rules", 
-              "build/tools",
-              "build/model-context-protocol"
+              "build/overview",
+              "build/quickstart",
+              "build/use-cases"
             ]
           },
           {
-            "group": "Agents API",
+            "group": "Agent Primitives",
             "pages": [
-              "api/message-events",
-              "api/example",
-              "api/run-agent",
+              "primitives/overview",
               {
-                "group": "Messages",
+                "group": "Environment",
                 "pages": [
-                  "api/get-messages",
-                  "api/clear-messages"
+                  "primitives/environment/sandbox",
+                  "primitives/environment/file-system",
+                  "primitives/environment/computer",
+                  "primitives/environment/browser"
                 ]
               },
               {
-                "group": "Datastores",
+                "group": "Essentials",
                 "pages": [
-                  "api/create-datastore",
-                  "api/index-document"
+                  "primitives/essentials/prompts",
+                  "primitives/essentials/custom-tools",
+                  "primitives/essentials/states",
+                  "primitives/essentials/sessions",
+                  "primitives/essentials/multi-agents",
+                  "primitives/essentials/parallelization",
+                  "primitives/essentials/context-management",
+                  "primitives/essentials/persistence",
+                  "primitives/essentials/self-healing",
+                  "primitives/essentials/self-evolving",
+                  "primitives/essentials/background",
+                  "primitives/essentials/versioning",
+                  "primitives/essentials/hooks",
+                  "primitives/essentials/traces",
+                  "primitives/essentials/evals"
+                ]
+              },
+              {
+                "group": "Extensions",
+                "pages": [
+                  "primitives/extensions/memory",
+                  "primitives/extensions/workflow",
+                  "primitives/extensions/orchestration",
+                  "primitives/extensions/voice",
+                  "primitives/extensions/mcp",
+                  "primitives/extensions/rag",
+                  "primitives/extensions/web-search",
+                  "primitives/extensions/crawl-scrape",
+                  "primitives/extensions/email",
+                  "primitives/extensions/ocr",
+                  "primitives/extensions/integrations",
+                  "primitives/extensions/data-connectors",
+                  "primitives/extensions/tasks",
+                  "primitives/extensions/skills",
+                  "primitives/extensions/trigger",
+                  "primitives/extensions/scheduling",
+                  "primitives/extensions/authentication",
+                  "primitives/extensions/interface"
                 ]
               }
             ]
           },
           {
-            "group": "Agentbase SDK",
+            "group": "Customization",
             "pages": [
-              "sdk/typescript-sdk",
-              "sdk/python-sdk"
+              "build/agent-modes",
+              "build/system-prompts",
+              "build/rules"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Deploy",
+        "groups": [
+          {
+            "group": "Production",
+            "pages": [
+              "deploy/overview",
+              "deploy/authentication"
             ]
           },
           {
-            "group": "Resources",
+            "group": "API Reference",
             "pages": [
-              "resources/use-cases",
+              "deploy/api/run-agent",
+              "deploy/api/message-events",
+              "deploy/api/example",
+              {
+                "group": "Messages",
+                "pages": [
+                  "deploy/api/get-messages",
+                  "deploy/api/clear-messages"
+                ]
+              },
+              {
+                "group": "Datastores",
+                "pages": [
+                  "deploy/api/create-datastore",
+                  "deploy/api/index-document"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "SDKs",
+            "pages": [
+              "deploy/sdk/typescript",
+              "deploy/sdk/python"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Improve",
+        "groups": [
+          {
+            "group": "Optimization",
+            "pages": [
+              "improve/overview",
+              "improve/cost-tracking",
+              "improve/performance"
+            ]
+          },
+          {
+            "group": "Monitoring & Debugging",
+            "pages": [
+              "improve/traces",
+              "improve/evals",
+              "improve/logging"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Resources",
+        "groups": [
+          {
+            "group": "Help",
+            "pages": [
+              "pricing",
               "contact-support"
             ]
           }

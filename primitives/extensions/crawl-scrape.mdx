@@ -1,0 +1,682 @@
+---
+title: "Crawl & Scrape"
+description: "Extract data from websites with web crawling and scraping"
+icon: "spider-web"
+---
+
+## Overview
+
+The Crawl & Scrape extension enables agents to systematically extract data from websites, navigate multi-page structures, and gather information at scale. Unlike simple web requests, this extension provides intelligent crawling with rate limiting, session management, and structured data extraction.
+
+<CardGroup cols={2}>
+  <Card title="Intelligent Crawling" icon="spider">
+    Navigate website structures automatically, following links and pagination
+  </Card>
+
+  <Card title="Data Extraction" icon="database">
+    Extract structured data from HTML, JSON, and APIs
+  </Card>
+
+  <Card title="Rate Limiting" icon="gauge">
+    Respect robots.txt and avoid overwhelming servers
+  </Card>
+
+  <Card title="Session Management" icon="cookie">
+    Handle cookies, authentication, and stateful navigation
+  </Card>
+</CardGroup>
+
+## How It Works
+
+Agents use the built-in `web` tool with crawl mode to systematically extract data from websites:
+
+<Steps>
+  <Step title="Target Identification">
+    Agent identifies the target website and data to extract
+  </Step>
+
+  <Step title="Page Navigation">
+    Navigates to the target page using the browser environment
+  </Step>
+
+  <Step title="Data Extraction">
+    Extracts relevant data using DOM selectors, regex, or structure
+  </Step>
+
+  <Step title="Link Following">
+    Optionally follows links to crawl multiple pages
+  </Step>
+
+  <Step title="Data Structuring">
+    Organizes extracted data into structured format
+  </Step>
+</Steps>
+
+## Basic Usage
+
+### Simple Page Scraping
+
+<Tabs>
+  <Tab title="TypeScript">
+    ```typescript
+    import Agentbase from "@agentbase/sdk";
+
+    const agentbase = new Agentbase({
+      apiKey: process.env.AGENTBASE_API_KEY
+    });
+
+    // Scrape product information
+    const result = await agentbase.runAgent({
+      message: "Go to example.com/products and extract all product names and prices",
+      mode: "fast"
+    });
+
+    console.log('Extracted data:', result.content);
+    ```
+  </Tab>
+
+  <Tab title="Python">
+    ```python
+    from agentbase import Agentbase
+
+    client = Agentbase(api_key=os.environ.get("AGENTBASE_API_KEY"))
+
+    # Scrape product information
+    result = client.run_agent(
+        message="Go to example.com/products and extract all product names and prices",
+        mode="fast"
+    )
+
+    print("Extracted data:", result.content)
+    ```
+  </Tab>
+
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://api.agentbase.sh/run-agent \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "message": "Go to example.com/products and extract all product names and prices",
+        "mode": "fast"
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+### Multi-Page Crawling
+
+```typescript
+// Crawl multiple pages with pagination
+const result = await agentbase.runAgent({
+  message: `Visit example.com/blog and extract:
+    - All article titles
+    - Author names
+    - Publication dates
+    - Follow pagination to get all articles from pages 1-5`,
+  mode: "fast"
+});
+```
+
+### Structured Data Extraction
+
+```typescript
+// Extract data in specific format
+const result = await agentbase.runAgent({
+  message: `Scrape example.com/directory and return data as JSON:
+    {
+      "listings": [
+        {
+          "name": "...",
+          "address": "...",
+          "phone": "...",
+          "rating": "..."
+        }
+      ]
+    }`,
+  mode: "fast"
+});
+
+const data = JSON.parse(result.content);
+```
+
+## Use Cases
+
+### 1. Competitive Intelligence
+
+Monitor competitor websites for pricing, features, and updates:
+
+```typescript
+async function monitorCompetitors(competitors: string[]) {
+  const results = await Promise.all(
+    competitors.map(async (url) => {
+      return await agentbase.runAgent({
+        message: `Visit ${url} and extract:
+          - All product names and prices
+          - Key features
+          - Any promotional banners
+          - Last updated date`,
+        mode: "fast"
+      });
+    })
+  );
+
+  return results.map((r, i) => ({
+    competitor: competitors[i],
+    data: r.content
+  }));
+}
+
+// Usage
+const intel = await monitorCompetitors([
+  'https://competitor1.com/pricing',
+  'https://competitor2.com/products',
+  'https://competitor3.com/features'
+]);
+```
+
+### 2. Lead Generation
+
+Extract business contact information from directories:
+
+```typescript
+async function extractLeads(directoryUrl: string) {
+  const result = await agentbase.runAgent({
+    message: `Scrape ${directoryUrl} and extract all business listings:
+      - Business name
+      - Industry/category
+      - Contact email
+      - Phone number
+      - Website URL
+
+      Follow pagination to get all listings. Return as CSV format.`,
+    mode: "fast"
+  });
+
+  // Save to file
+  fs.writeFileSync('leads.csv', result.content);
+  return result.content;
+}
+```
+
+### 3. Content Aggregation
+
+Aggregate content from multiple sources:
+
+```typescript
+async function aggregateNews(topics: string[]) {
+  const articles = [];
+
+  for (const topic of topics) {
+    const result = await agentbase.runAgent({
+      message: `Search for recent articles about "${topic}" and extract:
+        - Article title
+        - Source/publication
+        - Publication date
+        - Summary
+        - URL
+
+        Get the 10 most recent articles.`,
+      mode: "fast"
+    });
+
+    articles.push({
+      topic,
+      articles: JSON.parse(result.content)
+    });
+  }
+
+  return articles;
+}
+
+// Usage
+const news = await aggregateNews([
+  'AI developments',
+  'Cloud computing trends',
+  'Cybersecurity news'
+]);
+```
+
+### 4. Price Monitoring
+
+Track product prices across e-commerce sites:
+
+```typescript
+interface PriceAlert {
+  product: string;
+  targetPrice: number;
+  urls: string[];
+}
+
+async function monitorPrices(alerts: PriceAlert[]) {
+  for (const alert of alerts) {
+    for (const url of alert.urls) {
+      const result = await agentbase.runAgent({
+        message: `Visit ${url} and extract the current price for ${alert.product}`,
+        mode: "flash"
+      });
+
+      // Parse price from response
+      const priceMatch = result.content.match(/\$?([\d,]+\.?\d*)/);
+      if (priceMatch) {
+        const currentPrice = parseFloat(priceMatch[1].replace(',', ''));
+
+        if (currentPrice <= alert.targetPrice) {
+          await sendAlert({
+            product: alert.product,
+            currentPrice,
+            targetPrice: alert.targetPrice,
+            url
+          });
+        }
+      }
+    }
+  }
+}
+```
+
+### 5. Job Listings Aggregation
+
+Collect job postings from multiple boards:
+
+```typescript
+async function aggregateJobs(searchTerms: string[]) {
+  const jobBoards = [
+    'https://jobs.example.com',
+    'https://careers.example.org',
+    'https://opportunities.example.net'
+  ];
+
+  const allJobs = [];
+
+  for (const board of jobBoards) {
+    for (const term of searchTerms) {
+      const result = await agentbase.runAgent({
+        message: `Search for "${term}" on ${board} and extract:
+          - Job title
+          - Company name
+          - Location
+          - Salary (if available)
+          - Posted date
+          - Job URL
+
+          Return as JSON array. Get the first 20 results.`,
+        mode: "fast"
+      });
+
+      allJobs.push(...JSON.parse(result.content));
+    }
+  }
+
+  return allJobs;
+}
+```
+
+### 6. Market Research
+
+Gather product reviews and ratings:
+
+```typescript
+async function collectReviews(productUrl: string) {
+  const result = await agentbase.runAgent({
+    message: `Visit ${productUrl} and extract all customer reviews:
+      - Reviewer name
+      - Rating (stars)
+      - Review text
+      - Date
+      - Verified purchase (if shown)
+
+      Follow pagination to get all reviews. Return as JSON.`,
+    mode: "fast"
+  });
+
+  const reviews = JSON.parse(result.content);
+
+  // Analyze sentiment
+  const analysis = await agentbase.runAgent({
+    message: `Analyze these reviews and provide:
+      - Average rating
+      - Common positive themes
+      - Common negative themes
+      - Overall sentiment
+
+      Reviews: ${JSON.stringify(reviews.slice(0, 50))}`,
+    mode: "fast"
+  });
+
+  return {
+    reviews,
+    analysis: analysis.content
+  };
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Respect Robots.txt" icon="robot">
+    Always respect website crawling policies:
+
+    ```typescript
+    // ✅ Good: Mention respecting robots.txt
+    const result = await agentbase.runAgent({
+      message: "Crawl example.com (respecting robots.txt) and extract product data",
+      mode: "fast"
+    });
+    ```
+
+    **Why:** Violating robots.txt can get your IP blocked and is considered bad practice.
+  </Accordion>
+
+  <Accordion title="Implement Rate Limiting" icon="gauge">
+    Avoid overwhelming servers with requests:
+
+    ```typescript
+    // ✅ Good: Stagger requests
+    async function crawlWithDelay(urls: string[], delayMs: number = 2000) {
+      const results = [];
+
+      for (const url of urls) {
+        const result = await agentbase.runAgent({
+          message: `Extract data from ${url}`,
+          mode: "fast"
+        });
+
+        results.push(result);
+
+        // Wait before next request
+        if (urls.indexOf(url) < urls.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+        }
+      }
+
+      return results;
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Errors Gracefully" icon="shield">
+    Expect and handle failures:
+
+    ```typescript
+    async function scrapeSafely(url: string) {
+      try {
+        const result = await agentbase.runAgent({
+          message: `Extract data from ${url}. If the page is not found or blocked, return an error message.`,
+          mode: "fast"
+        });
+
+        return {
+          success: true,
+          data: result.content
+        };
+
+      } catch (error) {
+        console.error(`Failed to scrape ${url}:`, error);
+
+        return {
+          success: false,
+          error: error.message,
+          url
+        };
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Be Specific About Data Format" icon="table">
+    Clearly specify desired output format:
+
+    ```typescript
+    // ✅ Good: Specify format
+    const result = await agentbase.runAgent({
+      message: `Extract product data and return as JSON:
+        {
+          "products": [
+            {
+              "name": "string",
+              "price": "number",
+              "inStock": "boolean",
+              "url": "string"
+            }
+          ]
+        }`,
+      mode: "fast"
+    });
+
+    // ❌ Bad: Vague format
+    const result = await agentbase.runAgent({
+      message: "Get product data",
+      mode: "fast"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Cache Results" icon="database">
+    Avoid re-scraping unchanged data:
+
+    ```typescript
+    import { LRUCache } from 'lru-cache';
+
+    const cache = new LRUCache({
+      max: 1000,
+      ttl: 1000 * 60 * 60 // 1 hour
+    });
+
+    async function scrapeWithCache(url: string) {
+      // Check cache first
+      const cached = cache.get(url);
+      if (cached) {
+        console.log('Cache hit:', url);
+        return cached;
+      }
+
+      // Scrape if not cached
+      const result = await agentbase.runAgent({
+        message: `Extract data from ${url}`,
+        mode: "fast"
+      });
+
+      // Cache result
+      cache.set(url, result.content);
+      return result.content;
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Monitor for Changes" icon="eye">
+    Detect when websites update structure:
+
+    ```typescript
+    async function detectChanges(url: string, expectedStructure: string[]) {
+      const result = await agentbase.runAgent({
+        message: `Check if ${url} contains these elements: ${expectedStructure.join(', ')}. Return which are present and which are missing.`,
+        mode: "flash"
+      });
+
+      if (result.content.includes('missing')) {
+        await alertTeam({
+          message: `Website structure changed: ${url}`,
+          details: result.content
+        });
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Patterns
+
+### Parallel Scraping
+
+```typescript
+async function scrapeInParallel(urls: string[], concurrency: number = 5) {
+  const results = [];
+
+  for (let i = 0; i < urls.length; i += concurrency) {
+    const batch = urls.slice(i, i + concurrency);
+
+    const batchResults = await Promise.all(
+      batch.map(url =>
+        agentbase.runAgent({
+          message: `Extract data from ${url}`,
+          mode: "fast"
+        })
+      )
+    );
+
+    results.push(...batchResults);
+
+    // Rate limit between batches
+    if (i + concurrency < urls.length) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+  }
+
+  return results;
+}
+```
+
+### Recursive Crawling
+
+```typescript
+async function crawlSitemap(startUrl: string, maxDepth: number = 3) {
+  const visited = new Set();
+  const results = [];
+
+  async function crawlPage(url: string, depth: number) {
+    if (depth > maxDepth || visited.has(url)) return;
+
+    visited.add(url);
+
+    const result = await agentbase.runAgent({
+      message: `Visit ${url} and:
+        1. Extract main content
+        2. Find all internal links
+        3. Return both as JSON`,
+      mode: "fast"
+    });
+
+    results.push({
+      url,
+      depth,
+      content: result.content
+    });
+
+    // Crawl linked pages
+    const data = JSON.parse(result.content);
+    for (const link of data.links || []) {
+      await crawlPage(link, depth + 1);
+    }
+  }
+
+  await crawlPage(startUrl, 0);
+  return results;
+}
+```
+
+## Performance Considerations
+
+<CardGroup cols={2}>
+  <Card title="Use Flash Mode" icon="bolt">
+    For simple extraction tasks, use Flash mode:
+    ```typescript
+    // Fast, cheap extraction
+    mode: "flash"
+    ```
+  </Card>
+
+  <Card title="Batch Requests" icon="layer-group">
+    Combine multiple extractions when possible
+  </Card>
+
+  <Card title="Cache Aggressively" icon="database">
+    Cache results to avoid re-scraping
+  </Card>
+
+  <Card title="Optimize Selectors" icon="crosshairs">
+    Be specific about what to extract to reduce processing
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Page Not Loading" icon="spinner">
+    **Problem:** Agent can't access the page
+
+    **Solutions:**
+    - Check if URL is correct and accessible
+    - Verify website doesn't block automated access
+    - Try with different user agent
+    - Check for CAPTCHA or bot detection
+  </Accordion>
+
+  <Accordion title="Data Not Extracted" icon="empty-set">
+    **Problem:** Agent returns no or incomplete data
+
+    **Solutions:**
+    - Be more specific about what to extract
+    - Check if page structure has changed
+    - Verify data is visible (not behind JavaScript)
+    - Try with more detailed instructions
+  </Accordion>
+
+  <Accordion title="Rate Limited" icon="ban">
+    **Problem:** Website blocks requests
+
+    **Solutions:**
+    - Implement delays between requests
+    - Reduce concurrency
+    - Respect robots.txt
+    - Contact website owner for API access
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Primitives
+
+<CardGroup cols={2}>
+  <Card title="Browser" icon="browser" href="/primitives/environment/browser">
+    Uses browser environment for navigation and rendering
+  </Card>
+
+  <Card title="File System" icon="folder" href="/primitives/environment/file-system">
+    Save scraped data to files
+  </Card>
+
+  <Card title="Sessions" icon="messages" href="/primitives/essentials/sessions">
+    Maintain context across crawls
+  </Card>
+
+  <Card title="Background" icon="clock" href="/primitives/essentials/background">
+    Run long crawls asynchronously
+  </Card>
+
+  <Card title="Web Search" icon="magnifying-glass" href="/primitives/extensions/web-search">
+    Find pages to scrape
+  </Card>
+
+  <Card title="Data Connectors" icon="database" href="/primitives/extensions/data-connectors">
+    Store scraped data in databases
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Web Search" icon="magnifying-glass" href="/primitives/extensions/web-search">
+    Search for pages before scraping
+  </Card>
+
+  <Card title="Browser Automation" icon="browser" href="/primitives/environment/browser">
+    Learn about browser capabilities
+  </Card>
+
+  <Card title="Data Connectors" icon="database" href="/primitives/extensions/data-connectors">
+    Store scraped data efficiently
+  </Card>
+
+  <Card title="Background Tasks" icon="clock" href="/primitives/essentials/background">
+    Run long-running crawls
+  </Card>
+</CardGroup>

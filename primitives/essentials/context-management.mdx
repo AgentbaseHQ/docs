@@ -1,0 +1,1104 @@
+---
+title: "Context Management"
+description: "Optimize agent performance by managing conversation context, memory, and information flow"
+icon: "brain"
+---
+
+> Context management enables agents to maintain relevant information, handle long conversations effectively, and optimize performance by balancing comprehensive context with efficient processing.
+
+## Overview
+
+The Context Management primitive focuses on how agents maintain, organize, and utilize information throughout conversations and workflows. While sessions and states handle persistence, context management addresses the strategic questions of what information to keep active, how to structure it, and when to optimize it.
+
+Effective context management is essential for:
+
+- **Long Conversations**: Maintain relevance in extended interactions without performance degradation
+- **Information Prioritization**: Keep critical information accessible while managing less relevant details
+- **Memory Optimization**: Balance comprehensive context with processing efficiency
+- **Task Continuity**: Ensure agents have the right information at the right time
+- **Performance Scaling**: Handle complex workflows without overwhelming the context window
+
+<CardGroup cols={2}>
+  <Card title="Automatic History" icon="clock-rotate-left">
+    All messages automatically preserved in conversation context
+  </Card>
+
+  <Card title="Context Windowing" icon="window-frame">
+    Agents intelligently manage large conversation histories
+  </Card>
+
+  <Card title="Strategic Summarization" icon="compress">
+    Condense lengthy contexts while preserving key information
+  </Card>
+
+  <Card title="Priority Information" icon="star">
+    Highlight critical details for agent attention
+  </Card>
+</CardGroup>
+
+## How Context Management Works
+
+Context flows through agent conversations in several ways:
+
+1. **Message History**: All previous messages automatically included in agent context
+2. **System Prompts**: Persistent instructions and guidelines throughout the session
+3. **Tool Results**: Outputs from previous tool executions available as context
+4. **File State**: Created files and their contents accessible in the environment
+5. **Explicit Context**: Information you provide directly in messages
+
+<Note>
+**Automatic Context**: Agentbase automatically manages message history. You don't need to manually include previous messages - they're always available to the agent.
+</Note>
+
+## Code Examples
+
+### Basic Context Flow
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Turn 1: Establish context
+const turn1 = await agentbase.runAgent({
+  message: "I'm working on a Python data analysis project. The dataset is sales.csv with columns: date, product, quantity, revenue."
+});
+
+const sessionId = turn1.session;
+
+// Turn 2: Agent remembers project context
+const turn2 = await agentbase.runAgent({
+  message: "Create a script to calculate monthly totals",
+  session: sessionId
+  // Agent knows: Python project, sales.csv, column names
+});
+
+// Turn 3: Agent remembers previous work
+const turn3 = await agentbase.runAgent({
+  message: "Now add a function to find top products",
+  session: sessionId
+  // Agent knows: the script from turn2, can build on it
+});
+
+// All context automatically maintained
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Turn 1: Establish context
+turn1 = agentbase.run_agent(
+    message="I'm working on a Python data analysis project. The dataset is sales.csv with columns: date, product, quantity, revenue."
+)
+
+session_id = turn1.session
+
+# Turn 2: Agent remembers project context
+turn2 = agentbase.run_agent(
+    message="Create a script to calculate monthly totals",
+    session=session_id
+    # Agent knows: Python project, sales.csv, column names
+)
+
+# Turn 3: Agent remembers previous work
+turn3 = agentbase.run_agent(
+    message="Now add a function to find top products",
+    session=session_id
+    # Agent knows: the script from turn2, can build on it
+)
+
+# All context automatically maintained
+```
+
+</CodeGroup>
+
+### Explicit Context Provision
+
+<CodeGroup>
+
+```typescript TypeScript
+// Provide important context explicitly
+const result = await agentbase.runAgent({
+  message: `Analyze this customer feedback and suggest improvements.
+
+  CONTEXT:
+  - Product: Mobile app for task management
+  - Target users: Small business teams
+  - Current rating: 3.8/5 stars
+  - Main competitors: Asana, Trello, Monday
+  - Recent changes: New collaboration features added last month
+
+  FEEDBACK:
+  "${customerFeedback}"
+
+  Focus on actionable improvements that could increase our rating to 4.5+`,
+  system: "You are a product manager specializing in user experience and product strategy."
+});
+
+// Explicit context helps agent provide more relevant analysis
+```
+
+```python Python
+# Provide important context explicitly
+result = agentbase.run_agent(
+    message=f"""Analyze this customer feedback and suggest improvements.
+
+    CONTEXT:
+    - Product: Mobile app for task management
+    - Target users: Small business teams
+    - Current rating: 3.8/5 stars
+    - Main competitors: Asana, Trello, Monday
+    - Recent changes: New collaboration features added last month
+
+    FEEDBACK:
+    "{customer_feedback}"
+
+    Focus on actionable improvements that could increase our rating to 4.5+""",
+    system="You are a product manager specializing in user experience and product strategy."
+)
+
+# Explicit context helps agent provide more relevant analysis
+```
+
+</CodeGroup>
+
+### Context Summarization
+
+<CodeGroup>
+
+```typescript TypeScript
+// For very long conversations, periodically summarize
+async function manageConversationContext(sessionId: string, messageCount: number) {
+  if (messageCount > 50) {
+    // Generate summary of conversation so far
+    const summary = await agentbase.runAgent({
+      message: `Please summarize our conversation so far, highlighting:
+      1. The main project goal
+      2. Key decisions made
+      3. Current progress and status
+      4. Outstanding tasks or questions
+      5. Important technical details or constraints`,
+      session: sessionId
+    });
+
+    // Store summary for reference
+    await saveSummary({
+      sessionId,
+      messageCount,
+      summary: summary.message,
+      timestamp: new Date()
+    });
+
+    // Optionally start new session with summary
+    const freshSession = await agentbase.runAgent({
+      message: `Continue project with this context:
+      ${summary.message}
+
+      Next task: [describe next task]`,
+      system: "Previous conversation summary provided. Continue from this context."
+    });
+
+    return freshSession.session;
+  }
+
+  return sessionId;
+}
+```
+
+```python Python
+# For very long conversations, periodically summarize
+async def manage_conversation_context(session_id: str, message_count: int):
+    if message_count > 50:
+        # Generate summary of conversation so far
+        summary = await agentbase.run_agent_async(
+            message="""Please summarize our conversation so far, highlighting:
+            1. The main project goal
+            2. Key decisions made
+            3. Current progress and status
+            4. Outstanding tasks or questions
+            5. Important technical details or constraints""",
+            session=session_id
+        )
+
+        # Store summary for reference
+        await save_summary({
+            'session_id': session_id,
+            'message_count': message_count,
+            'summary': summary.message,
+            'timestamp': datetime.now()
+        })
+
+        # Optionally start new session with summary
+        fresh_session = await agentbase.run_agent_async(
+            message=f"""Continue project with this context:
+            {summary.message}
+
+            Next task: [describe next task]""",
+            system="Previous conversation summary provided. Continue from this context."
+        )
+
+        return fresh_session.session
+
+    return session_id
+```
+
+</CodeGroup>
+
+### Structured Context
+
+<CodeGroup>
+
+```typescript TypeScript
+// Use structured context for complex information
+interface ProjectContext {
+  projectName: string;
+  objectives: string[];
+  stakeholders: string[];
+  constraints: string[];
+  timeline: {
+    start: string;
+    deadline: string;
+    milestones: Array<{ date: string; description: string }>;
+  };
+  technicalStack: string[];
+  currentPhase: string;
+}
+
+async function runWithStructuredContext(
+  context: ProjectContext,
+  task: string
+) {
+  const result = await agentbase.runAgent({
+    message: `${task}
+
+    PROJECT CONTEXT:
+    ${JSON.stringify(context, null, 2)}`,
+    system: `You are a project manager. Use the provided project context to inform your decisions and recommendations.`
+  });
+
+  return result;
+}
+
+// Use with rich context
+const projectContext: ProjectContext = {
+  projectName: "Customer Portal Redesign",
+  objectives: [
+    "Improve user experience",
+    "Reduce support tickets by 30%",
+    "Increase customer satisfaction to 4.5/5"
+  ],
+  stakeholders: ["Product Team", "Engineering", "Customer Success", "Marketing"],
+  constraints: [
+    "Budget: $150k",
+    "Must maintain backward compatibility",
+    "Cannot require user data migration"
+  ],
+  timeline: {
+    start: "2024-01-01",
+    deadline: "2024-06-30",
+    milestones: [
+      { date: "2024-02-15", description: "Design approval" },
+      { date: "2024-04-30", description: "MVP complete" },
+      { date: "2024-06-15", description: "Beta testing" }
+    ]
+  },
+  technicalStack: ["React", "Node.js", "PostgreSQL", "AWS"],
+  currentPhase: "Development"
+};
+
+const result = await runWithStructuredContext(
+  projectContext,
+  "Create a risk assessment for the current project timeline"
+);
+```
+
+</CodeGroup>
+
+### Context Injection via System Prompt
+
+<CodeGroup>
+
+```typescript TypeScript
+// Inject persistent context via system prompt
+const sessionContext = {
+  company: "TechCorp Inc.",
+  industry: "B2B SaaS",
+  targetMarket: "Small to medium businesses",
+  keyProducts: ["ProjectHub", "TeamSync", "DataVault"],
+  brandVoice: "Professional, helpful, concise"
+};
+
+const result = await agentbase.runAgent({
+  message: "Draft a response to a customer asking about our pricing",
+  system: `You are a customer success representative for ${sessionContext.company}.
+
+  COMPANY CONTEXT:
+  Industry: ${sessionContext.industry}
+  Target Market: ${sessionContext.targetMarket}
+  Products: ${sessionContext.keyProducts.join(', ')}
+
+  COMMUNICATION GUIDELINES:
+  Brand Voice: ${sessionContext.brandVoice}
+  Always mention relevant products when appropriate
+  Focus on value and ROI for small businesses
+  Be transparent about pricing while highlighting benefits
+
+  Use this context to inform all your responses.`
+});
+
+// Context persists throughout entire session
+```
+
+```python Python
+# Inject persistent context via system prompt
+session_context = {
+    'company': 'TechCorp Inc.',
+    'industry': 'B2B SaaS',
+    'target_market': 'Small to medium businesses',
+    'key_products': ['ProjectHub', 'TeamSync', 'DataVault'],
+    'brand_voice': 'Professional, helpful, concise'
+}
+
+result = agentbase.run_agent(
+    message="Draft a response to a customer asking about our pricing",
+    system=f"""You are a customer success representative for {session_context['company']}.
+
+    COMPANY CONTEXT:
+    Industry: {session_context['industry']}
+    Target Market: {session_context['target_market']}
+    Products: {', '.join(session_context['key_products'])}
+
+    COMMUNICATION GUIDELINES:
+    Brand Voice: {session_context['brand_voice']}
+    Always mention relevant products when appropriate
+    Focus on value and ROI for small businesses
+    Be transparent about pricing while highlighting benefits
+
+    Use this context to inform all your responses."""
+)
+
+# Context persists throughout entire session
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Long-Running Project Management
+
+Maintain context across weeks or months:
+
+```typescript
+class ProjectManager {
+  private sessionId: string;
+  private messageCount: number = 0;
+  private summaries: Array<{ count: number; summary: string }> = [];
+
+  async initialize(projectDetails: any) {
+    const init = await agentbase.runAgent({
+      message: `Initialize project management for:
+      ${JSON.stringify(projectDetails, null, 2)}`,
+      system: "You are a project manager tracking a long-term software project."
+    });
+
+    this.sessionId = init.session;
+    return this.sessionId;
+  }
+
+  async addUpdate(update: string) {
+    this.messageCount++;
+
+    // Provide recent summary as context if available
+    const recentSummary = this.summaries[this.summaries.length - 1];
+    const contextMessage = recentSummary
+      ? `Previous summary (from message ${recentSummary.count}):
+         ${recentSummary.summary}
+
+         New update: ${update}`
+      : update;
+
+    const result = await agentbase.runAgent({
+      message: contextMessage,
+      session: this.sessionId
+    });
+
+    // Summarize every 25 messages
+    if (this.messageCount % 25 === 0) {
+      await this.createSummary();
+    }
+
+    return result;
+  }
+
+  private async createSummary() {
+    const summary = await agentbase.runAgent({
+      message: "Create a comprehensive project status summary",
+      session: this.sessionId
+    });
+
+    this.summaries.push({
+      count: this.messageCount,
+      summary: summary.message
+    });
+  }
+
+  async getStatus() {
+    return await agentbase.runAgent({
+      message: "Provide current project status, recent progress, and next steps",
+      session: this.sessionId
+    });
+  }
+}
+```
+
+### 2. Customer Conversation Management
+
+Handle extended customer interactions:
+
+```typescript
+async function customerSupportWithContext(customerId: string) {
+  // Load customer context
+  const customer = await getCustomerData(customerId);
+
+  // Create context-rich session
+  const session = await agentbase.runAgent({
+    message: "Customer initiated support request",
+    system: `You are a customer support agent.
+
+    CUSTOMER CONTEXT:
+    Name: ${customer.name}
+    Account Type: ${customer.accountType}
+    Member Since: ${customer.memberSince}
+    Lifetime Value: $${customer.lifetimeValue}
+    Support History: ${customer.supportTickets} previous tickets
+    Recent Activity: ${customer.recentActivity}
+    Current Issues: ${customer.openIssues.join(', ')}
+
+    Provide personalized support based on their history and value.
+    Reference their account type and previous interactions when relevant.`
+  });
+
+  return {
+    sessionId: session.session,
+    handleMessage: async (message: string) => {
+      return await agentbase.runAgent({
+        message,
+        session: session.session
+        // All customer context automatically maintained
+      });
+    }
+  };
+}
+```
+
+### 3. Research Compilation
+
+Accumulate research findings with context:
+
+```typescript
+async function researchWithContext(topic: string) {
+  // Initialize research session with scope
+  const init = await agentbase.runAgent({
+    message: `Starting comprehensive research on: ${topic}
+
+    Research Goals:
+    1. Understand current state of technology
+    2. Identify key players and solutions
+    3. Analyze market trends
+    4. Assess opportunities and challenges
+    5. Compile actionable insights`,
+    system: "You are a research analyst. Maintain a running compilation of findings."
+  });
+
+  const sessionId = init.session;
+
+  // Each research phase adds to context
+  await agentbase.runAgent({
+    message: "Phase 1: Research academic literature and papers",
+    session: sessionId
+  });
+
+  await agentbase.runAgent({
+    message: "Phase 2: Analyze industry reports and market data",
+    session: sessionId
+    // Can reference academic findings from Phase 1
+  });
+
+  await agentbase.runAgent({
+    message: "Phase 3: Study competitor approaches and solutions",
+    session: sessionId
+    // Can reference both previous phases
+  });
+
+  // Final synthesis with full context
+  const report = await agentbase.runAgent({
+    message: `Create comprehensive research report synthesizing all findings from:
+    - Academic research
+    - Industry reports
+    - Competitor analysis
+
+    Include executive summary, detailed findings, and recommendations.`,
+    session: sessionId
+    // Agent has full context from all research phases
+  });
+
+  return report;
+}
+```
+
+### 4. Iterative Development with Context
+
+Maintain development context across iterations:
+
+```typescript
+async function iterativeDevelopment() {
+  // Start with requirements
+  const requirements = await agentbase.runAgent({
+    message: `Build a REST API for user management with these requirements:
+    - User CRUD operations
+    - Authentication with JWT
+    - Role-based access control
+    - PostgreSQL database
+    - Express.js framework
+    - Comprehensive error handling
+    - API documentation`
+  });
+
+  const sessionId = requirements.session;
+
+  // Design phase - agent remembers requirements
+  await agentbase.runAgent({
+    message: "Design the database schema and API endpoints",
+    session: sessionId
+  });
+
+  // Implementation - agent remembers design
+  await agentbase.runAgent({
+    message: "Implement user authentication and JWT token generation",
+    session: sessionId
+  });
+
+  // Testing - agent knows implementation details
+  await agentbase.runAgent({
+    message: "Create comprehensive test suite for authentication",
+    session: sessionId
+  });
+
+  // Documentation - agent has full project context
+  const docs = await agentbase.runAgent({
+    message: "Generate API documentation covering all endpoints and examples",
+    session: sessionId
+    // Can document everything because it was involved in building it
+  });
+
+  return docs;
+}
+```
+
+### 5. Multi-Document Analysis
+
+Analyze multiple documents with shared context:
+
+```typescript
+async function multiDocumentAnalysis(documents: string[]) {
+  // Initialize analysis session
+  const init = await agentbase.runAgent({
+    message: `Analyzing ${documents.length} legal documents for consistency and compliance.
+
+    Documents to analyze:
+    ${documents.map((d, i) => `${i + 1}. ${d}`).join('\n')}
+
+    Track common themes, inconsistencies, and compliance issues across all documents.`,
+    system: "You are a legal analyst. Maintain running notes of cross-document findings."
+  });
+
+  const sessionId = init.session;
+
+  // Analyze each document - building context
+  for (const doc of documents) {
+    await agentbase.runAgent({
+      message: `Analyze document: ${doc}
+
+      Note any issues, key terms, obligations, and how this relates to previously analyzed documents.`,
+      session: sessionId
+    });
+  }
+
+  // Final cross-document analysis with full context
+  const analysis = await agentbase.runAgent({
+    message: `Create comprehensive cross-document analysis covering:
+    1. Common themes across all documents
+    2. Inconsistencies or conflicts between documents
+    3. Compliance issues
+    4. Risk assessment
+    5. Recommendations
+
+    Reference specific documents in your analysis.`,
+    session: sessionId
+    // Agent has analyzed all documents and can reference them
+  });
+
+  return analysis;
+}
+```
+
+### 6. Contextual Debugging
+
+Debug with full session context:
+
+```typescript
+async function debugWithContext() {
+  // Initial bug report
+  const session = await agentbase.runAgent({
+    message: `Bug Report:
+    - Application: E-commerce checkout
+    - Issue: Payment processing fails intermittently
+    - Error: "Transaction timeout after 30 seconds"
+    - Frequency: ~15% of transactions
+    - Impact: Lost sales, customer frustration
+
+    Start debugging this issue.`,
+    system: "You are a senior software engineer debugging production issues."
+  });
+
+  const sessionId = session.session;
+
+  // Each debugging step adds to context
+  await agentbase.runAgent({
+    message: "Analyze error logs from the past week",
+    session: sessionId
+  });
+
+  await agentbase.runAgent({
+    message: "Check payment gateway response times",
+    session: sessionId
+    // Agent can correlate with error logs
+  });
+
+  await agentbase.runAgent({
+    message: "Review recent code changes to checkout flow",
+    session: sessionId
+    // Agent can relate to gateway issues and error patterns
+  });
+
+  // Solution with full debugging context
+  const solution = await agentbase.runAgent({
+    message: `Based on all debugging findings:
+    1. What is the root cause?
+    2. What is the recommended fix?
+    3. How to prevent this in the future?
+    4. What monitoring should be added?`,
+    session: sessionId
+    // Agent has full context from entire debugging session
+  });
+
+  return solution;
+}
+```
+
+## Best Practices
+
+### Context Organization
+
+<AccordionGroup>
+  <Accordion title="Structure Important Context">
+    ```typescript
+    // Good: Structured, scannable context
+    const message = `Task: Analyze Q4 sales data
+
+    CONTEXT:
+    Business Goals:
+    - Identify top-performing products
+    - Understand seasonal trends
+    - Find underperforming regions
+
+    Data Available:
+    - sales_q4.csv (100,000 records)
+    - Columns: date, product_id, region, quantity, revenue
+
+    Previous Findings:
+    - Q3 showed 15% growth
+    - Mobile category outperformed desktop
+    - West region lagging
+
+    Constraints:
+    - Focus on actionable insights
+    - Highlight year-over-year comparisons`;
+
+    // Avoid: Unstructured wall of text
+    const badMessage = "Analyze Q4 sales data we have about 100k records and Q3 had 15% growth and mobile did better than desktop and west region was behind and we want to find top products and seasonal trends and compare to last year...";
+    ```
+  </Accordion>
+
+  <Accordion title="Prioritize Recent Information">
+    ```typescript
+    // Provide recent context explicitly when important
+    const result = await agentbase.runAgent({
+      message: `RECENT UPDATE (Override previous): The deadline has been moved up to March 15th.
+
+      Original task: ${originalTask}
+
+      Please adjust the timeline and resource plan accordingly.`,
+      session: sessionId
+    });
+
+    // Make critical updates explicit and prominent
+    ```
+  </Accordion>
+
+  <Accordion title="Use Reference Points">
+    ```typescript
+    // Create reference points for long conversations
+    const checkpoint = await agentbase.runAgent({
+      message: "Create a checkpoint: summarize current state, decisions made, and next steps",
+      session: sessionId
+    });
+
+    // Later, reference the checkpoint
+    await agentbase.runAgent({
+      message: `Referring to checkpoint from message #47:
+      ${checkpoint.message}
+
+      Now let's proceed with the next phase...`,
+      session: sessionId
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Context Optimization
+
+<Tip>
+**Periodic Summarization**: For conversations exceeding 40-50 messages, consider creating summaries to maintain performance while preserving key information.
+</Tip>
+
+<AccordionGroup>
+  <Accordion title="Compress Verbose Information">
+    ```typescript
+    // Instead of including entire documents
+    const verboseContext = `
+      Full document text: [10,000 words]...
+    `;
+
+    // Provide extracted key points
+    const optimizedContext = `
+      Document Summary:
+      - Key Finding 1: Revenue increased 25%
+      - Key Finding 2: Customer retention improved
+      - Key Finding 3: New market opportunities in APAC
+      - Recommendation: Expand sales team by Q2
+      - Risk: Supply chain constraints
+    `;
+
+    const result = await agentbase.runAgent({
+      message: `Based on this summary:
+      ${optimizedContext}
+
+      Create action plan...`
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Remove Stale Context">
+    ```typescript
+    // Start fresh session when context becomes irrelevant
+    if (contextNoLongerRelevant) {
+      // Save important information
+      const summary = await agentbase.runAgent({
+        message: "Summarize key decisions and outcomes",
+        session: oldSessionId
+      });
+
+      // Start fresh with just relevant context
+      const newSession = await agentbase.runAgent({
+        message: `Starting new phase.
+
+        Relevant context from previous phase:
+        ${summary.message}
+
+        Now focusing on: ${newTask}`
+      });
+
+      return newSession.session;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Context Handoff
+
+<AccordionGroup>
+  <Accordion title="Explicit Context Transfer">
+    ```typescript
+    // When transferring between agents or sessions
+    const handoffContext = await agentbase.runAgent({
+      message: "Prepare handoff summary including all critical information for next agent",
+      session: currentSession
+    });
+
+    // New agent gets explicit context
+    const newAgent = await agentbase.runAgent({
+      message: `Taking over from previous agent.
+
+      Context:
+      ${handoffContext.message}
+
+      Continuing with: ${nextTask}`,
+      system: "You are the specialist taking over this task."
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Primitives
+
+### With Sessions
+
+Sessions are the container for context:
+
+```typescript
+// All context lives within a session
+const session1 = await agentbase.runAgent({
+  message: "Context A"
+});
+// Session 1 has context A
+
+const session2 = await agentbase.runAgent({
+  message: "Context B"
+});
+// Session 2 has completely separate context B
+
+// Context doesn't leak between sessions
+```
+
+Learn more: [Sessions Primitive](/primitives/essentials/sessions)
+
+### With States
+
+State persistence enables context continuity:
+
+```typescript
+// State makes context actionable
+const result = await agentbase.runAgent({
+  message: "Create analysis.py with the findings we discussed"
+  // Context: agent remembers what findings were discussed
+  // State: analysis.py is created and persists
+});
+```
+
+Learn more: [States Primitive](/primitives/essentials/states)
+
+### With Prompts
+
+System prompts provide persistent context:
+
+```typescript
+// System prompt = persistent context throughout session
+const result = await agentbase.runAgent({
+  message: "Help customer",
+  system: `You are customer support for TechCorp.
+
+  Company context: [always available]
+  Products: [always available]
+  Policies: [always available]`
+  // This context persists for entire session
+});
+```
+
+Learn more: [Prompts Primitive](/primitives/essentials/prompts)
+
+### With Multi-Agent
+
+Context transfers between agents:
+
+```typescript
+// Context follows conversation through agent transfers
+const result = await agentbase.runAgent({
+  message: "I have a billing question about my order #12345",
+  agents: [
+    { name: "Billing", description: "Handles billing" }
+  ]
+  // When transferred to Billing agent, they receive full context
+  // including order #12345
+});
+```
+
+Learn more: [Multi-Agent Primitive](/primitives/essentials/multi-agents)
+
+## Performance Considerations
+
+### Context Window Size
+
+- **Small contexts** (<10 messages): Optimal performance
+- **Medium contexts** (10-50 messages): Good performance
+- **Large contexts** (50-100 messages): Consider summarization
+- **Very large contexts** (100+ messages): Implement context optimization
+
+### Optimization Strategies
+
+```typescript
+// Monitor conversation length
+class ContextMonitor {
+  private messageCount = 0;
+
+  async sendMessage(message: string, session: string) {
+    this.messageCount++;
+
+    // Warn at thresholds
+    if (this.messageCount === 50) {
+      console.warn('Consider summarizing conversation');
+    }
+
+    if (this.messageCount >= 75) {
+      // Auto-summarize
+      return await this.summarizeAndContinue(session, message);
+    }
+
+    return await agentbase.runAgent({ message, session });
+  }
+
+  private async summarizeAndContinue(session: string, newMessage: string) {
+    const summary = await agentbase.runAgent({
+      message: "Concise summary of our conversation",
+      session
+    });
+
+    // Start fresh with summary
+    const fresh = await agentbase.runAgent({
+      message: `Context: ${summary.message}
+
+      New message: ${newMessage}`
+    });
+
+    this.messageCount = 1;
+    return fresh;
+  }
+}
+```
+
+### Memory vs. Performance Trade-offs
+
+<CardGroup cols={2}>
+  <Card title="Comprehensive Context" icon="brain">
+    Pros: Agent has all information
+    Cons: Slower, higher costs
+  </Card>
+
+  <Card title="Optimized Context" icon="gauge-high">
+    Pros: Faster, lower costs
+    Cons: May lose some detail
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Agent Forgetting Information">
+    **Problem**: Agent doesn't remember earlier conversation
+
+    **Solution**: Verify session continuity and explicitly reference important info
+
+    ```typescript
+    // Ensure using same session
+    const result = await agentbase.runAgent({
+      message: "Continue from earlier",
+      session: sessionId  // ✓ Same session
+    });
+
+    // Explicitly reference important details
+    const explicit = await agentbase.runAgent({
+      message: "As we discussed earlier about the Q4 deadline...",
+      session: sessionId
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Slow Response Times">
+    **Problem**: Responses getting slower in long conversations
+
+    **Solution**: Implement summarization
+
+    ```typescript
+    if (messageCount > 50) {
+      const summary = await agentbase.runAgent({
+        message: "Brief summary of key points",
+        session: longSession
+      });
+
+      // Start fresh session with summary
+      const newSession = await agentbase.runAgent({
+        message: `Context: ${summary.message}
+
+        Continuing with: ${nextTask}`
+      });
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Context Confusion">
+    **Problem**: Agent mixing up different topics or tasks
+
+    **Solution**: Use structured context and clear delineation
+
+    ```typescript
+    // Clear structure
+    const result = await agentbase.runAgent({
+      message: `TOPIC: Customer Onboarding (not billing)
+
+      SPECIFIC TASK: Create welcome email template
+
+      CONTEXT:
+      - Target audience: New enterprise customers
+      - Tone: Professional, welcoming
+      - Must include: Login link, support contact, video tutorial`,
+      session: sessionId
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Sessions" icon="link" href="/primitives/essentials/sessions">
+    Container for all conversation context
+  </Card>
+
+  <Card title="States" icon="database" href="/primitives/essentials/states">
+    Persistent state that forms part of context
+  </Card>
+
+  <Card title="Prompts" icon="message-bot" href="/primitives/essentials/prompts">
+    Persistent context via system prompts
+  </Card>
+
+  <Card title="Multi-Agent" icon="users" href="/primitives/essentials/multi-agents">
+    Context transfer between agents
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="Get Messages" icon="message" href="/api/get-messages">
+    Retrieve conversation history
+  </Card>
+
+  <Card title="Performance Guide" icon="gauge-high" href="/improve/performance">
+    Optimize agent performance
+  </Card>
+
+  <Card title="Best Practices" icon="star" href="/build/overview">
+    Production patterns
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Context is automatically managed in Agentbase. Focus on providing relevant, well-structured information and implementing summarization for very long conversations to maintain optimal performance.
+</Tip>

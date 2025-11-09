@@ -1,0 +1,308 @@
+---
+title: "Authentication"
+description: "Secure your Agentbase API integration with API keys"
+icon: "key"
+---
+
+## API Key Authentication
+
+Agentbase uses API keys to authenticate requests. All API requests must include a valid API key in the `Authorization` header.
+
+## Getting Your API Key
+
+<Steps>
+  <Step title="Sign Up">
+    Create an account at [base.agentbase.sh/sign-up](https://base.agentbase.sh/sign-up)
+
+    <Tip>
+      Use your work email to get free credits automatically!
+    </Tip>
+  </Step>
+
+  <Step title="Access Dashboard">
+    Log in to your dashboard at [base.agentbase.sh](https://base.agentbase.sh)
+  </Step>
+
+  <Step title="Copy API Key">
+    Find your API key in the dashboard under **Settings** or **API Keys**
+  </Step>
+</Steps>
+
+## Using Your API Key
+
+<Tabs>
+  <Tab title="REST API">
+    Include your API key in the `Authorization` header:
+
+    ```bash
+    curl -X POST https://api.agentbase.sh/run-agent \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "message": "Hello, world!",
+        "mode": "fast"
+      }'
+    ```
+  </Tab>
+
+  <Tab title="TypeScript SDK">
+    Pass your API key when creating the client:
+
+    ```typescript
+    import Agentbase from "@agentbase/sdk";
+
+    const agentbase = new Agentbase({
+      apiKey: process.env.AGENTBASE_API_KEY
+    });
+    ```
+  </Tab>
+
+  <Tab title="Python SDK">
+    Pass your API key when creating the client:
+
+    ```python
+    from agentbase import Agentbase
+
+    client = Agentbase(
+        api_key=os.environ.get("AGENTBASE_API_KEY")
+    )
+    ```
+  </Tab>
+</Tabs>
+
+## Security Best Practices
+
+<AccordionGroup>
+  <Accordion title="Never Commit API Keys" icon="ban">
+    **Don't do this:**
+    ```typescript
+    // ❌ Bad: API key in code
+    const agentbase = new Agentbase({
+      apiKey: "agb_1234567890abcdef"
+    });
+    ```
+
+    **Do this instead:**
+    ```typescript
+    // ✅ Good: API key in environment variable
+    const agentbase = new Agentbase({
+      apiKey: process.env.AGENTBASE_API_KEY
+    });
+    ```
+
+    **Why:** Committing API keys to version control exposes them to anyone with repository access.
+  </Accordion>
+
+  <Accordion title="Use Environment Variables" icon="server">
+    Store API keys in environment variables:
+
+    ```bash
+    # .env file
+    AGENTBASE_API_KEY=agb_1234567890abcdef
+    ```
+
+    ```typescript
+    // Load from .env
+    import dotenv from 'dotenv';
+    dotenv.config();
+
+    const agentbase = new Agentbase({
+      apiKey: process.env.AGENTBASE_API_KEY
+    });
+    ```
+
+    **Note:** Add `.env` to your `.gitignore` file.
+  </Accordion>
+
+  <Accordion title="Separate Keys for Environments" icon="layers">
+    Use different API keys for development, staging, and production:
+
+    ```bash
+    # Development
+    AGENTBASE_API_KEY=agb_dev_1234567890abcdef
+
+    # Staging
+    AGENTBASE_API_KEY=agb_staging_1234567890abcdef
+
+    # Production
+    AGENTBASE_API_KEY=agb_prod_1234567890abcdef
+    ```
+
+    **Benefits:**
+    - Isolate environments
+    - Track usage separately
+    - Revoke keys independently
+    - Prevent accidents
+  </Accordion>
+
+  <Accordion title="Rotate Keys Regularly" icon="rotate">
+    Rotate your API keys periodically:
+
+    <Steps>
+      <Step title="Create New Key">
+        Generate a new API key in the dashboard
+      </Step>
+
+      <Step title="Update Applications">
+        Update all applications to use the new key
+      </Step>
+
+      <Step title="Test Thoroughly">
+        Verify all integrations work with the new key
+      </Step>
+
+      <Step title="Revoke Old Key">
+        Once confirmed, revoke the old API key
+      </Step>
+    </Steps>
+
+    **Recommended schedule:** Every 90 days or when team members leave
+  </Accordion>
+
+  <Accordion title="Server-Side Only" icon="shield">
+    **Never expose API keys in client-side code:**
+
+    ```javascript
+    // ❌ Bad: API key in browser
+    const agentbase = new Agentbase({
+      apiKey: "agb_1234567890abcdef"  // Visible to users!
+    });
+    ```
+
+    **Instead, proxy through your backend:**
+
+    ```typescript
+    // ✅ Good: API key on server
+    // Frontend
+    const response = await fetch('/api/agent', {
+      method: 'POST',
+      body: JSON.stringify({ message: 'Hello' })
+    });
+
+    // Backend
+    app.post('/api/agent', async (req, res) => {
+      const result = await agentbase.runAgent({
+        message: req.body.message,
+        mode: "fast"
+      });
+      res.json(result);
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Monitor Usage" icon="chart-line">
+    Regularly review API usage in your dashboard:
+    - Check for unexpected spikes
+    - Monitor cost trends
+    - Review active sessions
+    - Identify anomalies
+
+    **Set up alerts** for unusual activity:
+    - Sudden usage increases
+    - Cost threshold exceeded
+    - Failed authentication attempts
+  </Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+Handle authentication errors gracefully:
+
+<Tabs>
+  <Tab title="TypeScript">
+    ```typescript
+    try {
+      const result = await agentbase.runAgent({
+        message: "Hello",
+        mode: "fast"
+      });
+    } catch (error) {
+      if (error.status === 401) {
+        console.error('Invalid API key');
+        // Notify team, check configuration
+      } else if (error.status === 403) {
+        console.error('API key lacks permissions');
+        // Check account status
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Python">
+    ```python
+    try:
+        result = client.run_agent(
+            message="Hello",
+            mode="fast"
+        )
+    except AgentbaseError as e:
+        if e.status_code == 401:
+            print("Invalid API key")
+            # Notify team, check configuration
+        elif e.status_code == 403:
+            print("API key lacks permissions")
+            # Check account status
+    ```
+  </Tab>
+</Tabs>
+
+## Common Errors
+
+| Error Code | Meaning | Solution |
+|------------|---------|----------|
+| `401 Unauthorized` | Invalid or missing API key | Check your API key is correct and properly formatted |
+| `403 Forbidden` | API key lacks permissions | Verify your account is active and has credits |
+| `429 Too Many Requests` | Rate limit exceeded | Implement backoff and retry logic |
+
+## Rate Limiting
+
+Agentbase implements rate limiting to ensure fair usage:
+
+- **Rate limits** are applied per API key
+- **Limits vary** by account tier
+- **Headers** include rate limit information:
+  ```
+  X-RateLimit-Limit: 100
+  X-RateLimit-Remaining: 95
+  X-RateLimit-Reset: 1640000000
+  ```
+
+**Handling rate limits:**
+
+```typescript
+async function runAgentWithRetry(message: string, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await agentbase.runAgent({ message, mode: "fast" });
+    } catch (error) {
+      if (error.status === 429) {
+        const retryAfter = error.headers['retry-after'] || Math.pow(2, i);
+        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error('Max retries exceeded');
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Deploy Overview" icon="rocket" href="/deploy/overview">
+    Learn deployment patterns and best practices
+  </Card>
+
+  <Card title="API Reference" icon="code" href="/deploy/api/run-agent">
+    See complete API documentation
+  </Card>
+
+  <Card title="Cost Tracking" icon="dollar" href="/improve/cost-tracking">
+    Monitor and optimize your usage
+  </Card>
+
+  <Card title="Security Guide" icon="shield" href="/improve/overview">
+    Advanced security considerations
+  </Card>
+</CardGroup>

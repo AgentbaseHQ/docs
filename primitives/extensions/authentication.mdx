@@ -1,0 +1,1257 @@
+---
+title: "Authentication"
+description: "Secure agent access with authentication, authorization, and identity management"
+icon: "shield-keyhole"
+---
+
+> Authentication enables secure access control for agents, managing user identities, permissions, OAuth flows, and multi-tenant isolation to ensure agents operate within proper security boundaries.
+
+## Overview
+
+The Authentication primitive provides comprehensive identity and access management for agent operations. Whether you're building user-facing applications, multi-tenant platforms, or enterprise integrations, authentication ensures agents respect security boundaries and access controls.
+
+Authentication is essential for:
+
+- **User Identity**: Link agent executions to specific users
+- **Access Control**: Enforce permissions and role-based access
+- **OAuth Integration**: Handle OAuth flows for third-party services
+- **Multi-Tenancy**: Isolate data and operations by organization
+- **Session Management**: Maintain secure user sessions
+- **API Security**: Authenticate API requests and webhooks
+
+<CardGroup cols={2}>
+  <Card title="OAuth 2.0" icon="key">
+    Complete OAuth 2.0 flow support for external integrations
+  </Card>
+
+  <Card title="JWT Tokens" icon="passport">
+    Secure token-based authentication and authorization
+  </Card>
+
+  <Card title="RBAC" icon="users-gear">
+    Role-based access control for fine-grained permissions
+  </Card>
+
+  <Card title="SSO Support" icon="id-card">
+    Single sign-on with SAML, OAuth, and OpenID Connect
+  </Card>
+</CardGroup>
+
+## How Authentication Works
+
+When you implement authentication:
+
+1. **Identity Establishment**: User authenticates via credentials, OAuth, or SSO
+2. **Token Generation**: System issues secure JWT or session token
+3. **Context Injection**: User identity and permissions attached to agent context
+4. **Authorization Check**: Agent verifies permissions before operations
+5. **Scope Enforcement**: Operations restricted to user's authorized scope
+6. **Audit Logging**: All authenticated actions logged for compliance
+
+<Note>
+**Security First**: All authentication tokens are encrypted, have expiration times, and support automatic rotation.
+</Note>
+
+## Authentication Methods
+
+### API Key Authentication
+
+```typescript
+{
+  type: "api_key",
+  apiKey: "ab_sk_...",
+  permissions: ["read", "write"]
+}
+```
+
+### JWT Token Authentication
+
+```typescript
+{
+  type: "jwt",
+  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  claims: {
+    userId: "user_123",
+    role: "admin"
+  }
+}
+```
+
+### OAuth 2.0
+
+```typescript
+{
+  type: "oauth",
+  provider: "google" | "github" | "custom",
+  scope: ["profile", "email"],
+  redirectUri: "https://app.com/callback"
+}
+```
+
+### SSO (SAML/OpenID)
+
+```typescript
+{
+  type: "sso",
+  provider: "okta" | "auth0" | "custom",
+  assertionUrl: "https://sso.company.com/saml"
+}
+```
+
+## Code Examples
+
+### Basic API Key Authentication
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+// Initialize with API key
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Run agent with authentication
+const result = await agentbase.runAgent({
+  message: "Get my user profile",
+  auth: {
+    userId: "user_123", // Link to specific user
+    sessionId: "sess_abc456"
+  }
+});
+
+// Agent operates in context of authenticated user
+console.log('Result:', result);
+```
+
+```python Python
+from agentbase import Agentbase
+
+# Initialize with API key
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Run agent with authentication
+result = agentbase.run_agent(
+    message="Get my user profile",
+    auth={
+        "user_id": "user_123",  # Link to specific user
+        "session_id": "sess_abc456"
+    }
+)
+
+print(f"Result: {result}")
+```
+
+</CodeGroup>
+
+### JWT Token Authentication
+
+<CodeGroup>
+
+```typescript TypeScript
+// Create authenticated session with JWT
+const session = await agentbase.createSession({
+  auth: {
+    type: "jwt",
+    token: userJwtToken,
+    verify: true // Verify token signature
+  }
+});
+
+// Run agent with JWT authentication
+const result = await agentbase.runAgent({
+  message: "Access my protected data",
+  sessionId: session.id
+});
+
+// Agent has access to user claims from JWT
+```
+
+```python Python
+# Create authenticated session with JWT
+session = agentbase.create_session(
+    auth={
+        "type": "jwt",
+        "token": user_jwt_token,
+        "verify": True  # Verify token signature
+    }
+)
+
+# Run agent with JWT authentication
+result = agentbase.run_agent(
+    message="Access my protected data",
+    session_id=session.id
+)
+```
+
+</CodeGroup>
+
+### OAuth Integration
+
+<CodeGroup>
+
+```typescript TypeScript
+// Initialize OAuth flow
+const oauthUrl = await agentbase.initiateOAuth({
+  provider: "google",
+  scopes: ["profile", "email", "drive"],
+  redirectUri: "https://yourapp.com/oauth/callback",
+  state: "random_state_string"
+});
+
+// Redirect user to oauthUrl
+
+// Handle OAuth callback
+app.get('/oauth/callback', async (req, res) => {
+  const { code, state } = req.query;
+
+  // Exchange code for tokens
+  const tokens = await agentbase.completeOAuth({
+    provider: "google",
+    code,
+    state
+  });
+
+  // Save tokens for user
+  await saveUserTokens(userId, tokens);
+
+  // Now agent can access Google services on behalf of user
+  const result = await agentbase.runAgent({
+    message: "List my Google Drive files",
+    auth: {
+      userId: userId,
+      oauth: {
+        provider: "google",
+        accessToken: tokens.accessToken
+      }
+    },
+    integrations: {
+      google_drive: { enabled: true }
+    }
+  });
+
+  res.json(result);
+});
+```
+
+```python Python
+# Initialize OAuth flow
+oauth_url = agentbase.initiate_oauth(
+    provider="google",
+    scopes=["profile", "email", "drive"],
+    redirect_uri="https://yourapp.com/oauth/callback",
+    state="random_state_string"
+)
+
+# Redirect user to oauth_url
+
+# Handle OAuth callback
+@app.get('/oauth/callback')
+async def oauth_callback(code: str, state: str):
+    # Exchange code for tokens
+    tokens = agentbase.complete_oauth(
+        provider="google",
+        code=code,
+        state=state
+    )
+
+    # Save tokens for user
+    save_user_tokens(user_id, tokens)
+
+    # Now agent can access Google services
+    result = agentbase.run_agent(
+        message="List my Google Drive files",
+        auth={
+            "user_id": user_id,
+            "oauth": {
+                "provider": "google",
+                "access_token": tokens.access_token
+            }
+        },
+        integrations={
+            "google_drive": {"enabled": True}
+        }
+    )
+
+    return result
+```
+
+</CodeGroup>
+
+### Role-Based Access Control
+
+<CodeGroup>
+
+```typescript TypeScript
+// Define user with roles and permissions
+const result = await agentbase.runAgent({
+  message: "Delete customer record",
+  auth: {
+    userId: "user_123",
+    role: "admin",
+    permissions: [
+      "read:customers",
+      "write:customers",
+      "delete:customers"
+    ]
+  },
+  system: `You have the following permissions: {{auth.permissions}}
+
+  Only perform operations if user has required permission.
+  For delete operations, require 'delete:customers' permission.`
+});
+
+// Agent checks permissions before executing
+```
+
+```python Python
+# Define user with roles and permissions
+result = agentbase.run_agent(
+    message="Delete customer record",
+    auth={
+        "user_id": "user_123",
+        "role": "admin",
+        "permissions": [
+            "read:customers",
+            "write:customers",
+            "delete:customers"
+        ]
+    },
+    system="""You have the following permissions: {{auth.permissions}}
+
+    Only perform operations if user has required permission.
+    For delete operations, require 'delete:customers' permission."""
+)
+```
+
+</CodeGroup>
+
+### Multi-Tenant Isolation
+
+<CodeGroup>
+
+```typescript TypeScript
+// Isolate data by organization/tenant
+const result = await agentbase.runAgent({
+  message: "List all customers",
+  auth: {
+    userId: "user_123",
+    tenantId: "org_acme", // Tenant/organization ID
+    role: "member"
+  },
+  dataConnectors: {
+    postgres: {
+      enabled: true,
+      connectionString: process.env.DATABASE_URL,
+      tenantIsolation: {
+        enabled: true,
+        tenantColumn: "organization_id",
+        tenantValue: "{{auth.tenantId}}"
+      }
+    }
+  },
+  system: `You can only access data for organization: {{auth.tenantId}}
+
+  All queries must filter by organization_id = {{auth.tenantId}}`
+});
+
+// Agent automatically filters all queries by tenant
+```
+
+```python Python
+# Isolate data by organization/tenant
+result = agentbase.run_agent(
+    message="List all customers",
+    auth={
+        "user_id": "user_123",
+        "tenant_id": "org_acme",  # Tenant/organization ID
+        "role": "member"
+    },
+    data_connectors={
+        "postgres": {
+            "enabled": True,
+            "connection_string": os.environ['DATABASE_URL'],
+            "tenant_isolation": {
+                "enabled": True,
+                "tenant_column": "organization_id",
+                "tenant_value": "{{auth.tenant_id}}"
+            }
+        }
+    },
+    system="""You can only access data for organization: {{auth.tenant_id}}
+
+    All queries must filter by organization_id = {{auth.tenant_id}}"""
+)
+```
+
+</CodeGroup>
+
+### Session Management
+
+<CodeGroup>
+
+```typescript TypeScript
+// Create authenticated session
+const session = await agentbase.createSession({
+  auth: {
+    userId: "user_123",
+    role: "admin"
+  },
+  ttl: 3600, // 1 hour
+  refreshable: true
+});
+
+// Use session for multiple agent calls
+const result1 = await agentbase.runAgent({
+  message: "First task",
+  sessionId: session.id
+});
+
+const result2 = await agentbase.runAgent({
+  message: "Second task",
+  sessionId: session.id
+});
+
+// Refresh session before expiry
+if (session.expiresIn < 300) {
+  await agentbase.refreshSession(session.id);
+}
+
+// End session when done
+await agentbase.endSession(session.id);
+```
+
+```python Python
+# Create authenticated session
+session = agentbase.create_session(
+    auth={
+        "user_id": "user_123",
+        "role": "admin"
+    },
+    ttl=3600,  # 1 hour
+    refreshable=True
+)
+
+# Use session for multiple agent calls
+result1 = agentbase.run_agent(
+    message="First task",
+    session_id=session.id
+)
+
+result2 = agentbase.run_agent(
+    message="Second task",
+    session_id=session.id
+)
+
+# Refresh session before expiry
+if session.expires_in < 300:
+    agentbase.refresh_session(session.id)
+
+# End session when done
+agentbase.end_session(session.id)
+```
+
+</CodeGroup>
+
+### API Key Management
+
+<CodeGroup>
+
+```typescript TypeScript
+// Create scoped API key for user
+const apiKey = await agentbase.createApiKey({
+  userId: "user_123",
+  name: "Production API Key",
+  scopes: ["agents:run", "sessions:create"],
+  rateLimit: {
+    requestsPerMinute: 60
+  },
+  expiresAt: "2025-12-31T23:59:59Z"
+});
+
+console.log('API Key:', apiKey.key);
+console.log('Expires:', apiKey.expiresAt);
+
+// List user's API keys
+const keys = await agentbase.listApiKeys({
+  userId: "user_123"
+});
+
+// Revoke API key
+await agentbase.revokeApiKey(apiKey.id);
+```
+
+```python Python
+# Create scoped API key for user
+api_key = agentbase.create_api_key(
+    user_id="user_123",
+    name="Production API Key",
+    scopes=["agents:run", "sessions:create"],
+    rate_limit={
+        "requests_per_minute": 60
+    },
+    expires_at="2025-12-31T23:59:59Z"
+)
+
+print(f"API Key: {api_key.key}")
+print(f"Expires: {api_key.expires_at}")
+
+# List user's API keys
+keys = agentbase.list_api_keys(user_id="user_123")
+
+# Revoke API key
+agentbase.revoke_api_key(api_key.id)
+```
+
+</CodeGroup>
+
+### Webhook Signature Verification
+
+<CodeGroup>
+
+```typescript TypeScript
+// Verify webhook signatures
+app.post('/webhook/stripe', async (req, res) => {
+  const signature = req.headers['stripe-signature'];
+
+  // Verify webhook authenticity
+  const verified = await agentbase.verifyWebhookSignature({
+    provider: "stripe",
+    payload: req.body,
+    signature: signature,
+    secret: process.env.STRIPE_WEBHOOK_SECRET
+  });
+
+  if (!verified) {
+    return res.status(401).json({ error: "Invalid signature" });
+  }
+
+  // Process verified webhook
+  await agentbase.runAgent({
+    message: "Process Stripe webhook",
+    context: {
+      event: req.body
+    },
+    auth: {
+      webhookProvider: "stripe",
+      verified: true
+    }
+  });
+
+  res.json({ received: true });
+});
+```
+
+```python Python
+# Verify webhook signatures
+@app.post('/webhook/stripe')
+async def stripe_webhook(request):
+    signature = request.headers['stripe-signature']
+
+    # Verify webhook authenticity
+    verified = agentbase.verify_webhook_signature(
+        provider="stripe",
+        payload=request.body,
+        signature=signature,
+        secret=os.environ['STRIPE_WEBHOOK_SECRET']
+    )
+
+    if not verified:
+        return {"error": "Invalid signature"}, 401
+
+    # Process verified webhook
+    agentbase.run_agent(
+        message="Process Stripe webhook",
+        context={
+            "event": request.json()
+        },
+        auth={
+            "webhook_provider": "stripe",
+            "verified": True
+        }
+    )
+
+    return {"received": True}
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Multi-Tenant SaaS Application
+
+Isolate data by organization:
+
+```typescript
+// Organization-scoped agent execution
+app.post('/api/agent', async (req, res) => {
+  // Extract user from JWT
+  const user = await verifyJWT(req.headers.authorization);
+
+  const result = await agentbase.runAgent({
+    message: req.body.message,
+    auth: {
+      userId: user.id,
+      tenantId: user.organizationId,
+      role: user.role,
+      permissions: user.permissions
+    },
+    dataConnectors: {
+      postgres: {
+        enabled: true,
+        tenantIsolation: {
+          enabled: true,
+          tenantColumn: "org_id",
+          tenantValue: user.organizationId
+        }
+      }
+    },
+    memory: {
+      namespace: `org_${user.organizationId}_user_${user.id}`,
+      enabled: true
+    },
+    system: `You are operating in the context of ${user.organization}.
+    You can only access data belonging to this organization.
+    User role: ${user.role}
+    Permissions: ${user.permissions.join(', ')}`
+  });
+
+  res.json(result);
+});
+```
+
+### 2. OAuth-Powered Integrations
+
+Access user's third-party services:
+
+```typescript
+// Gmail integration with OAuth
+const result = await agentbase.runAgent({
+  message: "Send email to customer about their order",
+  auth: {
+    userId: currentUser.id,
+    oauth: {
+      provider: "google",
+      accessToken: currentUser.googleAccessToken,
+      refreshToken: currentUser.googleRefreshToken,
+      autoRefresh: true
+    }
+  },
+  integrations: {
+    gmail: { enabled: true }
+  },
+  context: {
+    customerEmail: order.customerEmail,
+    orderDetails: order
+  }
+});
+
+// Agent uses user's Gmail to send email
+```
+
+### 3. Enterprise SSO Integration
+
+Support enterprise single sign-on:
+
+```typescript
+// SAML SSO authentication
+app.post('/sso/acs', async (req, res) => {
+  // Validate SAML assertion
+  const samlData = await agentbase.validateSAML({
+    assertion: req.body.SAMLResponse,
+    certificat: process.env.IDP_CERTIFICATE
+  });
+
+  // Create session for SSO user
+  const session = await agentbase.createSession({
+    auth: {
+      type: "sso",
+      userId: samlData.userId,
+      email: samlData.email,
+      tenantId: samlData.organizationId,
+      role: samlData.role,
+      ssoProvider: "okta"
+    },
+    ttl: 28800 // 8 hours
+  });
+
+  // Redirect to app with session
+  res.redirect(`/app?session=${session.id}`);
+});
+```
+
+### 4. Permission-Based Operations
+
+Enforce fine-grained permissions:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: req.body.message,
+  auth: {
+    userId: user.id,
+    permissions: user.permissions
+  },
+  system: `You have these permissions: ${user.permissions.join(', ')}
+
+  Permission requirements:
+  - View data: requires 'read:data'
+  - Edit data: requires 'write:data'
+  - Delete data: requires 'delete:data' AND 'admin' role
+  - Access analytics: requires 'read:analytics'
+  - Export data: requires 'export:data'
+
+  Before performing any operation, verify user has required permission.
+  If permission denied, explain what permission is needed.`,
+  preExecutionChecks: [
+    {
+      type: "permission",
+      required: ["read:data"],
+      action: "block_if_missing"
+    }
+  ]
+});
+```
+
+### 5. API Rate Limiting by User
+
+Implement user-based rate limits:
+
+```typescript
+// Rate limit per authenticated user
+app.post('/api/agent', async (req, res) => {
+  const apiKey = req.headers['x-api-key'];
+
+  // Validate API key and get user
+  const user = await agentbase.validateApiKey(apiKey);
+
+  if (!user) {
+    return res.status(401).json({ error: "Invalid API key" });
+  }
+
+  // Check rate limit
+  const rateLimit = await agentbase.checkRateLimit({
+    userId: user.id,
+    endpoint: '/api/agent',
+    limit: user.rateLimit
+  });
+
+  if (rateLimit.exceeded) {
+    return res.status(429).json({
+      error: "Rate limit exceeded",
+      limit: rateLimit.limit,
+      remaining: 0,
+      resetAt: rateLimit.resetAt
+    });
+  }
+
+  // Execute agent
+  const result = await agentbase.runAgent({
+    message: req.body.message,
+    auth: {
+      userId: user.id,
+      apiKeyId: apiKey.id
+    }
+  });
+
+  // Add rate limit headers
+  res.set({
+    'X-RateLimit-Limit': rateLimit.limit,
+    'X-RateLimit-Remaining': rateLimit.remaining,
+    'X-RateLimit-Reset': rateLimit.resetAt
+  });
+
+  res.json(result);
+});
+```
+
+### 6. Audit Logging
+
+Track all authenticated actions:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Delete customer account",
+  auth: {
+    userId: user.id,
+    role: user.role
+  },
+  audit: {
+    enabled: true,
+    log: {
+      action: "customer.delete",
+      resourceType: "customer",
+      resourceId: customerId,
+      performedBy: user.id,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent']
+    }
+  }
+});
+
+// Query audit logs
+const logs = await agentbase.getAuditLogs({
+  userId: user.id,
+  action: "customer.delete",
+  timeRange: "7d"
+});
+```
+
+## Best Practices
+
+### Security
+
+<Warning>
+**Never Expose Secrets**: API keys, JWT secrets, and OAuth client secrets must never be exposed in client-side code.
+</Warning>
+
+<AccordionGroup>
+  <Accordion title="Secure Token Storage">
+    ```typescript
+    // Good: Server-side token storage
+    // Store tokens in secure database
+    await db.userTokens.create({
+      userId: user.id,
+      accessToken: encrypt(tokens.accessToken),
+      refreshToken: encrypt(tokens.refreshToken),
+      expiresAt: tokens.expiresAt
+    });
+
+    // Bad: Client-side token storage
+    localStorage.setItem('token', accessToken); // Don't do this!
+    ```
+  </Accordion>
+
+  <Accordion title="Use Short-Lived Tokens">
+    ```typescript
+    {
+      auth: {
+        type: "jwt",
+        token: jwtToken,
+        expiresIn: 900 // 15 minutes
+      },
+      refreshToken: refreshToken, // For obtaining new tokens
+      autoRefresh: true
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Implement Token Rotation">
+    ```typescript
+    // Rotate tokens on each use
+    async function refreshUserToken(refreshToken: string) {
+      const newTokens = await agentbase.refreshToken({
+        refreshToken,
+        revokeOld: true // Revoke old refresh token
+      });
+
+      // Save new tokens
+      await saveTokens(newTokens);
+
+      return newTokens;
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Validate All Inputs">
+    ```typescript
+    // Validate user context
+    function validateAuth(auth: any) {
+      if (!auth.userId || !auth.tenantId) {
+        throw new Error("Missing required auth fields");
+      }
+
+      // Verify tenant access
+      if (!userHasAccessToTenant(auth.userId, auth.tenantId)) {
+        throw new Error("Unauthorized tenant access");
+      }
+
+      return auth;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Access Control
+
+<Tip>
+**Principle of Least Privilege**: Grant minimum permissions necessary for each operation.
+</Tip>
+
+<AccordionGroup>
+  <Accordion title="Define Clear Permission Scopes">
+    ```typescript
+    const permissions = {
+      // Resource-based permissions
+      "read:customers": "View customer data",
+      "write:customers": "Create/update customers",
+      "delete:customers": "Delete customers",
+
+      // Feature-based permissions
+      "access:analytics": "View analytics dashboard",
+      "export:data": "Export data to files",
+
+      // Admin permissions
+      "manage:users": "Manage user accounts",
+      "manage:billing": "Access billing"
+    };
+    ```
+  </Accordion>
+
+  <Accordion title="Implement Role Hierarchy">
+    ```typescript
+    const roles = {
+      viewer: ["read:customers", "read:orders"],
+      member: ["read:customers", "write:customers", "read:orders", "write:orders"],
+      admin: ["*"] // All permissions
+    };
+
+    function getUserPermissions(role: string): string[] {
+      return roles[role] || [];
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Check Permissions in Agent">
+    ```typescript
+    system: `Before any operation, check if user has required permission.
+
+    Permission checks:
+    - To view data: verify 'read:${resource}' permission
+    - To modify data: verify 'write:${resource}' permission
+    - To delete data: verify 'delete:${resource}' permission AND admin role
+
+    If permission denied:
+    - Explain what permission is needed
+    - Suggest contacting administrator
+    - Do not perform the operation`
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### OAuth Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use PKCE for OAuth">
+    ```typescript
+    // Generate PKCE challenge
+    const codeVerifier = generateRandomString(128);
+    const codeChallenge = base64URLEncode(sha256(codeVerifier));
+
+    // Initiate OAuth with PKCE
+    const oauthUrl = await agentbase.initiateOAuth({
+      provider: "google",
+      scopes: ["profile", "email"],
+      pkce: {
+        codeChallenge,
+        codeChallengeMethod: "S256"
+      }
+    });
+
+    // Complete OAuth with verifier
+    const tokens = await agentbase.completeOAuth({
+      code,
+      codeVerifier
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Token Refresh">
+    ```typescript
+    async function callWithOAuth(userId: string, action: Function) {
+      let tokens = await getUserTokens(userId);
+
+      // Check if token expired
+      if (isTokenExpired(tokens.accessToken)) {
+        tokens = await refreshOAuthToken(tokens.refreshToken);
+        await saveUserTokens(userId, tokens);
+      }
+
+      return action(tokens.accessToken);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Scope Minimization">
+    ```typescript
+    // Good: Request minimal scopes needed
+    {
+      scopes: ["user:email", "repo:status"] // Only what's needed
+    }
+
+    // Avoid: Requesting excessive scopes
+    {
+      scopes: ["user", "repo", "admin:org"] // Too broad
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Primitives
+
+### With Memory
+
+User-scoped memory:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Remember my preferences",
+  auth: {
+    userId: user.id,
+    tenantId: user.tenantId
+  },
+  memory: {
+    namespace: `org_${user.tenantId}_user_${user.id}`,
+    enabled: true
+  }
+});
+
+// Memory automatically scoped to user
+```
+
+Learn more: [Memory Primitive](/primitives/extensions/memory)
+
+### With Data Connectors
+
+Tenant-isolated database access:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Query customer data",
+  auth: {
+    tenantId: user.tenantId
+  },
+  dataConnectors: {
+    postgres: {
+      enabled: true,
+      tenantIsolation: {
+        enabled: true,
+        tenantColumn: "tenant_id",
+        tenantValue: user.tenantId
+      }
+    }
+  }
+});
+```
+
+Learn more: [Data Connectors Primitive](/primitives/extensions/data-connectors)
+
+### With Integrations
+
+OAuth-authenticated integrations:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Create GitHub issue",
+  auth: {
+    userId: user.id,
+    oauth: {
+      provider: "github",
+      accessToken: user.githubToken
+    }
+  },
+  integrations: {
+    github: { enabled: true }
+  }
+});
+```
+
+Learn more: [Integrations Primitive](/primitives/extensions/integrations)
+
+## Performance Considerations
+
+### Token Validation
+
+- **JWT Validation**: < 10ms per request
+- **API Key Lookup**: < 5ms (cached)
+- **OAuth Token Refresh**: 100-500ms
+
+### Session Management
+
+- **Session Creation**: < 50ms
+- **Session Lookup**: < 5ms (cached)
+- **Concurrent Sessions**: Thousands per user
+
+### Scalability
+
+```typescript
+// Optimize authentication performance
+{
+  auth: {
+    caching: {
+      enabled: true,
+      ttl: 300, // Cache auth context for 5 minutes
+      invalidateOn: ["permission_change", "role_change"]
+    }
+  }
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Authentication Failures">
+    **Problem**: User cannot authenticate
+
+    **Solutions**:
+    - Verify API key is valid and not expired
+    - Check JWT token signature
+    - Ensure OAuth tokens not revoked
+    - Verify user account is active
+    - Check for clock skew issues
+
+    ```typescript
+    // Debug authentication
+    const debug = await agentbase.debugAuth({
+      token: userToken,
+      type: "jwt"
+    });
+
+    console.log('Valid:', debug.valid);
+    console.log('Reason:', debug.reason);
+    console.log('Expires:', debug.expiresAt);
+    ```
+  </Accordion>
+
+  <Accordion title="Permission Denied">
+    **Problem**: User lacks permissions for operation
+
+    **Solutions**:
+    - Review user's assigned permissions
+    - Check role configuration
+    - Verify tenant isolation is correct
+    - Audit permission requirements
+    - Update user permissions if appropriate
+
+    ```typescript
+    // Check user permissions
+    const permissions = await agentbase.getUserPermissions(userId);
+    const hasPermission = permissions.includes('write:customers');
+
+    if (!hasPermission) {
+      console.log('User needs: write:customers');
+      console.log('User has:', permissions);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="OAuth Token Expired">
+    **Problem**: OAuth access token expired
+
+    **Solutions**:
+    - Implement automatic token refresh
+    - Handle refresh token expiration
+    - Re-authenticate user if needed
+    - Check token expiration before use
+
+    ```typescript
+    // Auto-refresh expired tokens
+    {
+      auth: {
+        oauth: {
+          accessToken: token,
+          refreshToken: refreshToken,
+          autoRefresh: true
+        }
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Patterns
+
+### Custom Authentication Provider
+
+Implement custom auth:
+
+```typescript
+await agentbase.registerAuthProvider({
+  name: "company_sso",
+  validate: async (credentials) => {
+    // Custom validation logic
+    const user = await validateWithInternalSSO(credentials);
+    return {
+      userId: user.id,
+      role: user.role,
+      permissions: user.permissions
+    };
+  }
+});
+```
+
+### Context-Based Access Control
+
+Dynamic permissions based on context:
+
+```typescript
+{
+  auth: {
+    userId: user.id,
+    dynamicPermissions: async (context) => {
+      // Grant extra permissions based on context
+      if (context.resource === "own_profile") {
+        return ["write:profile"];
+      }
+      return [];
+    }
+  }
+}
+```
+
+### Federated Identity
+
+Support multiple identity providers:
+
+```typescript
+const session = await agentbase.createSession({
+  auth: {
+    federatedIdentity: {
+      provider: "google",
+      providerId: googleUser.sub,
+      email: googleUser.email
+    },
+    mapToLocalUser: true // Link to local user account
+  }
+});
+```
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Integrations" icon="plug" href="/primitives/extensions/integrations">
+    OAuth-powered third-party integrations
+  </Card>
+
+  <Card title="Data Connectors" icon="database" href="/primitives/extensions/data-connectors">
+    Tenant-isolated database access
+  </Card>
+
+  <Card title="Memory" icon="brain" href="/primitives/extensions/memory">
+    User-scoped memory storage
+  </Card>
+
+  <Card title="Hooks" icon="webhook" href="/primitives/essentials/hooks">
+    Authentication in webhook handlers
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api/authentication">
+    Complete authentication API
+  </Card>
+
+  <Card title="Security Guide" icon="shield" href="/guides/security">
+    Security best practices
+  </Card>
+
+  <Card title="OAuth Guide" icon="key" href="/guides/oauth">
+    OAuth 2.0 implementation guide
+  </Card>
+</CardGroup>
+
+<Tip>
+**Pro Tip**: Implement authentication early in development. Retrofitting auth into an existing system is much harder than building with it from the start.
+</Tip>

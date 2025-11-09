@@ -1,0 +1,24 @@
+---
+title: "Clear Messages"
+api: "POST https://api.agentbase.sh/clear-messages"
+authMethod: "bearer"
+description: "Clear all messages from the current agent session."
+---
+
+### Query Parameters
+
+<ParamField query="session" type="string" required>
+  The session ID to clear messages from. This identifies the specific agent
+  session.
+</ParamField>
+
+### Response
+
+Returns confirmation of the clear messages operation.
+
+```json
+{
+  "success": true,
+  "message": "Messages cleared"
+}
+```

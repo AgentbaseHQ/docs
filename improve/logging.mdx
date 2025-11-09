@@ -1,0 +1,457 @@
+---
+title: "Logging & Monitoring"
+description: "Implement comprehensive logging for production agents"
+icon: "file-lines"
+---
+
+## Overview
+
+Proper logging is essential for monitoring agent health, debugging issues, and understanding usage patterns in production. This guide covers logging strategies and best practices.
+
+## What to Log
+
+<CardGroup cols={2}>
+  <Card title="Request/Response" icon="exchange">
+    Log all agent requests and responses
+  </Card>
+
+  <Card title="Performance Metrics" icon="gauge">
+    Track response times, steps, and efficiency
+  </Card>
+
+  <Card title="Errors & Exceptions" icon="exclamation-triangle">
+    Capture and log all errors with context
+  </Card>
+
+  <Card title="Cost & Usage" icon="dollar-sign">
+    Monitor costs and usage patterns
+  </Card>
+</CardGroup>
+
+## Logging Implementation
+
+### Basic Logger
+
+```typescript
+import winston from 'winston';
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' })
+  ]
+});
+
+// Add console logging in development
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.simple()
+  }));
+}
+```
+
+### Agent Request Logger
+
+```typescript
+async function loggedRunAgent(message: string, options: any = {}) {
+  const requestId = generateRequestId();
+  const startTime = Date.now();
+
+  logger.info('Agent request started', {
+    requestId,
+    message: truncate(message, 200),
+    mode: options.mode || 'fast',
+    session: options.session,
+    userId: options.userId
+  });
+
+  try {
+    const result = await agentbase.runAgent({
+      message,
+      ...options
+    });
+
+    const duration = Date.now() - startTime;
+
+    logger.info('Agent request completed', {
+      requestId,
+      duration,
+      session: result.session,
+      cost: result.cost,
+      success: true
+    });
+
+    return result;
+
+  } catch (error) {
+    const duration = Date.now() - startTime;
+
+    logger.error('Agent request failed', {
+      requestId,
+      duration,
+      error: error.message,
+      stack: error.stack,
+      success: false
+    });
+
+    throw error;
+  }
+}
+```
+
+### Streaming Logger
+
+```typescript
+async function loggedStreamAgent(message: string, options: any = {}) {
+  const requestId = generateRequestId();
+  const startTime = Date.now();
+  let steps = 0;
+  const tools = [];
+  let totalCost = 0;
+
+  logger.info('Agent stream started', {
+    requestId,
+    message: truncate(message, 200)
+  });
+
+  try {
+    const stream = await agentbase.runAgent({
+      message,
+      ...options,
+      stream: true
+    });
+
+    for await (const event of stream) {
+      // Log important events
+      switch (event.type) {
+        case 'agent_step':
+          steps++;
+          logger.debug('Agent step completed', {
+            requestId,
+            step: steps
+          });
+          break;
+
+        case 'agent_tool_use':
+          tools.push(event.tool);
+          logger.debug('Tool used', {
+            requestId,
+            tool: event.tool,
+            input: truncate(JSON.stringify(event.input), 100)
+          });
+          break;
+
+        case 'agent_cost':
+          totalCost = parseFloat(event.cost);
+          break;
+
+        case 'agent_error':
+          logger.error('Agent error during stream', {
+            requestId,
+            error: event.error,
+            step: steps
+          });
+          break;
+      }
+    }
+
+    const duration = Date.now() - startTime;
+
+    logger.info('Agent stream completed', {
+      requestId,
+      duration,
+      steps,
+      tools,
+      cost: totalCost,
+      success: true
+    });
+
+    return stream;
+
+  } catch (error) {
+    const duration = Date.now() - startTime;
+
+    logger.error('Agent stream failed', {
+      requestId,
+      duration,
+      steps,
+      error: error.message,
+      success: false
+    });
+
+    throw error;
+  }
+}
+```
+
+## Log Levels
+
+Use appropriate log levels for different scenarios:
+
+```typescript
+// DEBUG - Detailed diagnostic information
+logger.debug('Processing step', { step: 3, tool: 'web' });
+
+// INFO - General informational messages
+logger.info('Agent request completed', { duration: 5000 });
+
+// WARN - Warning messages for unusual situations
+logger.warn('Request taking longer than expected', { duration: 20000 });
+
+// ERROR - Error events
+logger.error('Agent request failed', { error: error.message });
+```
+
+## Structured Logging
+
+Use structured logging for easier analysis:
+
+```typescript
+// ❌ Unstructured
+logger.info(`User ${userId} ran agent with message "${message}" in ${duration}ms`);
+
+// ✅ Structured
+logger.info('Agent request completed', {
+  userId,
+  message: truncate(message),
+  duration,
+  cost,
+  steps
+});
+```
+
+Benefits of structured logging:
+- Easy to query and filter
+- Enables analytics and monitoring
+- Better integration with log management tools
+
+## Sensitive Data Handling
+
+Protect sensitive information in logs:
+
+```typescript
+function sanitizeMessage(message: string): string {
+  // Remove potential PII
+  return message
+    .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN]')  // SSN
+    .replace(/\b[\w\.-]+@[\w\.-]+\.\w+\b/g, '[EMAIL]')  // Email
+    .replace(/\b\d{16}\b/g, '[CARD]');  // Credit card
+}
+
+function sanitizeLogs(data: any): any {
+  return {
+    ...data,
+    message: data.message ? sanitizeMessage(data.message) : undefined,
+    response: data.response ? truncate(data.response, 500) : undefined
+  };
+}
+
+logger.info('Agent request', sanitizeLogs({
+  message: userInput,
+  response: agentOutput
+}));
+```
+
+## Log Aggregation
+
+### Integration with Log Management Tools
+
+<Tabs>
+  <Tab title="Datadog">
+    ```typescript
+    import { createLogger, format, transports } from 'winston';
+    import { DatadogTransport } from 'winston-datadog-logs';
+
+    const logger = createLogger({
+      transports: [
+        new DatadogTransport({
+          apiKey: process.env.DD_API_KEY,
+          service: 'agentbase-integration',
+          ddsource: 'nodejs',
+          ddtags: 'env:production'
+        })
+      ]
+    });
+    ```
+  </Tab>
+
+  <Tab title="CloudWatch">
+    ```typescript
+    import { WinstonCloudWatch } from 'winston-cloudwatch';
+
+    const logger = createLogger({
+      transports: [
+        new WinstonCloudWatch({
+          logGroupName: '/agentbase/production',
+          logStreamName: 'agent-requests',
+          awsRegion: 'us-east-1'
+        })
+      ]
+    });
+    ```
+  </Tab>
+
+  <Tab title="Elasticsearch">
+    ```typescript
+    import { ElasticsearchTransport } from 'winston-elasticsearch';
+
+    const logger = createLogger({
+      transports: [
+        new ElasticsearchTransport({
+          index: 'agentbase-logs',
+          level: 'info',
+          clientOpts: {
+            node: process.env.ELASTICSEARCH_URL
+          }
+        })
+      ]
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Monitoring & Alerts
+
+### Set Up Alerts
+
+```typescript
+// Alert on high error rates
+function checkErrorRate(logs: any[]) {
+  const recentLogs = logs.filter(log =>
+    Date.now() - log.timestamp < 3600000  // Last hour
+  );
+
+  const errors = recentLogs.filter(log => log.level === 'error');
+  const errorRate = errors.length / recentLogs.length;
+
+  if (errorRate > 0.05) {  // > 5% error rate
+    alertTeam({
+      severity: 'high',
+      message: `Error rate is ${(errorRate * 100).toFixed(1)}%`,
+      errors: errors.slice(0, 5)  // Include sample errors
+    });
+  }
+}
+
+// Alert on slow requests
+function checkPerformance(logs: any[]) {
+  const slowRequests = logs.filter(log =>
+    log.duration && log.duration > 30000  // > 30 seconds
+  );
+
+  if (slowRequests.length > 0) {
+    alertTeam({
+      severity: 'medium',
+      message: `${slowRequests.length} slow requests detected`,
+      samples: slowRequests.slice(0, 3)
+    });
+  }
+}
+
+// Alert on cost spikes
+function checkCosts(logs: any[]) {
+  const recentCosts = logs
+    .filter(log => log.cost && Date.now() - log.timestamp < 3600000)
+    .reduce((sum, log) => sum + parseFloat(log.cost), 0);
+
+  if (recentCosts > 10) {  // > $10/hour
+    alertTeam({
+      severity: 'medium',
+      message: `High cost detected: $${recentCosts.toFixed(2)}/hour`
+    });
+  }
+}
+```
+
+### Dashboards
+
+Create dashboards to visualize logs:
+
+```typescript
+// Generate metrics for dashboard
+function generateMetrics(logs: any[]) {
+  return {
+    totalRequests: logs.length,
+    successRate: logs.filter(l => l.success).length / logs.length,
+    avgDuration: average(logs.map(l => l.duration)),
+    avgSteps: average(logs.map(l => l.steps)),
+    totalCost: logs.reduce((sum, l) => sum + (l.cost || 0), 0),
+    errorsByType: groupBy(logs.filter(l => l.error), 'error'),
+    toolUsage: countTools(logs)
+  };
+}
+```
+
+## Log Retention
+
+Implement log retention policies:
+
+```typescript
+// Rotate logs daily
+import { createLogger, transports } from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
+
+const logger = createLogger({
+  transports: [
+    new DailyRotateFile({
+      filename: 'agent-%DATE%.log',
+      datePattern: 'YYYY-MM-DD',
+      maxSize: '20m',
+      maxFiles: '30d'  // Keep 30 days
+    })
+  ]
+});
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Log All Requests" icon="list-check">
+    Log every agent request with context
+  </Card>
+
+  <Card title="Include Request IDs" icon="fingerprint">
+    Use unique IDs to trace requests
+  </Card>
+
+  <Card title="Structure Your Logs" icon="table">
+    Use structured logging for analysis
+  </Card>
+
+  <Card title="Sanitize Sensitive Data" icon="user-shield">
+    Remove PII and secrets from logs
+  </Card>
+
+  <Card title="Set Appropriate Levels" icon="layer-group">
+    Use DEBUG, INFO, WARN, ERROR correctly
+  </Card>
+
+  <Card title="Monitor Continuously" icon="eye">
+    Set up alerts for errors and anomalies
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Traces" icon="bug" href="/improve/traces">
+    Debug with detailed execution traces
+  </Card>
+
+  <Card title="Cost Tracking" icon="dollar" href="/improve/cost-tracking">
+    Monitor and optimize costs
+  </Card>
+
+  <Card title="Performance" icon="gauge" href="/improve/performance">
+    Optimize agent performance
+  </Card>
+
+  <Card title="Evals" icon="check-circle" href="/improve/evals">
+    Test and validate agents
+  </Card>
+</CardGroup>

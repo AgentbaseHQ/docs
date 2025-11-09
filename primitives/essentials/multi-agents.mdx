@@ -1,0 +1,1054 @@
+---
+title: "Multi-Agent"
+description: "Coordinate multiple specialized agents for complex workflows and seamless conversation handoffs"
+icon: "users"
+---
+
+> Multi-agent systems enable sophisticated workflows where specialized agents collaborate, transfer conversations, and handle different aspects of complex tasks.
+
+## Overview
+
+The Multi-Agent primitive allows you to orchestrate multiple specialized agents within a single workflow or conversation. Instead of one generalist agent handling everything, you can deploy domain experts that collaborate, transfer work between each other, and provide specialized capabilities for different parts of your application.
+
+Multi-agent systems are essential for:
+
+- **Specialized Expertise**: Different agents with deep knowledge in specific domains
+- **Conversation Routing**: Intelligent transfer between support, sales, technical agents
+- **Complex Workflows**: Breaking down large tasks across multiple specialized agents
+- **Parallel Processing**: Multiple agents working simultaneously on different subtasks
+- **Scalable Architecture**: Add new agent specialists without modifying existing ones
+
+<CardGroup cols={2}>
+  <Card title="Seamless Handoffs" icon="right-left">
+    Agents can transfer conversations to other specialists while maintaining full context
+  </Card>
+
+  <Card title="Domain Experts" icon="graduation-cap">
+    Each agent can have specialized knowledge, tools, and behavioral patterns
+  </Card>
+
+  <Card title="Automatic Routing" icon="route">
+    Main agent intelligently determines which specialist should handle each request
+  </Card>
+
+  <Card title="Shared Context" icon="share-nodes">
+    All agents in a session share conversation history and can build on each other's work
+  </Card>
+</CardGroup>
+
+## How Multi-Agent Works
+
+When you configure multiple agents:
+
+1. **Main Agent**: Acts as coordinator, receives initial requests
+2. **Agent Discovery**: Main agent knows about available specialists and their capabilities
+3. **Intelligent Routing**: Determines which specialist is best suited for the current task
+4. **Transfer**: Hands off conversation to specialist while preserving full context
+5. **Specialist Handling**: Specialist agent takes over and handles the request
+6. **Return or Continue**: Specialist can return control to main agent or continue handling
+
+<Note>
+**Context Preservation**: When agents transfer conversations, the entire message history and context is preserved. The specialist agent has full visibility into everything that was discussed before.
+</Note>
+
+## Code Examples
+
+### Basic Multi-Agent Setup
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Configure multiple specialized agents
+const result = await agentbase.runAgent({
+  message: "I need help with my order",
+  system: "You are a customer service coordinator. Analyze the request and transfer to the appropriate specialist.",
+  agents: [
+    {
+      name: "Order Support",
+      description: "Handles order status, tracking, shipping, and delivery questions"
+    },
+    {
+      name: "Billing Support",
+      description: "Handles payment issues, refunds, invoices, and billing questions"
+    },
+    {
+      name: "Technical Support",
+      description: "Handles technical issues, bugs, and product functionality questions"
+    }
+  ]
+});
+
+// Main agent analyzes request and transfers to Order Support
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Configure multiple specialized agents
+result = agentbase.run_agent(
+    message="I need help with my order",
+    system="You are a customer service coordinator. Analyze the request and transfer to the appropriate specialist.",
+    agents=[
+        {
+            "name": "Order Support",
+            "description": "Handles order status, tracking, shipping, and delivery questions"
+        },
+        {
+            "name": "Billing Support",
+            "description": "Handles payment issues, refunds, invoices, and billing questions"
+        },
+        {
+            "name": "Technical Support",
+            "description": "Handles technical issues, bugs, and product functionality questions"
+        }
+    ]
+)
+
+# Main agent analyzes request and transfers to Order Support
+```
+
+```bash cURL
+curl -X POST https://api.agentbase.sh \
+  -H "Authorization: Bearer $AGENTBASE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "I need help with my order",
+    "system": "You are a customer service coordinator. Analyze the request and transfer to the appropriate specialist.",
+    "agents": [
+      {
+        "name": "Order Support",
+        "description": "Handles order status, tracking, shipping, and delivery questions"
+      },
+      {
+        "name": "Billing Support",
+        "description": "Handles payment issues, refunds, invoices, and billing questions"
+      },
+      {
+        "name": "Technical Support",
+        "description": "Handles technical issues, bugs, and product functionality questions"
+      }
+    ]
+  }'
+```
+
+</CodeGroup>
+
+### Sales and Support Routing
+
+<CodeGroup>
+
+```typescript TypeScript
+// Configure sales and support agents
+const result = await agentbase.runAgent({
+  message: "What are your pricing plans?",
+  system: `You are a helpful assistant. Route customers to:
+  - Sales Agent for pricing, demos, and product information
+  - Support Agent for existing customer issues and technical help`,
+  agents: [
+    {
+      name: "Sales Agent",
+      description: "Handles product inquiries, pricing questions, demos, and new customer onboarding"
+    },
+    {
+      name: "Support Agent",
+      description: "Handles existing customer support, technical issues, and account management"
+    }
+  ]
+});
+
+// Main agent transfers to Sales Agent for pricing inquiry
+```
+
+```python Python
+# Configure sales and support agents
+result = agentbase.run_agent(
+    message="What are your pricing plans?",
+    system="""You are a helpful assistant. Route customers to:
+    - Sales Agent for pricing, demos, and product information
+    - Support Agent for existing customer issues and technical help""",
+    agents=[
+        {
+            "name": "Sales Agent",
+            "description": "Handles product inquiries, pricing questions, demos, and new customer onboarding"
+        },
+        {
+            "name": "Support Agent",
+            "description": "Handles existing customer support, technical issues, and account management"
+        }
+    ]
+)
+
+# Main agent transfers to Sales Agent for pricing inquiry
+```
+
+</CodeGroup>
+
+### Multi-Agent with Custom Tools
+
+<CodeGroup>
+
+```typescript TypeScript
+// Different agents with different tool access
+const result = await agentbase.runAgent({
+  message: "Process this customer order",
+  system: "You are an order coordinator. Route to appropriate specialist.",
+  agents: [
+    {
+      name: "Order Processor",
+      description: "Processes new orders, checks inventory, creates order records"
+    },
+    {
+      name: "Payment Handler",
+      description: "Handles payment processing, refunds, and billing"
+    },
+    {
+      name: "Shipping Coordinator",
+      description: "Manages shipping, tracking, and delivery logistics"
+    }
+  ],
+  mcpServers: [
+    {
+      serverName: "order-system",
+      serverUrl: "https://api.company.com/orders"
+    },
+    {
+      serverName: "payment-gateway",
+      serverUrl: "https://api.company.com/payments"
+    },
+    {
+      serverName: "shipping-api",
+      serverUrl: "https://api.company.com/shipping"
+    }
+  ]
+});
+
+// Each specialist agent uses relevant tools for their domain
+```
+
+```python Python
+# Different agents with different tool access
+result = agentbase.run_agent(
+    message="Process this customer order",
+    system="You are an order coordinator. Route to appropriate specialist.",
+    agents=[
+        {
+            "name": "Order Processor",
+            "description": "Processes new orders, checks inventory, creates order records"
+        },
+        {
+            "name": "Payment Handler",
+            "description": "Handles payment processing, refunds, and billing"
+        },
+        {
+            "name": "Shipping Coordinator",
+            "description": "Manages shipping, tracking, and delivery logistics"
+        }
+    ],
+    mcp_servers=[
+        {
+            "serverName": "order-system",
+            "serverUrl": "https://api.company.com/orders"
+        },
+        {
+            "serverName": "payment-gateway",
+            "serverUrl": "https://api.company.com/payments"
+        },
+        {
+            "serverName": "shipping-api",
+            "serverUrl": "https://api.company.com/shipping"
+        }
+    ]
+)
+
+# Each specialist agent uses relevant tools for their domain
+```
+
+</CodeGroup>
+
+### Continuing Multi-Agent Conversations
+
+<CodeGroup>
+
+```typescript TypeScript
+// Initial request with multi-agent setup
+const initial = await agentbase.runAgent({
+  message: "I have a billing question",
+  system: "Route to appropriate specialist",
+  agents: [
+    {
+      name: "Billing Specialist",
+      description: "Handles all billing and payment questions"
+    },
+    {
+      name: "Technical Specialist",
+      description: "Handles technical issues"
+    }
+  ]
+});
+
+// Main agent transfers to Billing Specialist
+const sessionId = initial.session;
+
+// Continue conversation with same session
+const followUp = await agentbase.runAgent({
+  message: "I need a copy of my invoice",
+  session: sessionId
+  // Billing Specialist still handling, has full context
+});
+
+// Another follow-up
+const finalResponse = await agentbase.runAgent({
+  message: "Can you explain this charge?",
+  session: sessionId
+  // Still with Billing Specialist, remembers everything
+});
+```
+
+```python Python
+# Initial request with multi-agent setup
+initial = agentbase.run_agent(
+    message="I have a billing question",
+    system="Route to appropriate specialist",
+    agents=[
+        {
+            "name": "Billing Specialist",
+            "description": "Handles all billing and payment questions"
+        },
+        {
+            "name": "Technical Specialist",
+            "description": "Handles technical issues"
+        }
+    ]
+)
+
+# Main agent transfers to Billing Specialist
+session_id = initial.session
+
+# Continue conversation with same session
+follow_up = agentbase.run_agent(
+    message="I need a copy of my invoice",
+    session=session_id
+    # Billing Specialist still handling, has full context
+)
+
+# Another follow-up
+final_response = agentbase.run_agent(
+    message="Can you explain this charge?",
+    session=session_id
+    # Still with Billing Specialist, remembers everything
+)
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Customer Service Hub
+
+Multi-tier support with specialized agents:
+
+```typescript
+async function customerServiceHub() {
+  const config = {
+    system: `You are a customer service coordinator for TechCorp.
+
+    Analyze each customer request and route to the appropriate specialist:
+    - Order Support: order status, shipping, delivery
+    - Billing Support: payments, refunds, invoices
+    - Technical Support: product issues, bugs, troubleshooting
+    - Account Support: account settings, password resets, user management
+
+    Always greet customers warmly and let them know you're transferring them to a specialist.`,
+    agents: [
+      {
+        name: "Order Support",
+        description: "Expert in order management, shipping, tracking, and delivery. Has access to order database and shipping APIs."
+      },
+      {
+        name: "Billing Support",
+        description: "Expert in payments, refunds, invoices, and billing issues. Has access to payment systems and accounting tools."
+      },
+      {
+        name: "Technical Support",
+        description: "Expert in product functionality, troubleshooting, and bug reporting. Has access to technical documentation and bug tracking system."
+      },
+      {
+        name: "Account Support",
+        description: "Expert in account management, user settings, and authentication. Has access to user management system."
+      }
+    ],
+    mcpServers: [
+      {
+        serverName: "customer-systems",
+        serverUrl: "https://api.company.com/mcp"
+      }
+    ]
+  };
+
+  return config;
+}
+
+// Use in application
+const result = await agentbase.runAgent({
+  message: "I can't access my account",
+  ...await customerServiceHub()
+});
+```
+
+### 2. Sales Pipeline
+
+Route through sales stages with specialized agents:
+
+```typescript
+const salesPipeline = await agentbase.runAgent({
+  message: "I'm interested in your enterprise plan",
+  system: `You manage the sales pipeline. Route prospects through:
+  - Discovery Agent: initial contact, qualification
+  - Demo Agent: product demonstrations, feature explanations
+  - Pricing Agent: pricing discussions, proposals
+  - Closing Agent: contract negotiation, final steps`,
+  agents: [
+    {
+      name: "Discovery Agent",
+      description: "Qualifies leads, understands customer needs, identifies pain points, and determines fit"
+    },
+    {
+      name: "Demo Agent",
+      description: "Showcases product features, provides demonstrations, explains use cases, answers product questions"
+    },
+    {
+      name: "Pricing Agent",
+      description: "Discusses pricing options, creates proposals, explains ROI, handles budget conversations"
+    },
+    {
+      name: "Closing Agent",
+      description: "Finalizes contracts, addresses final concerns, coordinates onboarding, completes sale"
+    }
+  ]
+});
+```
+
+### 3. Content Production Workflow
+
+Coordinate content creation across specialists:
+
+```typescript
+const contentWorkflow = await agentbase.runAgent({
+  message: "Create a comprehensive blog post about AI in healthcare",
+  system: "You coordinate content production. Route through specialists for best results.",
+  agents: [
+    {
+      name: "Research Agent",
+      description: "Conducts research, gathers sources, verifies facts, finds statistics and case studies"
+    },
+    {
+      name: "Writing Agent",
+      description: "Creates compelling content, ensures proper structure, maintains tone and voice"
+    },
+    {
+      name: "SEO Agent",
+      description: "Optimizes for search engines, adds meta descriptions, suggests keywords, improves discoverability"
+    },
+    {
+      name: "Editing Agent",
+      description: "Reviews for grammar, clarity, consistency, fact-checks, and overall quality"
+    }
+  ]
+});
+
+// Research Agent gathers information
+// Writing Agent creates draft
+// SEO Agent optimizes
+// Editing Agent reviews and polishes
+```
+
+### 4. Development Team Simulation
+
+Specialized development agents:
+
+```typescript
+const devTeam = await agentbase.runAgent({
+  message: "Build a REST API for user management",
+  system: "You are a tech lead coordinating development specialists.",
+  agents: [
+    {
+      name: "Backend Developer",
+      description: "Designs and implements server-side logic, APIs, database schemas, and business logic"
+    },
+    {
+      name: "Database Architect",
+      description: "Designs database schemas, optimizes queries, ensures data integrity and performance"
+    },
+    {
+      name: "DevOps Engineer",
+      description: "Sets up deployment pipelines, manages infrastructure, handles containerization and orchestration"
+    },
+    {
+      name: "QA Engineer",
+      description: "Creates test plans, writes tests, performs quality assurance, validates functionality"
+    },
+    {
+      name: "Security Specialist",
+      description: "Reviews for security vulnerabilities, implements authentication, ensures compliance"
+    }
+  ]
+});
+
+// Each specialist contributes their expertise to the project
+```
+
+### 5. Healthcare Triage System
+
+Medical domain specialists:
+
+```typescript
+const healthcareTriage = await agentbase.runAgent({
+  message: "Patient experiencing chest pain and shortness of breath",
+  system: `You are a medical triage coordinator.
+
+  IMPORTANT: This is for informational purposes only. Always advise patients to seek immediate medical attention for serious symptoms.
+
+  Route to appropriate specialist based on symptoms and severity.`,
+  agents: [
+    {
+      name: "Emergency Triage",
+      description: "Handles urgent symptoms requiring immediate medical attention. Advises calling 911 or going to ER."
+    },
+    {
+      name: "Primary Care Advisor",
+      description: "Handles general health questions, non-urgent symptoms, provides health information and guidance"
+    },
+    {
+      name: "Specialist Referral",
+      description: "Recommends appropriate medical specialists based on symptoms, provides information about specialists"
+    },
+    {
+      name: "Appointment Scheduler",
+      description: "Helps schedule appointments with appropriate providers, checks availability"
+    }
+  ]
+});
+
+// Emergency Triage would handle this serious symptom
+```
+
+### 6. Financial Advisory Service
+
+Financial domain specialists:
+
+```typescript
+const financialAdvisory = await agentbase.runAgent({
+  message: "Help me plan for retirement",
+  system: `You coordinate financial advisory services.
+
+  IMPORTANT: Remind users that agents provide educational information only and to consult licensed financial advisors for personalized advice.`,
+  agents: [
+    {
+      name: "Retirement Planner",
+      description: "Provides retirement planning information, 401k guidance, pension advice, retirement age calculations"
+    },
+    {
+      name: "Investment Advisor",
+      description: "Educates about investment options, portfolio strategies, risk assessment, asset allocation"
+    },
+    {
+      name: "Tax Specialist",
+      description: "Provides tax-related information, deduction guidance, tax-advantaged account education"
+    },
+    {
+      name: "Estate Planner",
+      description: "Educates about estate planning, wills, trusts, inheritance considerations"
+    }
+  ]
+});
+```
+
+## Best Practices
+
+### Agent Design
+
+<AccordionGroup>
+  <Accordion title="Clear Specialization">
+    ```typescript
+    // Good: Clear, distinct specializations
+    agents: [
+      {
+        name: "Technical Support",
+        description: "Handles technical issues: bugs, errors, performance problems, integration issues"
+      },
+      {
+        name: "Product Support",
+        description: "Handles product usage: features, best practices, workflows, how-to questions"
+      }
+    ]
+
+    // Avoid: Overlapping or vague descriptions
+    agents: [
+      {
+        name: "Support Agent 1",
+        description: "Helps with various issues"
+      },
+      {
+        name: "Support Agent 2",
+        description: "Also helps with issues"
+      }
+    ]
+    ```
+  </Accordion>
+
+  <Accordion title="Descriptive Names">
+    ```typescript
+    // Good: Descriptive, role-based names
+    agents: [
+      {
+        name: "Order Fulfillment Specialist",
+        description: "Processes orders, manages inventory, coordinates shipping"
+      },
+      {
+        name: "Returns and Refunds Specialist",
+        description: "Handles return requests, processes refunds, manages exchanges"
+      }
+    ]
+
+    // Avoid: Generic or numbered names
+    agents: [
+      {
+        name: "Agent 1",
+        description: "Handles some tasks"
+      },
+      {
+        name: "Agent 2",
+        description: "Handles other tasks"
+      }
+    ]
+    ```
+  </Accordion>
+
+  <Accordion title="Detailed Descriptions">
+    ```typescript
+    // Good: Comprehensive descriptions
+    agents: [
+      {
+        name: "Billing Specialist",
+        description: `Expert in all billing matters including:
+        - Payment processing and methods
+        - Invoice generation and history
+        - Refund and chargeback handling
+        - Subscription management
+        - Pricing and plan changes
+        - Payment failure resolution
+
+        Has access to payment gateway and billing systems.`
+      }
+    ]
+
+    // Avoid: Minimal descriptions
+    agents: [
+      {
+        name: "Billing Specialist",
+        description: "Handles billing"
+      }
+    ]
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Routing Strategy
+
+<Tip>
+**Main Agent Guidance**: Give your main/coordinator agent clear instructions on when to route to each specialist and how to handle edge cases.
+</Tip>
+
+```typescript
+const result = await agentbase.runAgent({
+  message: customerMessage,
+  system: `You are a customer service coordinator.
+
+  ROUTING RULES:
+  1. Order questions (status, tracking, delivery) → Order Support
+  2. Payment questions (charges, refunds, invoices) → Billing Support
+  3. Technical problems (errors, bugs, not working) → Technical Support
+  4. Account questions (login, settings, profile) → Account Support
+
+  EDGE CASES:
+  - If unclear, ask clarifying questions before routing
+  - If spans multiple areas, route to primary concern
+  - If urgent (data loss, security), route to Technical Support immediately
+
+  Always:
+  - Greet customer warmly
+  - Briefly acknowledge their issue
+  - Explain which specialist will help them
+  - Transfer seamlessly`,
+  agents: [
+    // ... agent definitions
+  ]
+});
+```
+
+### Performance Optimization
+
+<CardGroup cols={2}>
+  <Card title="Limit Agent Count" icon="users">
+    Use 3-5 specialized agents per workflow for optimal performance
+  </Card>
+
+  <Card title="Smart Routing" icon="route">
+    Design clear routing criteria to minimize unnecessary transfers
+  </Card>
+
+  <Card title="Session Reuse" icon="recycle">
+    Keep multi-agent sessions alive for related conversations
+  </Card>
+
+  <Card title="Tool Scoping" icon="toolbox">
+    Give each agent access only to tools they need
+  </Card>
+</CardGroup>
+
+### Error Handling
+
+<AccordionGroup>
+  <Accordion title="Handle Ambiguous Requests">
+    ```typescript
+    system: `You are a coordinator.
+
+    If the customer's request is ambiguous:
+    1. DON'T transfer immediately
+    2. Ask 1-2 clarifying questions
+    3. Once clear, route to appropriate specialist
+
+    Example:
+    Customer: "I have a problem"
+    You: "I'd be happy to help! Could you tell me a bit more about the problem you're experiencing? Is it related to an order, billing, technical issue, or something else?"
+
+    Then route based on clarification.`
+    ```
+  </Accordion>
+
+  <Accordion title="Fallback Agents">
+    ```typescript
+    agents: [
+      {
+        name: "Order Support",
+        description: "Handles order-related questions"
+      },
+      {
+        name: "Billing Support",
+        description: "Handles billing questions"
+      },
+      {
+        name: "General Support",
+        description: "Fallback agent for questions that don't fit other categories or need general assistance"
+      }
+    ]
+
+    // Main agent can route to General Support for edge cases
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Primitives
+
+### With Prompts
+
+Each agent can have specialized system prompts:
+
+```typescript
+// Main agent has routing prompt
+// Specialist agents get specialized prompts when they take over
+const result = await agentbase.runAgent({
+  message: "Technical issue",
+  system: "You are a coordinator. Route technical issues to Technical Support.",
+  agents: [
+    {
+      name: "Technical Support",
+      description: "Handles technical issues"
+      // When this agent takes over, it gets technical support expertise
+    }
+  ]
+});
+```
+
+Learn more: [Prompts Primitive](/primitives/essentials/prompts)
+
+### With Custom Tools
+
+Different agents can access different tools:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Process order and payment",
+  agents: [
+    {
+      name: "Order Agent",
+      description: "Processes orders (has access to order-system tools)"
+    },
+    {
+      name: "Payment Agent",
+      description: "Handles payments (has access to payment-gateway tools)"
+    }
+  ],
+  mcpServers: [
+    {
+      serverName: "order-system",
+      serverUrl: "https://api.company.com/orders"
+    },
+    {
+      serverName: "payment-gateway",
+      serverUrl: "https://api.company.com/payments"
+    }
+  ]
+});
+
+// Each agent intelligently uses tools relevant to their domain
+```
+
+Learn more: [Custom Tools Primitive](/primitives/essentials/custom-tools)
+
+### With Sessions
+
+All agents in a session share context:
+
+```typescript
+// Start multi-agent session
+const initial = await agentbase.runAgent({
+  message: "I need help",
+  agents: [
+    { name: "Agent A", description: "Handles A" },
+    { name: "Agent B", description: "Handles B" }
+  ]
+});
+
+// Continue - agents share full conversation history
+const continued = await agentbase.runAgent({
+  message: "Follow-up question",
+  session: initial.session
+  // Current agent has full context from previous agents
+});
+```
+
+Learn more: [Sessions Primitive](/primitives/essentials/sessions)
+
+### With Parallelization
+
+Run multiple agents in parallel:
+
+```typescript
+// Parallel multi-agent execution
+const results = await Promise.all([
+  agentbase.runAgent({
+    message: "Research topic A",
+    agents: [{ name: "Research A", description: "Expert in A" }]
+  }),
+  agentbase.runAgent({
+    message: "Research topic B",
+    agents: [{ name: "Research B", description: "Expert in B" }]
+  }),
+  agentbase.runAgent({
+    message: "Research topic C",
+    agents: [{ name: "Research C", description: "Expert in C" }]
+  })
+]);
+
+// Each runs independently with specialized agent
+```
+
+Learn more: [Parallelization Primitive](/primitives/essentials/parallelization)
+
+## Performance Considerations
+
+### Agent Count Impact
+
+- **2-3 Agents**: Optimal performance, clear routing
+- **4-6 Agents**: Good performance, more specialization
+- **7+ Agents**: Consider if all are necessary, may slow routing decisions
+
+```typescript
+// Optimize by grouping related capabilities
+// Instead of 10 narrow specialists:
+agents: [
+  { name: "Spec1", description: "Does X" },
+  { name: "Spec2", description: "Does Y" },
+  // ... 8 more
+]
+
+// Use 4-5 broader specialists:
+agents: [
+  { name: "Order & Shipping", description: "Handles all order-related tasks including shipping" },
+  { name: "Billing & Payments", description: "Handles all financial transactions" },
+  { name: "Technical Support", description: "Handles all technical issues" },
+  { name: "Account Management", description: "Handles user accounts and settings" }
+]
+```
+
+### Routing Efficiency
+
+Clear routing reduces transfer overhead:
+
+```typescript
+// Efficient: Clear routing criteria
+system: `Route based on keywords:
+- "order", "shipping", "delivery" → Order Support
+- "payment", "charge", "refund" → Billing Support
+- "error", "bug", "not working" → Technical Support`
+
+// Less efficient: Vague routing
+system: "Figure out which agent should handle this"
+```
+
+### Tool Access Optimization
+
+Only provide tools relevant to each agent:
+
+```typescript
+// Configure tools that all agents might need at the main level
+mcpServers: [
+  {
+    serverName: "customer-data",  // All agents can access
+    serverUrl: "https://api.company.com/customers"
+  }
+]
+
+// Specialist agents automatically use domain-specific tools wisely
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Agent Not Transferring">
+    **Problem**: Main agent not routing to specialists
+
+    **Solutions**:
+    - Make agent descriptions more specific
+    - Add explicit routing guidance in system prompt
+    - Ensure agent names clearly indicate their purpose
+
+    ```typescript
+    // Add explicit routing guidance
+    system: `IMPORTANT: You must transfer to specialists.
+
+    When you receive a request:
+    1. Identify the primary topic
+    2. Match to specialist description
+    3. Transfer immediately with warm introduction
+
+    Examples:
+    - "Track my order" → Transfer to Order Support
+    - "Refund question" → Transfer to Billing Support
+
+    DO NOT try to handle specialist topics yourself.`
+    ```
+  </Accordion>
+
+  <Accordion title="Wrong Agent Selected">
+    **Problem**: Requests routed to incorrect specialist
+
+    **Solutions**:
+    - Improve agent descriptions to be more distinct
+    - Add routing examples in system prompt
+    - Use clear, non-overlapping specializations
+
+    ```typescript
+    // Make descriptions mutually exclusive
+    agents: [
+      {
+        name: "Pre-Sales",
+        description: "ONLY for prospects and leads who haven't purchased yet. Handles product questions, demos, pricing for new customers."
+      },
+      {
+        name: "Post-Sales",
+        description: "ONLY for existing customers who have already purchased. Handles support, issues, account management."
+      }
+    ]
+    ```
+  </Accordion>
+
+  <Accordion title="Context Lost After Transfer">
+    **Problem**: Specialist doesn't seem to have previous context
+
+    **Solution**: This shouldn't happen - verify you're using same session
+
+    ```typescript
+    // Ensure session continuity
+    const initial = await agentbase.runAgent({
+      message: "My order #12345 is late",
+      agents: [ /* ... */ ]
+    });
+
+    // Use same session for follow-ups
+    const followUp = await agentbase.runAgent({
+      message: "Did you check the tracking?",
+      session: initial.session  // ✓ Context preserved
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Too Many Transfers">
+    **Problem**: Request bounces between multiple agents
+
+    **Solutions**:
+    - Design clear, non-overlapping specializations
+    - Give guidance on edge cases
+    - Use a generalist fallback agent
+
+    ```typescript
+    system: `Route requests clearly:
+
+    - If request fits ONE specialist perfectly → transfer immediately
+    - If request spans MULTIPLE areas → route to primary concern
+    - If request is UNCLEAR → ask clarifying question first
+    - If request is GENERAL → handle yourself or route to General Support
+
+    Never transfer more than once per request.`
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Prompts" icon="message-bot" href="/primitives/essentials/prompts">
+    Specialized system prompts for each agent
+  </Card>
+
+  <Card title="Sessions" icon="link" href="/primitives/essentials/sessions">
+    Shared context across all agents
+  </Card>
+
+  <Card title="Custom Tools" icon="toolbox" href="/primitives/essentials/custom-tools">
+    Domain-specific tools for specialists
+  </Card>
+
+  <Card title="Parallelization" icon="arrows-split-up-and-left" href="/primitives/essentials/parallelization">
+    Run multiple agents concurrently
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Agents parameter documentation
+  </Card>
+
+  <Card title="Agent Transfer" icon="right-left" href="/build/agent-transfer">
+    Details on agent handoff mechanism
+  </Card>
+
+  <Card title="Use Cases" icon="lightbulb" href="/build/use-cases">
+    Multi-agent implementation examples
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Design agents as specialists with clear, non-overlapping domains. Let the main agent handle routing, and give each specialist deep expertise in their area.
+</Tip>

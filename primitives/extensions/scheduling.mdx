@@ -1,0 +1,1152 @@
+---
+title: "Scheduling"
+description: "Schedule agent executions at specific times, intervals, and recurring patterns"
+icon: "calendar-clock"
+---
+
+> Scheduling enables agents to run automatically on time-based schedules, from simple recurring tasks to complex time-orchestrated workflows, ensuring critical operations happen exactly when needed.
+
+## Overview
+
+The Scheduling primitive allows you to execute agents at specified times using cron expressions, intervals, or custom schedules. Whether you need daily reports, hourly data syncs, or one-time future executions, scheduling makes it effortless to automate time-based operations.
+
+Scheduling is essential for:
+
+- **Recurring Tasks**: Run agents daily, weekly, monthly, or custom intervals
+- **Batch Processing**: Process data during off-peak hours
+- **Regular Reports**: Generate and distribute reports on schedule
+- **Maintenance Operations**: Perform cleanup and optimization tasks
+- **Time-Based Triggers**: Execute agents at specific times or dates
+- **Multi-Region Coordination**: Schedule across different time zones
+
+<CardGroup cols={2}>
+  <Card title="Cron Expressions" icon="calendar">
+    Use familiar cron syntax for flexible scheduling
+  </Card>
+
+  <Card title="Time Zones" icon="globe">
+    Schedule in any time zone with automatic DST handling
+  </Card>
+
+  <Card title="One-Time Schedules" icon="clock">
+    Execute agents at a specific future time
+  </Card>
+
+  <Card title="Smart Retries" icon="arrows-rotate">
+    Automatic retry for missed or failed executions
+  </Card>
+</CardGroup>
+
+## How Scheduling Works
+
+When you schedule an agent:
+
+1. **Definition**: Schedule created with cron expression or specific time
+2. **Registration**: Schedule registered with execution engine
+3. **Monitoring**: System continuously monitors scheduled times
+4. **Execution**: Agent executes automatically at scheduled time
+5. **Completion**: Results logged and next execution calculated
+6. **Repeat**: Process repeats for recurring schedules
+
+<Note>
+**Guaranteed Execution**: Schedules use at-least-once execution semantics. Missed executions are caught up automatically.
+</Note>
+
+## Schedule Types
+
+### Cron Schedules
+
+```typescript
+{
+  type: "cron",
+  expression: "0 9 * * *", // Every day at 9 AM
+  timezone: "America/New_York"
+}
+```
+
+### Interval Schedules
+
+```typescript
+{
+  type: "interval",
+  every: "1h", // Every 1 hour
+  startTime: "2024-02-01T00:00:00Z"
+}
+```
+
+### One-Time Schedules
+
+```typescript
+{
+  type: "once",
+  executeAt: "2024-02-15T14:30:00Z"
+}
+```
+
+### Complex Schedules
+
+```typescript
+{
+  type: "complex",
+  schedules: [
+    { cron: "0 9 * * 1-5", timezone: "US/Eastern" }, // Weekdays 9 AM EST
+    { cron: "0 12 * * 6,0", timezone: "US/Pacific" } // Weekends 12 PM PST
+  ]
+}
+```
+
+## Code Examples
+
+### Basic Cron Schedule
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Schedule daily report
+const schedule = await agentbase.scheduleAgent({
+  name: "daily_sales_report",
+  schedule: "0 9 * * *", // Every day at 9 AM
+  timezone: "America/New_York",
+  agent: {
+    message: "Generate daily sales report",
+    system: `Create report including:
+    - Total sales for previous day
+    - Top selling products
+    - New customers
+    - Key metrics vs targets
+
+    Send report to team via Slack.`,
+    dataConnectors: {
+      postgres: { enabled: true }
+    },
+    integrations: {
+      slack: { enabled: true }
+    }
+  }
+});
+
+console.log('Schedule created:', schedule.id);
+console.log('Next run:', schedule.nextRun);
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Schedule daily report
+schedule = agentbase.schedule_agent(
+    name="daily_sales_report",
+    schedule="0 9 * * *",  # Every day at 9 AM
+    timezone="America/New_York",
+    agent={
+        "message": "Generate daily sales report",
+        "system": """Create report including:
+        - Total sales for previous day
+        - Top selling products
+        - New customers
+        - Key metrics vs targets
+
+        Send report to team via Slack.""",
+        "data_connectors": {
+            "postgres": {"enabled": True}
+        },
+        "integrations": {
+            "slack": {"enabled": True}
+        }
+    }
+)
+
+print(f"Schedule created: {schedule.id}")
+print(f"Next run: {schedule.next_run}")
+```
+
+</CodeGroup>
+
+### Interval Schedule
+
+<CodeGroup>
+
+```typescript TypeScript
+// Run every hour
+const hourlySync = await agentbase.scheduleAgent({
+  name: "hourly_data_sync",
+  interval: "1h",
+  agent: {
+    message: "Sync data from external API",
+    system: "Fetch latest data and update database"
+  }
+});
+
+// Run every 15 minutes
+const frequentCheck = await agentbase.scheduleAgent({
+  name: "health_check",
+  interval: "15m",
+  agent: {
+    message: "Check system health",
+    system: "Monitor services and alert if issues detected"
+  }
+});
+```
+
+```python Python
+# Run every hour
+hourly_sync = agentbase.schedule_agent(
+    name="hourly_data_sync",
+    interval="1h",
+    agent={
+        "message": "Sync data from external API",
+        "system": "Fetch latest data and update database"
+    }
+)
+
+# Run every 15 minutes
+frequent_check = agentbase.schedule_agent(
+    name="health_check",
+    interval="15m",
+    agent={
+        "message": "Check system health",
+        "system": "Monitor services and alert if issues detected"
+    }
+)
+```
+
+</CodeGroup>
+
+### One-Time Execution
+
+<CodeGroup>
+
+```typescript TypeScript
+// Schedule for specific future time
+const oneTime = await agentbase.scheduleAgent({
+  name: "quarter_end_report",
+  executeAt: "2024-03-31T23:59:00Z",
+  agent: {
+    message: "Generate Q1 financial report",
+    system: "Compile comprehensive Q1 financial analysis"
+  }
+});
+
+// Schedule in 24 hours
+const delayed = await agentbase.scheduleAgent({
+  name: "follow_up_email",
+  executeIn: "24h",
+  agent: {
+    message: "Send follow-up email to lead",
+    context: {
+      leadId: "lead_123"
+    }
+  }
+});
+```
+
+```python Python
+# Schedule for specific future time
+one_time = agentbase.schedule_agent(
+    name="quarter_end_report",
+    execute_at="2024-03-31T23:59:00Z",
+    agent={
+        "message": "Generate Q1 financial report",
+        "system": "Compile comprehensive Q1 financial analysis"
+    }
+)
+
+# Schedule in 24 hours
+delayed = agentbase.schedule_agent(
+    name="follow_up_email",
+    execute_in="24h",
+    agent={
+        "message": "Send follow-up email to lead",
+        "context": {
+            "lead_id": "lead_123"
+        }
+    }
+)
+```
+
+</CodeGroup>
+
+### Business Hours Schedule
+
+<CodeGroup>
+
+```typescript TypeScript
+// Run only during business hours
+const businessHours = await agentbase.scheduleAgent({
+  name: "customer_support_check",
+  schedule: "0 9-17 * * 1-5", // 9 AM - 5 PM, Monday - Friday
+  timezone: "America/New_York",
+  agent: {
+    message: "Check pending support tickets",
+    system: "Review and assign urgent tickets during business hours"
+  }
+});
+```
+
+```python Python
+# Run only during business hours
+business_hours = agentbase.schedule_agent(
+    name="customer_support_check",
+    schedule="0 9-17 * * 1-5",  # 9 AM - 5 PM, Monday - Friday
+    timezone="America/New_York",
+    agent={
+        "message": "Check pending support tickets",
+        "system": "Review and assign urgent tickets during business hours"
+    }
+)
+```
+
+</CodeGroup>
+
+### Monthly Schedule
+
+<CodeGroup>
+
+```typescript TypeScript
+// First day of every month
+const monthlyReport = await agentbase.scheduleAgent({
+  name: "monthly_financial_report",
+  schedule: "0 0 1 * *", // Midnight on 1st of each month
+  timezone: "America/New_York",
+  agent: {
+    message: "Generate monthly financial report",
+    system: `Create comprehensive monthly report:
+    - Revenue and expenses
+    - Profit margins
+    - Cash flow analysis
+    - Budget variance
+    - Key metrics and KPIs
+
+    Distribute to finance team and executives.`
+  }
+});
+
+// Last day of every month
+const monthEnd = await agentbase.scheduleAgent({
+  name: "month_end_close",
+  schedule: "0 23 L * *", // 11 PM on last day of month
+  timezone: "America/New_York",
+  agent: {
+    message: "Perform month-end closing procedures",
+    system: "Run accounting close process"
+  }
+});
+```
+
+```python Python
+# First day of every month
+monthly_report = agentbase.schedule_agent(
+    name="monthly_financial_report",
+    schedule="0 0 1 * *",  # Midnight on 1st of each month
+    timezone="America/New_York",
+    agent={
+        "message": "Generate monthly financial report",
+        "system": """Create comprehensive monthly report:
+        - Revenue and expenses
+        - Profit margins
+        - Cash flow analysis
+        - Budget variance
+        - Key metrics and KPIs
+
+        Distribute to finance team and executives."""
+    }
+)
+```
+
+</CodeGroup>
+
+### Complex Multi-Schedule
+
+<CodeGroup>
+
+```typescript TypeScript
+// Different schedules for different days
+const complexSchedule = await agentbase.scheduleAgent({
+  name: "adaptive_backup",
+  schedules: [
+    {
+      cron: "0 2 * * 1-5", // Weekdays at 2 AM
+      config: { backupType: "incremental" }
+    },
+    {
+      cron: "0 1 * * 0", // Sundays at 1 AM
+      config: { backupType: "full" }
+    }
+  ],
+  timezone: "UTC",
+  agent: {
+    message: "Perform database backup",
+    context: {
+      backupType: "{{schedule.config.backupType}}"
+    },
+    system: "Run backup based on schedule type"
+  }
+});
+```
+
+```python Python
+# Different schedules for different days
+complex_schedule = agentbase.schedule_agent(
+    name="adaptive_backup",
+    schedules=[
+        {
+            "cron": "0 2 * * 1-5",  # Weekdays at 2 AM
+            "config": {"backup_type": "incremental"}
+        },
+        {
+            "cron": "0 1 * * 0",  # Sundays at 1 AM
+            "config": {"backup_type": "full"}
+        }
+    ],
+    timezone="UTC",
+    agent={
+        "message": "Perform database backup",
+        "context": {
+            "backup_type": "{{schedule.config.backup_type}}"
+        },
+        "system": "Run backup based on schedule type"
+    }
+)
+```
+
+</CodeGroup>
+
+### Schedule with Conditions
+
+<CodeGroup>
+
+```typescript TypeScript
+// Only run if condition is met
+const conditionalSchedule = await agentbase.scheduleAgent({
+  name: "conditional_cleanup",
+  schedule: "0 3 * * *", // Daily at 3 AM
+  preCheck: {
+    condition: "SELECT COUNT(*) FROM temp_data WHERE created_at < NOW() - INTERVAL '7 days'",
+    runIfGreaterThan: 0
+  },
+  agent: {
+    message: "Clean up old temporary data",
+    system: "Delete temp data older than 7 days"
+  }
+});
+```
+
+```python Python
+# Only run if condition is met
+conditional_schedule = agentbase.schedule_agent(
+    name="conditional_cleanup",
+    schedule="0 3 * * *",  # Daily at 3 AM
+    pre_check={
+        "condition": "SELECT COUNT(*) FROM temp_data WHERE created_at < NOW() - INTERVAL '7 days'",
+        "run_if_greater_than": 0
+    },
+    agent={
+        "message": "Clean up old temporary data",
+        "system": "Delete temp data older than 7 days"
+    }
+)
+```
+
+</CodeGroup>
+
+### Manage Schedules
+
+<CodeGroup>
+
+```typescript TypeScript
+// List all schedules
+const schedules = await agentbase.getSchedules({
+  status: "active",
+  sortBy: "nextRun"
+});
+
+// Get specific schedule
+const schedule = await agentbase.getSchedule("schedule_123");
+console.log('Next run:', schedule.nextRun);
+console.log('Last run:', schedule.lastRun);
+console.log('Execution count:', schedule.executionCount);
+
+// Pause schedule
+await agentbase.pauseSchedule("schedule_123");
+
+// Resume schedule
+await agentbase.resumeSchedule("schedule_123");
+
+// Delete schedule
+await agentbase.deleteSchedule("schedule_123");
+
+// Update schedule
+await agentbase.updateSchedule("schedule_123", {
+  schedule: "0 10 * * *", // Change to 10 AM
+  timezone: "America/Los_Angeles"
+});
+```
+
+```python Python
+# List all schedules
+schedules = agentbase.get_schedules(
+    status="active",
+    sort_by="next_run"
+)
+
+# Get specific schedule
+schedule = agentbase.get_schedule("schedule_123")
+print(f"Next run: {schedule.next_run}")
+print(f"Last run: {schedule.last_run}")
+print(f"Execution count: {schedule.execution_count}")
+
+# Pause schedule
+agentbase.pause_schedule("schedule_123")
+
+# Resume schedule
+agentbase.resume_schedule("schedule_123")
+
+# Delete schedule
+agentbase.delete_schedule("schedule_123")
+
+# Update schedule
+agentbase.update_schedule("schedule_123", {
+    "schedule": "0 10 * * *",  # Change to 10 AM
+    "timezone": "America/Los_Angeles"
+})
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Daily Reporting
+
+Automate daily business reports:
+
+```typescript
+await agentbase.scheduleAgent({
+  name: "morning_report",
+  schedule: "0 8 * * 1-5", // Weekdays at 8 AM
+  timezone: "America/New_York",
+  agent: {
+    message: "Generate morning executive brief",
+    system: `Create morning report including:
+
+    1. Yesterday's Performance
+       - Revenue vs target
+       - New customers
+       - Churn rate
+       - Support tickets
+
+    2. Today's Focus
+       - Key meetings
+       - Important deadlines
+       - Critical tasks
+
+    3. Alerts
+       - Systems issues
+       - Budget concerns
+       - Urgent items
+
+    Format as executive summary and send via email and Slack.`,
+    integrations: {
+      slack: { enabled: true },
+      sendgrid: { enabled: true }
+    }
+  }
+});
+```
+
+### 2. Data Synchronization
+
+Sync data between systems:
+
+```typescript
+await agentbase.scheduleAgent({
+  name: "crm_warehouse_sync",
+  interval: "1h", // Every hour
+  agent: {
+    message: "Sync CRM data to warehouse",
+    system: `ETL Process:
+    1. Extract new/modified records from Salesforce (last hour)
+    2. Transform data to warehouse schema
+    3. Load into Snowflake data warehouse
+    4. Validate row counts match
+    5. Log sync statistics
+    6. Alert if errors exceed threshold`,
+    integrations: {
+      salesforce: { enabled: true }
+    },
+    dataConnectors: {
+      snowflake: { enabled: true }
+    }
+  }
+});
+```
+
+### 3. System Maintenance
+
+Schedule maintenance tasks:
+
+```typescript
+await agentbase.scheduleAgent({
+  name: "database_maintenance",
+  schedule: "0 2 * * 0", // Sundays at 2 AM
+  timezone: "UTC",
+  agent: {
+    message: "Perform weekly database maintenance",
+    system: `Maintenance tasks:
+    1. Vacuum and analyze tables
+    2. Rebuild indexes
+    3. Update statistics
+    4. Archive old data
+    5. Check disk space
+    6. Verify backups
+    7. Generate health report`,
+    dataConnectors: {
+      postgres: { enabled: true }
+    }
+  },
+  notifications: {
+    onSuccess: ["devops@company.com"],
+    onFailure: ["devops@company.com", "oncall@company.com"]
+  }
+});
+```
+
+### 4. Content Publishing
+
+Schedule content distribution:
+
+```typescript
+await agentbase.scheduleAgent({
+  name: "weekly_newsletter",
+  schedule: "0 10 * * 3", // Wednesdays at 10 AM
+  timezone: "America/New_York",
+  agent: {
+    message: "Send weekly newsletter",
+    system: `Newsletter workflow:
+    1. Curate top blog posts from last week
+    2. Gather customer success stories
+    3. Include product updates
+    4. Add upcoming events
+    5. Generate personalized content per segment
+    6. Send via Mailchimp
+    7. Track engagement metrics`,
+    integrations: {
+      mailchimp: { enabled: true },
+      wordpress: { enabled: true }
+    }
+  }
+});
+```
+
+### 5. Compliance and Auditing
+
+Regular compliance checks:
+
+```typescript
+await agentbase.scheduleAgent({
+  name: "security_audit",
+  schedule: "0 0 1 * *", // Monthly on 1st at midnight
+  timezone: "UTC",
+  agent: {
+    message: "Perform monthly security audit",
+    system: `Security audit checklist:
+    1. Review user access permissions
+    2. Check for inactive accounts (disable if > 90 days)
+    3. Audit API key usage
+    4. Review security logs for anomalies
+    5. Scan for vulnerable dependencies
+    6. Verify encryption configurations
+    7. Generate compliance report
+    8. Distribute to security team`,
+    skills: ["security_audit"]
+  }
+});
+```
+
+### 6. Customer Engagement
+
+Automated customer touchpoints:
+
+```typescript
+// Trial ending reminder
+await agentbase.scheduleAgent({
+  name: "trial_ending_reminders",
+  schedule: "0 10 * * *", // Daily at 10 AM
+  agent: {
+    message: "Send trial ending reminders",
+    system: `Find trials ending in 3 days:
+    1. Query users with trial_end_date = TODAY + 3
+    2. For each user:
+       - Send personalized email
+       - Highlight value received during trial
+       - Include upgrade incentive
+       - Schedule follow-up call
+    3. Log outreach in CRM`,
+    dataConnectors: {
+      postgres: { enabled: true }
+    },
+    integrations: {
+      sendgrid: { enabled: true },
+      salesforce: { enabled: true }
+    }
+  }
+});
+```
+
+## Best Practices
+
+### Cron Expression Tips
+
+<AccordionGroup>
+  <Accordion title="Common Cron Patterns">
+    ```typescript
+    // Every day at midnight
+    schedule: "0 0 * * *"
+
+    // Every weekday at 9 AM
+    schedule: "0 9 * * 1-5"
+
+    // Every hour on the hour
+    schedule: "0 * * * *"
+
+    // Every 30 minutes
+    schedule: "*/30 * * * *"
+
+    // First day of month at noon
+    schedule: "0 12 1 * *"
+
+    // Last day of month at 11 PM
+    schedule: "0 23 L * *"
+
+    // Weekends only at 8 AM
+    schedule: "0 8 * * 6,0"
+    ```
+  </Accordion>
+
+  <Accordion title="Test Cron Expressions">
+    ```typescript
+    // Validate cron expression
+    const validation = await agentbase.validateSchedule({
+      schedule: "0 9 * * 1-5",
+      timezone: "America/New_York"
+    });
+
+    console.log('Valid:', validation.valid);
+    console.log('Next 5 runs:', validation.nextRuns);
+    ```
+  </Accordion>
+
+  <Accordion title="Use Named Time Zones">
+    ```typescript
+    // Good: Named time zone (handles DST automatically)
+    timezone: "America/New_York"
+
+    // Avoid: UTC offset (doesn't handle DST)
+    timezone: "UTC-5"
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Schedule Management
+
+<Tip>
+**Monitor Schedule Health**: Regularly review schedule execution history to catch failures early.
+</Tip>
+
+<AccordionGroup>
+  <Accordion title="Set Execution Windows">
+    ```typescript
+    {
+      schedule: "0 2 * * *",
+      executionWindow: {
+        start: "02:00",
+        end: "04:00",
+        timezone: "UTC"
+      },
+      // If can't execute at 2 AM, can run anytime until 4 AM
+      catchUpMissed: true
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Configure Retries">
+    ```typescript
+    {
+      schedule: "0 9 * * *",
+      retry: {
+        enabled: true,
+        maxAttempts: 3,
+        backoff: "exponential",
+        initialDelay: 300000 // 5 minutes
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Overlapping Executions">
+    ```typescript
+    {
+      schedule: "*/5 * * * *", // Every 5 minutes
+      concurrency: {
+        policy: "skip", // Skip if previous still running
+        // Other options: "queue", "cancel_previous"
+      },
+      timeout: 300000 // 5 minute timeout
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Set Expiration">
+    ```typescript
+    // Schedule expires after date
+    {
+      schedule: "0 9 * * *",
+      expiresAt: "2024-12-31T23:59:59Z",
+      onExpiration: "archive" // or "delete"
+    }
+
+    // Or after number of executions
+    {
+      schedule: "0 12 * * *",
+      maxExecutions: 30, // Run 30 times then stop
+      onComplete: "notify_owner"
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Performance
+
+<AccordionGroup>
+  <Accordion title="Off-Peak Scheduling">
+    ```typescript
+    // Schedule heavy tasks during off-peak hours
+    {
+      name: "data_processing",
+      schedule: "0 2 * * *", // 2 AM when traffic is low
+      agent: {
+        message: "Process large dataset",
+        optimization: {
+          priority: "low", // Don't compete with user-facing tasks
+          useSpotInstances: true
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Stagger Executions">
+    ```typescript
+    // Avoid thundering herd
+    const schedules = [];
+    for (let i = 0; i < 10; i++) {
+      schedules.push(
+        agentbase.scheduleAgent({
+          name: `batch_processor_${i}`,
+          schedule: `${i * 5} * * * *`, // Stagger by 5 minutes
+          agent: {
+            message: "Process batch",
+            context: { batchId: i }
+          }
+        })
+      );
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Monitor Resource Usage">
+    ```typescript
+    // Track schedule performance
+    const metrics = await agentbase.getScheduleMetrics({
+      scheduleId: "schedule_123",
+      timeRange: "7d"
+    });
+
+    console.log('Avg execution time:', metrics.avgExecutionTime);
+    console.log('Success rate:', metrics.successRate);
+    console.log('Resource usage:', metrics.resourceUsage);
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Primitives
+
+### With Workflow
+
+Schedule workflow executions:
+
+```typescript
+await agentbase.scheduleWorkflow({
+  schedule: "0 0 * * *", // Daily at midnight
+  timezone: "UTC",
+  workflow: {
+    id: "daily_etl_pipeline",
+    input: {
+      date: "{{execution_date}}"
+    }
+  }
+});
+```
+
+Learn more: [Workflow Primitive](/primitives/extensions/workflow)
+
+### With Tasks
+
+Create scheduled task generation:
+
+```typescript
+await agentbase.scheduleAgent({
+  schedule: "0 9 * * 1", // Every Monday at 9 AM
+  agent: {
+    message: "Create weekly tasks",
+    capabilities: {
+      tasks: { enabled: true }
+    },
+    system: "Generate weekly sprint tasks based on roadmap"
+  }
+});
+```
+
+Learn more: [Tasks Primitive](/primitives/extensions/tasks)
+
+### With Memory
+
+Remember schedule execution context:
+
+```typescript
+await agentbase.scheduleAgent({
+  schedule: "0 */6 * * *", // Every 6 hours
+  agent: {
+    message: "Check for updates",
+    memory: {
+      namespace: "scheduled_checker",
+      enabled: true
+    },
+    system: "Remember what was checked last time to avoid duplicates"
+  }
+});
+```
+
+Learn more: [Memory Primitive](/primitives/extensions/memory)
+
+## Performance Considerations
+
+### Execution Precision
+
+- **Cron Schedules**: ±1 second precision
+- **Interval Schedules**: ±100ms precision
+- **One-Time Schedules**: ±1 second precision
+
+### Scalability
+
+- **Concurrent Schedules**: Thousands of active schedules
+- **Execution Rate**: Thousands of executions per minute
+- **Time Zone Support**: All IANA time zones
+
+### Cost Optimization
+
+```typescript
+// Optimize costs for frequent schedules
+{
+  schedule: "*/1 * * * *", // Every minute
+  optimization: {
+    skipIfNoWork: true, // Skip execution if no pending work
+    earlyExit: true, // Exit early if nothing to do
+    cacheResults: 300 // Cache for 5 minutes
+  }
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Schedule Not Running">
+    **Problem**: Schedule created but not executing
+
+    **Solutions**:
+    - Verify schedule is active/enabled
+    - Check cron expression is valid
+    - Verify time zone is correct
+    - Review execution history for errors
+    - Check for conflicting schedules
+
+    ```typescript
+    // Debug schedule
+    const debug = await agentbase.debugSchedule("schedule_123");
+
+    console.log('Is active:', debug.isActive);
+    console.log('Next run:', debug.nextRun);
+    console.log('Last error:', debug.lastError);
+    console.log('Cron valid:', debug.cronValid);
+    ```
+  </Accordion>
+
+  <Accordion title="Missed Executions">
+    **Problem**: Schedules being skipped
+
+    **Solutions**:
+    - Enable catch-up for missed executions
+    - Increase execution window
+    - Check system load during scheduled time
+    - Review concurrency settings
+    - Verify timeout isn't too short
+
+    ```typescript
+    {
+      schedule: "0 9 * * *",
+      catchUpMissed: true, // Run missed executions
+      executionWindow: {
+        start: "09:00",
+        end: "11:00" // Can run anytime in this window
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Time Zone Issues">
+    **Problem**: Schedule running at wrong time
+
+    **Solutions**:
+    - Verify time zone string is correct
+    - Check for DST transitions
+    - Use UTC for consistency
+    - Test schedule with multiple dates
+
+    ```typescript
+    // Validate time zone and get next runs
+    const validation = await agentbase.validateSchedule({
+      schedule: "0 9 * * *",
+      timezone: "America/New_York",
+      showNext: 10 // Show next 10 runs
+    });
+
+    validation.nextRuns.forEach(run => {
+      console.log('Will run at:', run.local, '(', run.utc, 'UTC)');
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Overlapping Executions">
+    **Problem**: New execution starting while previous still running
+
+    **Solutions**:
+    - Increase timeout
+    - Set concurrency policy to skip
+    - Optimize agent execution time
+    - Reduce schedule frequency
+
+    ```typescript
+    {
+      schedule: "*/5 * * * *",
+      timeout: 240000, // 4 minutes (less than 5 min interval)
+      concurrency: {
+        policy: "skip" // Don't start if already running
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Patterns
+
+### Dynamic Scheduling
+
+Adjust schedule based on conditions:
+
+```typescript
+// Change frequency based on load
+await agentbase.createAdaptiveSchedule({
+  name: "adaptive_processor",
+  baseSchedule: "*/30 * * * *", // Start with every 30 min
+  adjustments: [
+    {
+      condition: "queue_length > 1000",
+      schedule: "*/5 * * * *" // Increase to every 5 min
+    },
+    {
+      condition: "queue_length < 100",
+      schedule: "0 * * * *" // Decrease to hourly
+    }
+  ]
+});
+```
+
+### Schedule Dependencies
+
+Chain schedules:
+
+```typescript
+// Schedule B waits for Schedule A
+await agentbase.scheduleAgent({
+  name: "schedule_b",
+  dependsOn: ["schedule_a"],
+  schedule: "0 10 * * *",
+  waitForDependencies: true,
+  agent: {
+    message: "Process data after Schedule A completes"
+  }
+});
+```
+
+### Holiday Handling
+
+Skip holidays automatically:
+
+```typescript
+{
+  schedule: "0 9 * * 1-5", // Weekdays
+  excludeDates: [
+    "2024-01-01", // New Year
+    "2024-07-04", // Independence Day
+    "2024-12-25"  // Christmas
+  ],
+  holidayCalendar: "US", // Or use standard holiday calendar
+  skipHolidays: true
+}
+```
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Trigger" icon="bolt" href="/primitives/extensions/trigger">
+    Event-driven agent execution
+  </Card>
+
+  <Card title="Workflow" icon="diagram-project" href="/primitives/extensions/workflow">
+    Schedule complex workflows
+  </Card>
+
+  <Card title="Background" icon="clock-rotate-left" href="/primitives/essentials/background">
+    Run scheduled agents asynchronously
+  </Card>
+
+  <Card title="Tasks" icon="list-check" href="/primitives/extensions/tasks">
+    Create scheduled task generation
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api/scheduling">
+    Complete scheduling API documentation
+  </Card>
+
+  <Card title="Cron Guide" icon="book" href="/guides/cron-expressions">
+    Cron expression syntax and examples
+  </Card>
+
+  <Card title="Time Zones" icon="globe" href="/guides/timezones">
+    Supported time zones and DST handling
+  </Card>
+</CardGroup>
+
+<Tip>
+**Pro Tip**: Use [crontab.guru](https://crontab.guru/) to test and validate cron expressions before deploying schedules. This helps avoid scheduling errors.
+</Tip>
