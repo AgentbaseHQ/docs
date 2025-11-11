@@ -1,0 +1,436 @@
+---
+title: "React SDK"
+description: "Official React SDK for building agent interfaces with Agentbase"
+icon: "react"
+---
+
+> The official React SDK for building interactive agent interfaces with hooks and components.
+
+## Installation
+
+```bash
+npm install @agentbase-sdk/react
+# or
+yarn add @agentbase-sdk/react
+```
+
+## Quick Start
+
+### 1. Create a Server-Side API Route
+
+The React SDK calls a server-side endpoint to keep your Agentbase API key secure. Here's an example using Next.js App Router:
+
+```typescript
+// app/api/agent/route.ts
+import Agentbase from "agentbase-sdk";
+import { NextRequest } from "next/server";
+
+// Initialize Agentbase client (reuse across requests)
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY!,
+});
+
+export const runtime = "edge"; // Optional: Use Edge Runtime for better performance
+
+export async function POST(req: NextRequest) {
+  try {
+    // Parse request body
+    const body = await req.json();
+    const {
+      message,
+      session,
+      system,
+      mode = "fast",
+      rules,
+      mcp_servers,
+      agents,
+      streaming_tokens = false,
+    } = body;
+
+    // Validate required fields
+    if (!message) {
+      return new Response("Message is required", { status: 400 });
+    }
+
+    // Prepare Agentbase parameters
+    const params: any = {
+      message,
+      mode,
+      streaming_tokens,
+    };
+
+    if (session) params.session = session;
+    if (system) params.system = system;
+    if (rules) params.rules = rules;
+    if (mcp_servers) params.mcp_servers = mcp_servers;
+    if (agents) params.agents = agents;
+
+    // Create a TransformStream to convert async iterator to ReadableStream
+    const encoder = new TextEncoder();
+    const stream = new TransformStream();
+    const writer = stream.writable.getWriter();
+
+    // Start streaming in the background
+    (async () => {
+      try {
+        const responseStream = await agentbase.runAgent(params);
+
+        for await (const response of responseStream) {
+          // Format as Server-Sent Events
+          const data = `data: ${JSON.stringify(response)}\n\n`;
+          await writer.write(encoder.encode(data));
+        }
+
+        await writer.close();
+      } catch (error) {
+        console.error("Streaming error:", error);
+        await writer.abort(error);
+      }
+    })();
+
+    // Return the stream as SSE
+    return new Response(stream.readable, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+    });
+  } catch (error) {
+    console.error("Chat API error:", error);
+    return new Response("Internal server error", { status: 500 });
+  }
+}
+```
+
+### 2. Use the useAgent Hook in Your Component
+
+```typescript
+"use client";
+
+import { useAgent } from "@agentbase-sdk/react";
+import { useState } from "react";
+
+export default function Chat() {
+  const [input, setInput] = useState("");
+  const { messages, send, stop, clear, isRunning, error, session } = useAgent({
+    api: "/api/agent",
+    system: "You are a helpful AI assistant. Be concise and friendly.",
+    mode: "fast",
+    onError: (error) => {
+      console.error("Agent error:", error);
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isRunning) return;
+
+    send(input);
+    setInput("");
+  };
+
+  return (
+    <div>
+      {/* Session Info */}
+      {session && <div>Session: {session.substring(0, 8)}...</div>}
+
+      {/* Error Display */}
+      {error && <div>Error: {error.message}</div>}
+
+      {/* Messages */}
+      <div>
+        {messages.map((message, msgIndex) => (
+          <div key={msgIndex}>
+            <strong>{message.role === "user" ? "You" : "Assistant"}:</strong>
+
+            {/* Render all content items */}
+            {message.content.map((item, index) => (
+              <div key={index}>
+                {item.type === "text" && (
+                  <div>{item.text}</div>
+                )}
+                {item.type === "thinking" && (
+                  <div style={{ fontStyle: "italic", opacity: 0.7 }}>
+                    💭 {item.text}
+                  </div>
+                )}
+                {item.type === "tool_use" && (
+                  <div>
+                    <strong>🔧 Tool Use:</strong>
+                    <pre>{item.text}</pre>
+                  </div>
+                )}
+                {item.type === "tool_response" && (
+                  <div>
+                    <strong>✅ Tool Result:</strong>
+                    <pre>{item.text}</pre>
+                  </div>
+                )}
+                {item.type === "transfer" && (
+                  <div>
+                    🔄 Transferred to: {item.agent}
+                    {item.context && <div>{item.context}</div>}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
+
+        {/* Loading indicator */}
+        {isRunning && <div>...</div>}
+      </div>
+
+      {/* Controls */}
+      <button onClick={clear} disabled={messages.length === 0}>
+        Clear
+      </button>
+
+      {/* Input Form */}
+      <form onSubmit={handleSubmit}>
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your message..."
+          disabled={isRunning}
+        />
+        {isRunning ? (
+          <button type="button" onClick={stop}>
+            Stop
+          </button>
+        ) : (
+          <button type="submit" disabled={!input.trim()}>
+            Send
+          </button>
+        )}
+      </form>
+    </div>
+  );
+}
+```
+
+## API Reference
+
+### useAgent(options)
+
+The main hook for building agent interfaces.
+
+#### Options
+
+```typescript
+interface UseAgentOptions {
+  // Required: API endpoint to call
+  api: string;
+
+  // Optional: System prompt for the agent
+  system?: string;
+
+  // Optional: Agent mode (default: "fast")
+  mode?: "flash" | "fast" | "max";
+
+  // Optional: Rules for the agent
+  rules?: string[];
+
+  // Optional: MCP servers configuration
+  mcpServers?: Array<{
+    serverName: string;
+    serverUrl: string;
+  }>;
+
+  // Optional: Agent handoffs for multi-agent flows
+  agents?: Array<{
+    name: string;
+    description?: string;
+  }>;
+
+  // Optional: Stream tokens individually
+  streamingTokens?: boolean;
+
+  // Optional: Initial messages
+  initialMessages?: Message[];
+
+  // Optional: Error callback
+  onError?: (error: Error) => void;
+
+  // Optional: Custom headers and body
+  headers?: Record<string, string>;
+  body?: Record<string, any>;
+}
+```
+
+#### Returns
+
+```typescript
+interface UseAgentReturn {
+  // Message history
+  messages: Message[];
+
+  // Send a message to the agent
+  send: (message: string) => Promise<void>;
+
+  // Stop the current agent run
+  stop: () => void;
+
+  // Clear all messages (locally and on server)
+  clear: () => Promise<void>;
+
+  // State
+  isRunning: boolean;
+  error: Error | null;
+  session: string | null;
+}
+```
+
+### Message Types
+
+The hook handles various message types from the agent:
+
+```typescript
+interface Message {
+  role: "user" | "assistant";
+  content: ContentItem[];
+}
+
+type ContentItem =
+  | { type: "text"; text: string }
+  | { type: "thinking"; text: string }
+  | { type: "tool_use"; text: string }
+  | { type: "tool_response"; text: string }
+  | { type: "transfer"; agent: string; context?: string };
+```
+
+## Examples
+
+### Basic Chat Interface
+
+```typescript
+"use client";
+
+import { useAgent } from "@agentbase-sdk/react";
+import { useState } from "react";
+
+export default function BasicChat() {
+  const [input, setInput] = useState("");
+  const { messages, send, isRunning } = useAgent({
+    api: "/api/agent",
+  });
+
+  return (
+    <div>
+      <div>
+        {messages.map((msg, i) => (
+          <div key={i}>
+            <strong>{msg.role}:</strong>
+            {msg.content.map((item, j) => (
+              <span key={j}>{item.type === "text" && item.text}</span>
+            ))}
+          </div>
+        ))}
+      </div>
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        send(input);
+        setInput("");
+      }}>
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          disabled={isRunning}
+        />
+        <button type="submit" disabled={isRunning}>Send</button>
+      </form>
+    </div>
+  );
+}
+```
+
+### With System Prompt and Rules
+
+```typescript
+const { messages, send } = useAgent({
+  api: "/api/agent",
+  system: "You are a coding assistant specializing in React.",
+  mode: "max",
+  rules: [
+    "Always explain your code changes",
+    "Use TypeScript when possible",
+    "Follow React best practices"
+  ],
+});
+```
+
+### Multi-Agent Handoffs
+
+```typescript
+const { messages, send } = useAgent({
+  api: "/api/agent",
+  system: "You are a customer support agent.",
+  agents: [
+    {
+      name: "technical_support",
+      description: "Handles technical issues and debugging"
+    },
+    {
+      name: "billing_support",
+      description: "Handles billing and payment questions"
+    }
+  ],
+});
+```
+
+### With Error Handling
+
+```typescript
+const { messages, send, error } = useAgent({
+  api: "/api/agent",
+  onError: (error) => {
+    console.error("Agent error:", error);
+    // Custom error handling logic
+  },
+});
+
+// Display errors in UI
+{error && (
+  <div className="error">
+    Error: {error.message}
+  </div>
+)}
+```
+
+### Session Persistence
+
+```typescript
+const { session, messages } = useAgent({
+  api: "/api/agent",
+});
+
+// Session ID is automatically managed
+// Use it to track conversations
+useEffect(() => {
+  if (session) {
+    console.log("Current session:", session);
+  }
+}, [session]);
+```
+
+## Resources
+
+- **GitHub Repository**: [@agentbase-sdk/react](https://github.com/AgentbaseHQ/agentbase-sdk)
+- **NPM Package**: [@agentbase-sdk/react](https://www.npmjs.com/package/@agentbase-sdk/react)
+
+## What's Next?
+
+<CardGroup cols={3}>
+  <Card title="TypeScript SDK" icon="code" href="/sdk/typescript-sdk">
+    Server-side TypeScript integration
+  </Card>
+
+  <Card title="Python SDK" icon="python" href="/sdk/python-sdk">
+    Use Agentbase with Python
+  </Card>
+
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Complete API documentation
+  </Card>
+</CardGroup>

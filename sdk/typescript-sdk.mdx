@@ -90,7 +90,7 @@ const stream = await client.runAgent({
       ]
     }
   ],
-  mcpServers: [ // optional: MCP server configs
+  mcp_servers: [ // optional: MCP server configs
     {
       serverName: "my-api",
       serverUrl: "https://api.example.com/mcp"
@@ -149,7 +149,7 @@ const stream = await client.agent.run({
   system: "You are a helpful assistant", // optional
   rules: ["Be concise", "Show examples"], // optional
   workflows: [...], // optional
-  mcpServers: [...], // optional
+  mcp_servers: [...], // optional
   background: false, // optional
   callback: {...}, // optional
   datastores: [...], // optional
@@ -208,7 +208,7 @@ interface RunAgentParams {
   system?: string;
   rules?: string[];
   workflows?: Workflow[];
-  mcpServers?: MCPServer[];
+  mcp_servers?: MCPServer[];
   background?: boolean;
   callback?: CallbackConfig;
   datastores?: Datastore[];

@@ -41,19 +41,23 @@
           {
             "group": "Getting Started",
             "tag": "NEW",
-            "pages": ["getting-started/overview", "getting-started/quickstart", "getting-started/common-use-cases"]
+            "pages": [
+              "getting-started/overview",
+              "getting-started/quickstart",
+              "getting-started/common-use-cases"
+            ]
           },
           {
             "group": "Build with Agentbase",
             "pages": [
-              "introduction", 
+              "introduction",
               "pricing",
               "build/agent-modes",
               "build/persistence",
               "build/agent-computer",
               "build/cost-tracking",
               "build/system-prompts",
-              "build/rules", 
+              "build/rules",
               "build/tools",
               "build/model-context-protocol"
             ]
@@ -66,33 +70,21 @@
               "api/run-agent",
               {
                 "group": "Messages",
-                "pages": [
-                  "api/get-messages",
-                  "api/clear-messages"
-                ]
+                "pages": ["api/get-messages", "api/clear-messages"]
               },
               {
                 "group": "Datastores",
-                "pages": [
-                  "api/create-datastore",
-                  "api/index-document"
-                ]
+                "pages": ["api/create-datastore", "api/index-document"]
               }
             ]
           },
           {
             "group": "Agentbase SDK",
-            "pages": [
-              "sdk/typescript-sdk",
-              "sdk/python-sdk"
-            ]
+            "pages": ["sdk/typescript-sdk", "sdk/python-sdk", "sdk/react-sdk"]
           },
           {
             "group": "Resources",
-            "pages": [
-              "resources/use-cases",
-              "contact-support"
-            ]
+            "pages": ["resources/use-cases", "contact-support"]
           }
         ]
       }
@@ -102,13 +94,7 @@
     }
   },
   "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "chatgpt",
-      "claude",
-      "perplexity"
-    ]
+    "options": ["copy", "view", "chatgpt", "claude", "perplexity"]
   },
   "navbar": {
     "links": [
