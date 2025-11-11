@@ -34,119 +34,37 @@
     "url": "https://base.agentbase.sh/sign-up"
   },
   "navigation": {
-    "tabs": [
+    "groups": [
       {
-        "tab": "Build",
-        "groups": [
+        "group": "Getting Started",
+        "tag": "NEW",
+        "pages": [
+          "build/quickstart",
+          "getting-started/libraries",
+          "build/agent-modes",
+          "deploy/pricing"
+        ]
+      },
+      {
+        "group": "Build",
+        "pages": [
+          "build/overview",
+          "build/system-prompts",
+          "build/rules",
           {
-            "group": "Getting Started",
-            "tag": "NEW",
+            "group": "SDKs",
             "pages": [
-              "build/overview",
-              "build/quickstart",
-              "build/use-cases"
-            ]
-          },
-          {
-            "group": "Agent Primitives",
-            "pages": [
-              "primitives/overview",
-              {
-                "group": "Environment",
-                "pages": [
-                  "primitives/environment/sandbox",
-                  "primitives/environment/file-system",
-                  "primitives/environment/computer",
-                  "primitives/environment/browser"
-                ]
-              },
-              {
-                "group": "Essentials",
-                "pages": [
-                  "primitives/essentials/prompts",
-                  "primitives/essentials/custom-tools",
-                  "primitives/essentials/states",
-                  "primitives/essentials/sessions",
-                  "primitives/essentials/multi-agents",
-                  "primitives/essentials/parallelization",
-                  "primitives/essentials/context-management",
-                  "primitives/essentials/persistence",
-                  "primitives/essentials/self-healing",
-                  "primitives/essentials/self-evolving",
-                  "primitives/essentials/background",
-                  "primitives/essentials/versioning",
-                  "primitives/essentials/hooks",
-                  "primitives/essentials/traces",
-                  "primitives/essentials/evals"
-                ]
-              },
-              {
-                "group": "Extensions",
-                "pages": [
-                  "primitives/extensions/memory",
-                  "primitives/extensions/workflow",
-                  "primitives/extensions/orchestration",
-                  "primitives/extensions/voice",
-                  "primitives/extensions/mcp",
-                  "primitives/extensions/rag",
-                  "primitives/extensions/web-search",
-                  "primitives/extensions/crawl-scrape",
-                  "primitives/extensions/email",
-                  "primitives/extensions/ocr",
-                  "primitives/extensions/integrations",
-                  "primitives/extensions/data-connectors",
-                  "primitives/extensions/tasks",
-                  "primitives/extensions/skills",
-                  "primitives/extensions/trigger",
-                  "primitives/extensions/scheduling",
-                  "primitives/extensions/authentication",
-                  "primitives/extensions/interface"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Customization",
-            "pages": [
-              "build/agent-modes",
-              "build/system-prompts",
-              "build/rules"
+              "build/sdk/react"
             ]
           }
         ]
       },
       {
-        "tab": "Deploy",
-        "groups": [
-          {
-            "group": "Production",
-            "pages": [
-              "deploy/overview",
-              "deploy/authentication"
-            ]
-          },
-          {
-            "group": "API Reference",
-            "pages": [
-              "deploy/api/run-agent",
-              "deploy/api/message-events",
-              "deploy/api/example",
-              {
-                "group": "Messages",
-                "pages": [
-                  "deploy/api/get-messages",
-                  "deploy/api/clear-messages"
-                ]
-              },
-              {
-                "group": "Datastores",
-                "pages": [
-                  "deploy/api/create-datastore",
-                  "deploy/api/index-document"
-                ]
-              }
-            ]
-          },
+        "group": "Deploy",
+        "pages": [
+          "deploy/overview",
+          "deploy/cost-tracking",
+          "deploy/authentication",
           {
             "group": "SDKs",
             "pages": [
@@ -157,42 +75,101 @@
         ]
       },
       {
-        "tab": "Improve",
-        "groups": [
+        "group": "Improve",
+        "pages": [
+          "improve/performance",
+          "improve/traces",
+          "improve/evals",
+          "improve/logging"
+        ]
+      },
+      {
+        "group": "Agent Primitives",
+        "pages": [
+          "primitives/overview",
           {
-            "group": "Optimization",
+            "group": "Environment",
             "pages": [
-              "improve/overview",
-              "improve/cost-tracking",
-              "improve/performance"
+              "primitives/environment/sandbox",
+              "primitives/environment/file-system",
+              "primitives/environment/computer",
+              "primitives/environment/browser"
             ]
           },
           {
-            "group": "Monitoring & Debugging",
+            "group": "Essentials",
             "pages": [
-              "improve/traces",
-              "improve/evals",
-              "improve/logging"
+              "primitives/essentials/prompts",
+              "primitives/essentials/custom-tools",
+              "primitives/essentials/states",
+              "primitives/essentials/sessions",
+              "primitives/essentials/multi-agents",
+              "primitives/essentials/parallelization",
+              "primitives/essentials/context-management",
+              "primitives/essentials/persistence",
+              "primitives/essentials/self-healing",
+              "primitives/essentials/self-evolving",
+              "primitives/essentials/background",
+              "primitives/essentials/versioning",
+              "primitives/essentials/hooks",
+              "primitives/essentials/traces",
+              "primitives/essentials/evals"
+            ]
+          },
+          {
+            "group": "Extensions",
+            "pages": [
+              "primitives/extensions/memory",
+              "primitives/extensions/workflow",
+              "primitives/extensions/orchestration",
+              "primitives/extensions/voice",
+              "primitives/extensions/mcp",
+              "primitives/extensions/rag",
+              "primitives/extensions/web-search",
+              "primitives/extensions/crawl-scrape",
+              "primitives/extensions/email",
+              "primitives/extensions/ocr",
+              "primitives/extensions/integrations",
+              "primitives/extensions/data-connectors",
+              "primitives/extensions/tasks",
+              "primitives/extensions/skills",
+              "primitives/extensions/trigger",
+              "primitives/extensions/scheduling",
+              "primitives/extensions/authentication",
+              "primitives/extensions/interface"
             ]
           }
         ]
       },
       {
-        "tab": "Resources",
-        "groups": [
+        "group": "API Reference",
+        "pages": [
+          "deploy/api/run-agent",
+          "deploy/api/message-events",
+          "deploy/api/example",
           {
-            "group": "Help",
+            "group": "Messages",
             "pages": [
-              "pricing",
-              "contact-support"
+              "deploy/api/get-messages",
+              "deploy/api/clear-messages"
+            ]
+          },
+          {
+            "group": "Datastores",
+            "pages": [
+              "deploy/api/create-datastore",
+              "deploy/api/index-document"
             ]
           }
         ]
+      },
+      {
+        "group": "Resources",
+        "pages": [
+          "contact-support"
+        ]
       }
-    ],
-    "global": {
-      "anchors": []
-    }
+    ]
   },
   "contextual": {
     "options": [

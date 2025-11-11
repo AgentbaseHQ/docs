@@ -121,15 +121,15 @@ The default working directory is `/home/pointer`:
 
 ```mermaid
 graph TB
-    A[Session] --> B[File System]
-    B --> C[/home/pointer]
-    C --> D[User Files]
-    C --> E[Installed Packages]
-    C --> F[Generated Outputs]
-    D --> G[Persistent Storage]
+    A[Session] --> B["File System"]
+    B --> C["/home/pointer"]
+    C --> D["User Files"]
+    C --> E["Installed Packages"]
+    C --> F["Generated Outputs"]
+    D --> G["Persistent Storage"]
     E --> G
     F --> G
-    G --> H[10GB Limit]
+    G --> H["10GB Limit"]
 ```
 
 ## Code Examples

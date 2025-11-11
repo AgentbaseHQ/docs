@@ -1,0 +1,189 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Agentbase Docs",
+  "siteUrl": "https://docs.agentbase.sh",
+  "theme": "mint",
+  "logo": {
+    "light": "/logo/blacklogo.svg",
+    "dark": "/logo/whitelogo.svg"
+  },
+  "favicon": "/logo/blacklogo.svg",
+  "colors": {
+    "primary": "#1A1A1A",
+    "light": "#FBFBFB",
+    "dark": "#1A1A1A"
+  },
+  "modeToggle": {
+    "default": "light",
+    "isHidden": false
+  },
+  "seo": {
+    "indexHiddenPages": false
+  },
+  "metadata": {
+    "og:site_name": "Agentbase Documentation",
+    "twitter:site": "@agentbase_"
+  },
+  "topbarCtaButton": {
+    "name": "Get Free Credits",
+    "url": "https://base.agentbase.sh/sign-up"
+  },
+  "banner": {
+    "content": "🎉 Agentbase is now in public beta! Try it free with work email signup.",
+    "ctaText": "Get Started",
+    "url": "https://base.agentbase.sh/sign-up"
+  },
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "icon": "play",
+      "pages": [
+        "getting-started/quickstart",
+        "getting-started/common-use-cases"
+      ]
+    },
+    {
+      "group": "Build",
+      "icon": "hammer",
+      "pages": [
+        "primitives/overview"
+      ]
+    },
+    {
+      "group": "Improve",
+      "icon": "chart-line",
+      "pages": [
+        "improve/cost-tracking",
+        "improve/performance",
+        "improve/traces",
+        "improve/evals",
+        "improve/logging"
+      ]
+    },
+    {
+      "group": "Agent Primitives",
+      "icon": "cpu",
+      "pages": [
+        "overview",
+        {
+          "group": "Environment",
+          "pages": [
+            "primitives/environment/sandbox",
+            "primitives/environment/file-system",
+            "primitives/environment/computer",
+            "primitives/environment/browser"
+          ]
+        },
+        {
+          "group": "Essentials",
+          "pages": [
+            "primitives/essentials/prompts",
+            "primitives/essentials/custom-tools",
+            "primitives/essentials/states",
+            "primitives/essentials/sessions",
+            "primitives/essentials/multi-agents",
+            "primitives/essentials/parallelization",
+            "primitives/essentials/context-management",
+            "primitives/essentials/persistence",
+            "primitives/essentials/self-healing",
+            "primitives/essentials/self-evolving",
+            "primitives/essentials/background",
+            "primitives/essentials/versioning",
+            "primitives/essentials/hooks",
+            "primitives/essentials/traces",
+            "primitives/essentials/evals"
+          ]
+        },
+        {
+          "group": "Extensions",
+          "pages": [
+            "primitives/extensions/memory",
+            "primitives/extensions/workflow",
+            "primitives/extensions/orchestration",
+            "primitives/extensions/voice",
+            "primitives/extensions/mcp",
+            "primitives/extensions/rag",
+            "primitives/extensions/web-search",
+            "primitives/extensions/crawl-scrape",
+            "primitives/extensions/email",
+            "primitives/extensions/ocr",
+            "primitives/extensions/integrations",
+            "primitives/extensions/data-connectors",
+            "primitives/extensions/tasks",
+            "primitives/extensions/skills",
+            "primitives/extensions/trigger",
+            "primitives/extensions/scheduling",
+            "primitives/extensions/authentication",
+            "primitives/extensions/interface"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "API Reference",
+      "icon": "code",
+      "pages": [
+        "deploy/authentication",
+        "deploy/pricing",
+        "deploy/api/run-agent",
+        "deploy/api/message-events",
+        "deploy/api/example",
+        {
+          "group": "Messages",
+          "pages": [
+            "deploy/api/get-messages",
+            "deploy/api/clear-messages"
+          ]
+        },
+        {
+          "group": "Datastores",
+          "pages": [
+            "deploy/api/create-datastore",
+            "deploy/api/index-document"
+          ]
+        },
+        {
+          "group": "SDKs",
+          "pages": [
+            "deploy/sdk/typescript",
+            "deploy/sdk/python"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Resources",
+      "icon": "book",
+      "pages": [
+        "contact-support"
+      ]
+    }
+  ],
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity"
+    ]
+  },
+  "navbar": {
+    "links": [
+      { "label": "Support", "href": "https://discord.com/invite/KFtqf7j9fs" }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Try Agentbase",
+      "href": "https://base.agentbase.sh/sign-up"
+    }
+  },
+  "footer": {
+    "socials": {
+      "discord": "https://discord.com/invite/KFtqf7j9fs",
+      "website": "https://www.agentbase.sh",
+      "x": "https://x.com/agentbase_",
+      "linkedin": "https://www.linkedin.com/company/agentbasehq/"
+    }
+  }
+}

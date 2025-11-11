@@ -4,25 +4,21 @@ description: "Learn how to build production-grade AI agents with Agentbase"
 icon: "hammer"
 ---
 
-## Build AI Agents Without Infrastructure
+Build production-ready AI agents with simple APIs. Agentbase handles infrastructure so you can focus on what your agents do.
 
-Agentbase is a serverless platform for building production-grade AI agents. Focus on what your agent does, not on managing infrastructure, frameworks, or dependencies.
+## How to Build an Agent
 
-<CardGroup cols={2}>
-  <Card title="30-Second Setup" icon="bolt">
-    Get your first agent running locally in under a minute with `npm create agentbase@latest`
+<CardGroup cols={3}>
+  <Card title="Build" icon="hammer">
+    Create agents with system prompts, custom tools, and rules
   </Card>
 
-  <Card title="Zero Framework Required" icon="ban">
-    No need to build or maintain complex agent frameworks - Agentbase provides everything out of the box
+  <Card title="Deploy" icon="rocket">
+    Run agents in production with automatic scaling
   </Card>
 
-  <Card title="Full Customization" icon="sliders">
-    Customize agents with your own tools, prompts, rules, and capabilities through simple APIs
-  </Card>
-
-  <Card title="Production Ready" icon="rocket">
-    Built-in persistence, state management, and scalable infrastructure that just works
+  <Card title="Optimize" icon="chart-line">
+    Monitor performance and improve with traces and evals
   </Card>
 </CardGroup>
 
@@ -155,19 +151,33 @@ graph TB
 - Scaling and load balancing
 - Security and compliance
 
-## Pricing Model
+## Agent Primitives
 
-Pay per action, not per token:
+Build sophisticated agents using Agentbase primitives - the building blocks that power agent functionality:
 
-| Mode | Cost per Step | Best For |
-|------|---------------|----------|
-| **Flash** | $0.01 | Simple tasks, quick responses |
-| **Fast** | $0.05 | Most tasks, balanced performance |
-| **Max** | $0.20 | Complex reasoning, multi-step workflows |
+<CardGroup cols={3}>
+  <Card title="Environment" icon="server" href="/primitives/overview">
+    **Sandbox, File System, Computer, Browser**
+    
+    Execution environments where agents operate with full isolation and security
+  </Card>
 
-<Tip>
-  Sign up with your work email to get free credits automatically!
-</Tip>
+  <Card title="Essentials" icon="wrench" href="/primitives/overview">
+    **Prompts, Tools, Sessions, States**
+    
+    Core capabilities every agent needs for interaction and memory
+  </Card>
+
+  <Card title="Extensions" icon="puzzle-piece" href="/primitives/overview">
+    **Memory, RAG, Workflows, Voice**
+    
+    Advanced features for specialized use cases and complex workflows
+  </Card>
+</CardGroup>
+
+<Card title="Explore All Primitives" icon="cubes" href="/primitives/overview">
+  See all 35+ primitives and learn how they work together →
+</Card>
 
 ## Next Steps
 
