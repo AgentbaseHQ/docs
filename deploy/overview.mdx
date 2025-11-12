@@ -1,0 +1,456 @@
+---
+title: "Overview"
+description: "Deploy AI agents to production with Agentbase"
+icon: "rocket"
+---
+
+## Production-Ready Agent Deployment
+
+Agentbase makes deploying AI agents to production simple and reliable. No infrastructure to manage, no scaling concerns, and no maintenance overhead.
+
+<CardGroup cols={2}>
+  <Card title="Instant Production" icon="zap">
+    Same API you tested locally works in production - no code changes needed
+  </Card>
+
+  <Card title="Auto-Scaling" icon="chart-line">
+    Automatically scales from 1 to 1000s of concurrent agents based on demand
+  </Card>
+
+  <Card title="99.9% Uptime SLA" icon="shield-check">
+    Enterprise-grade reliability with built-in redundancy and failover
+  </Card>
+
+  <Card title="Simple Pricing" icon="dollar-sign">
+    Pay per action, not per token - predictable costs that scale with usage
+  </Card>
+</CardGroup>
+
+## Deployment Options
+
+<Tabs>
+  <Tab title="REST API">
+    ### Direct API Integration
+
+    The simplest way to deploy agents - call the API directly from any language or platform.
+
+    ```bash
+    curl -X POST https://api.agentbase.sh/run-agent \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "message": "Analyze this data and create a report",
+        "mode": "base"
+      }'
+    ```
+
+    **Best for:**
+    - Simple integrations
+    - Any programming language
+    - Webhook-based workflows
+    - Serverless functions
+
+    <Card title="API Reference" icon="code" href="/deploy/api/run-agent">
+      See complete API documentation and examples
+    </Card>
+  </Tab>
+
+  <Tab title="TypeScript SDK">
+    ### TypeScript/JavaScript Integration
+
+    Use the official TypeScript SDK for type-safe agent integration.
+
+    ```typescript
+    import Agentbase from "@agentbase/sdk";
+
+    const agentbase = new Agentbase({
+      apiKey: process.env.AGENTBASE_API_KEY
+    });
+
+    const result = await agentbase.runAgent({
+      message: "Analyze this data and create a report",
+      mode: "base"
+    });
+    ```
+
+    **Best for:**
+    - Node.js applications
+    - Next.js backends
+    - Express/Fastify APIs
+    - React applications
+
+    <Card title="TypeScript SDK" icon="code" href="/resources/sdk/typescript">
+      See TypeScript SDK documentation
+    </Card>
+  </Tab>
+
+  <Tab title="Python SDK">
+    ### Python Integration
+
+    Use the official Python SDK for seamless integration with Python applications.
+
+    ```python
+    from agentbase import Agentbase
+
+    client = Agentbase(api_key="YOUR_API_KEY")
+
+    result = client.run_agent(
+        message="Analyze this data and create a report",
+        mode="base"
+    )
+    ```
+
+    **Best for:**
+    - Flask/Django applications
+    - Data science workflows
+    - ML/AI pipelines
+    - Automation scripts
+
+    <Card title="Python SDK" icon="code" href="/resources/sdk/python">
+      See Python SDK documentation
+    </Card>
+  </Tab>
+</Tabs>
+
+## Production Checklist
+
+<Steps>
+  <Step title="Get Production API Key">
+    Sign up at [base.agentbase.sh](https://base.agentbase.sh/sign-up) and get your API key from the dashboard.
+
+    <Tip>
+      Use work email to get free credits automatically!
+    </Tip>
+  </Step>
+
+  <Step title="Secure Your Keys">
+    Store API keys in environment variables, never in code:
+
+    ```bash
+    # .env file
+    AGENTBASE_API_KEY=your_api_key_here
+    ```
+
+    ```typescript
+    // Use environment variables
+    const agentbase = new Agentbase({
+      apiKey: process.env.AGENTBASE_API_KEY
+    });
+    ```
+  </Step>
+
+  <Step title="Implement Error Handling">
+    Handle errors gracefully in production:
+
+    ```typescript
+    try {
+      const result = await agentbase.runAgent({
+        message: userInput,
+        mode: "base"
+      });
+    } catch (error) {
+      if (error.status === 429) {
+        // Handle rate limiting
+      } else if (error.status === 500) {
+        // Handle server errors
+      }
+      // Log error and notify team
+    }
+    ```
+  </Step>
+
+  <Step title="Monitor Usage">
+    Track costs and usage in your [dashboard](https://base.agentbase.sh):
+    - Real-time cost tracking
+    - Session monitoring
+    - Performance metrics
+    - Usage analytics
+  </Step>
+
+  <Step title="Set Up Persistence">
+    Use sessions for multi-turn conversations:
+
+    ```typescript
+    // First message creates a session
+    const result1 = await agentbase.runAgent({
+      message: "Create a Python script"
+    });
+
+    // Continue in the same session
+    const result2 = await agentbase.runAgent({
+      message: "Now add error handling",
+      session: result1.session
+    });
+    ```
+  </Step>
+</Steps>
+
+## Architecture Patterns
+
+<AccordionGroup>
+  <Accordion title="Stateless API Pattern" icon="bolt">
+    **Use case:** One-off tasks, simple queries, independent operations
+
+    ```typescript
+    // Each request is independent
+    app.post('/api/analyze', async (req, res) => {
+      const result = await agentbase.runAgent({
+        message: `Analyze: ${req.body.data}`,
+        mode: "base"
+      });
+      res.json(result);
+    });
+    ```
+
+    **Pros:**
+    - Simple to implement
+    - No session management
+    - Easy to scale
+
+    **Cons:**
+    - No conversation history
+    - Can't build on previous context
+  </Accordion>
+
+  <Accordion title="Session-Based Pattern" icon="messages">
+    **Use case:** Chat applications, multi-turn conversations, iterative tasks
+
+    ```typescript
+    // Store session per user
+    app.post('/api/chat', async (req, res) => {
+      const userId = req.user.id;
+      const session = await getUserSession(userId);
+
+      const result = await agentbase.runAgent({
+        message: req.body.message,
+        session: session,
+        mode: "base"
+      });
+
+      await saveUserSession(userId, result.session);
+      res.json(result);
+    });
+    ```
+
+    **Pros:**
+    - Maintains conversation context
+    - Builds on previous interactions
+    - Natural chat experience
+
+    **Cons:**
+    - Requires session storage
+    - More complex state management
+  </Accordion>
+
+  <Accordion title="Background Processing Pattern" icon="server">
+    **Use case:** Long-running tasks, async workflows, scheduled jobs
+
+    ```typescript
+    // Queue job for background processing
+    app.post('/api/process', async (req, res) => {
+      const jobId = generateJobId();
+
+      // Return immediately
+      res.json({ jobId, status: 'processing' });
+
+      // Process in background
+      processInBackground(async () => {
+        const result = await agentbase.runAgent({
+          message: req.body.task,
+          mode: "max"
+        });
+        await saveResult(jobId, result);
+        await notifyUser(jobId);
+      });
+    });
+    ```
+
+    **Pros:**
+    - Non-blocking operations
+    - Handle long tasks gracefully
+    - Better user experience
+
+    **Cons:**
+    - More complex architecture
+    - Requires job queue
+  </Accordion>
+
+  <Accordion title="Streaming Pattern" icon="stream">
+    **Use case:** Real-time updates, chat UIs, progress tracking
+
+    ```typescript
+    // Stream agent responses
+    app.get('/api/stream', async (req, res) => {
+      res.setHeader('Content-Type', 'text/event-stream');
+
+      const stream = await agentbase.runAgent({
+        message: req.query.message,
+        mode: "base",
+        stream: true
+      });
+
+      for await (const event of stream) {
+        res.write(`data: ${JSON.stringify(event)}\n\n`);
+      }
+
+      res.end();
+    });
+    ```
+
+    **Pros:**
+    - Real-time feedback
+    - Better UX for long tasks
+    - See agent thinking process
+
+    **Cons:**
+    - Requires SSE/WebSocket support
+    - More complex client code
+  </Accordion>
+</AccordionGroup>
+
+## Security Best Practices
+
+<CardGroup cols={2}>
+  <Card title="API Key Security" icon="key">
+    - Never commit API keys to version control
+    - Use environment variables
+    - Rotate keys regularly
+    - Use separate keys for dev/staging/prod
+  </Card>
+
+  <Card title="Input Validation" icon="shield">
+    - Validate and sanitize user inputs
+    - Set message length limits
+    - Filter sensitive information
+    - Implement rate limiting
+  </Card>
+
+  <Card title="Access Control" icon="lock">
+    - Authenticate users before agent access
+    - Implement role-based permissions
+    - Log all agent interactions
+    - Monitor for abuse
+  </Card>
+
+  <Card title="Data Privacy" icon="user-shield">
+    - Don't send PII to agents unnecessarily
+    - Implement data retention policies
+    - Clear sensitive sessions
+    - Comply with GDPR/CCPA
+  </Card>
+</CardGroup>
+
+## Monitoring & Observability
+
+Track your agents in production:
+
+<Tabs>
+  <Tab title="Dashboard">
+    **Agentbase Dashboard** ([base.agentbase.sh](https://base.agentbase.sh))
+    - Real-time cost tracking
+    - Session monitoring
+    - Usage analytics
+    - Performance metrics
+  </Tab>
+
+  <Tab title="Event Streaming">
+    **Stream agent events** for real-time monitoring:
+    ```typescript
+    const stream = await agentbase.runAgent({
+      message: "Process this data",
+      stream: true
+    });
+
+    for await (const event of stream) {
+      switch (event.type) {
+        case 'agent_tool_use':
+          console.log('Tool:', event.content);
+          break;
+        case 'agent_cost':
+          console.log('Cost:', event.cost);
+          break;
+        case 'agent_step':
+          console.log('Step:', event.stepNumber);
+          break;
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Logging">
+    **Implement comprehensive logging:**
+    ```typescript
+    const logger = createLogger();
+
+    try {
+      logger.info('Agent request started', {
+        userId,
+        message: truncate(message),
+        mode
+      });
+
+      const result = await agentbase.runAgent({
+        message,
+        mode
+      });
+
+      logger.info('Agent request completed', {
+        userId,
+        session: result.session,
+        cost: result.cost
+      });
+
+      return result;
+    } catch (error) {
+      logger.error('Agent request failed', {
+        userId,
+        error: error.message,
+        stack: error.stack
+      });
+      throw error;
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Scaling Considerations
+
+Agentbase automatically handles scaling, but consider these patterns:
+
+<CardGroup cols={2}>
+  <Card title="Connection Pooling" icon="network-wired">
+    Reuse SDK instances across requests for better performance
+  </Card>
+
+  <Card title="Caching Strategy" icon="database">
+    Cache common agent responses to reduce costs and latency
+  </Card>
+
+  <Card title="Rate Limiting" icon="gauge">
+    Implement rate limits to prevent abuse and control costs
+  </Card>
+
+  <Card title="Load Balancing" icon="balance-scale">
+    Distribute requests across multiple API keys if needed
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="code" href="/deploy/api/run-agent">
+    Complete API documentation and examples
+  </Card>
+
+  <Card title="TypeScript SDK" icon="code" href="/resources/sdk/typescript">
+    TypeScript SDK guide and reference
+  </Card>
+
+  <Card title="Python SDK" icon="code" href="/resources/sdk/python">
+    Python SDK guide and reference
+  </Card>
+
+  <Card title="Cost Tracking" icon="dollar" href="/deploy/cost-tracking">
+    Learn how to track and optimize costs
+  </Card>
+</CardGroup>

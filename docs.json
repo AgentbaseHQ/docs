@@ -28,71 +28,116 @@
     "name": "Get Free Credits",
     "url": "https://base.agentbase.sh/sign-up"
   },
-  "banner": {
-    "content": "🎉 Agentbase is now in public beta! Try it free with work email signup.",
-    "ctaText": "Get Started",
-    "url": "https://base.agentbase.sh/sign-up"
-  },
   "navigation": {
-    "tabs": [
+    "groups": [
       {
-        "tab": "Introduction",
-        "groups": [
+        "group": "Getting Started",
+        "tag": "NEW",
+        "pages": ["getting-started/quickstart", "getting-started/pricing"]
+      },
+      {
+        "group": "Build",
+        "pages": [
+          "build/overview",
+          "build/system-prompts",
+          "build/rules",
+          "build/tools",
           {
-            "group": "Getting Started",
-            "tag": "NEW",
+            "group": "SDKs",
             "pages": [
-              "getting-started/overview",
-              "getting-started/quickstart",
-              "getting-started/common-use-cases"
+              "resources/sdk/react",
+              "resources/sdk/typescript",
+              "resources/sdk/python"
             ]
-          },
-          {
-            "group": "Build with Agentbase",
-            "pages": [
-              "introduction",
-              "pricing",
-              "build/agent-modes",
-              "build/persistence",
-              "build/agent-computer",
-              "build/cost-tracking",
-              "build/system-prompts",
-              "build/rules",
-              "build/tools",
-              "build/model-context-protocol"
-            ]
-          },
-          {
-            "group": "Agents API",
-            "pages": [
-              "api/message-events",
-              "api/example",
-              "api/run-agent",
-              {
-                "group": "Messages",
-                "pages": ["api/get-messages", "api/clear-messages"]
-              },
-              {
-                "group": "Datastores",
-                "pages": ["api/create-datastore", "api/index-document"]
-              }
-            ]
-          },
-          {
-            "group": "Agentbase SDK",
-            "pages": ["sdk/typescript-sdk", "sdk/python-sdk", "sdk/react-sdk"]
-          },
-          {
-            "group": "Resources",
-            "pages": ["resources/use-cases", "contact-support"]
           }
         ]
+      },
+      {
+        "group": "Deploy",
+        "pages": [
+          "deploy/overview",
+          "deploy/cost-tracking",
+          "deploy/authentication"
+        ]
+      },
+      {
+        "group": "Improve",
+        "pages": ["improve/traces"]
+      },
+      {
+        "group": "Agent Primitives",
+        "pages": [
+          "primitives/overview",
+          {
+            "group": "Environment",
+            "pages": [
+              "primitives/environment/sandbox",
+              "primitives/environment/file-system",
+              "primitives/environment/computer",
+              "primitives/environment/browser"
+            ]
+          },
+          {
+            "group": "Essentials",
+            "pages": [
+              "primitives/essentials/prompts",
+              "primitives/essentials/custom-tools",
+              "primitives/essentials/states",
+              "primitives/essentials/sessions",
+              "primitives/essentials/multi-agents",
+              "primitives/essentials/parallelization",
+              "primitives/essentials/context-management",
+              "primitives/essentials/persistence",
+              "primitives/essentials/background",
+              "primitives/essentials/versioning",
+              "primitives/essentials/hooks",
+              "primitives/essentials/traces"
+            ]
+          },
+          {
+            "group": "Extensions",
+            "pages": [
+              "primitives/extensions/memory",
+              "primitives/extensions/workflow",
+              "primitives/extensions/orchestration",
+              "primitives/extensions/mcp",
+              "primitives/extensions/web-search",
+              "primitives/extensions/crawl-scrape",
+              "primitives/extensions/integrations",
+              "primitives/extensions/data-connectors",
+              "primitives/extensions/tasks",
+              "primitives/extensions/trigger",
+              "primitives/extensions/scheduling"
+            ]
+          }
+        ]
+      },
+      {
+        "group": "API Reference",
+        "pages": [
+          "deploy/api/run-agent",
+          "deploy/api/message-events",
+          "deploy/api/example",
+          {
+            "group": "Messages",
+            "pages": ["deploy/api/get-messages", "deploy/api/clear-messages"]
+          },
+          {
+            "group": "Datastores",
+            "pages": [
+              "deploy/api/create-datastore",
+              "deploy/api/index-document"
+            ]
+          }
+        ]
+      },
+      {
+        "group": "Resources",
+        "pages": ["contact-support"]
       }
-    ],
-    "global": {
-      "anchors": []
-    }
+    ]
   },
+  "css": "styles.css",
   "contextual": {
     "options": ["copy", "view", "chatgpt", "claude", "perplexity"]
   },

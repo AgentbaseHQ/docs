@@ -1,0 +1,1030 @@
+---
+title: "Versioning"
+description: "Manage agent configurations, prompts, and tool versions with rollback capabilities"
+icon: "code-branch"
+---
+
+> Versioning enables you to track, manage, and control different versions of your agent configurations, allowing safe experimentation, rollback, and deployment strategies.
+
+## Overview
+
+The Versioning primitive provides version control for your agent configurations, including system prompts, tools, rules, and parameters. Like Git for code, versioning for agents lets you experiment safely, maintain production stability, and rollback when needed.
+
+Versioning is essential for:
+
+- **Safe Experimentation**: Test new prompts and configurations without affecting production
+- **Rollback Capability**: Quickly revert to previous working versions if issues arise
+- **A/B Testing**: Compare different agent configurations to find optimal setup
+- **Environment Management**: Maintain different configurations for dev, staging, and production
+- **Audit Trail**: Track changes to agent behavior over time
+
+<CardGroup cols={2}>
+  <Card title="Configuration Snapshots" icon="camera">
+    Capture complete agent configuration at any point in time
+  </Card>
+
+  <Card title="Instant Rollback" icon="rotate-left">
+    Revert to any previous version instantly if problems occur
+  </Card>
+
+  <Card title="Parallel Testing" icon="split">
+    Run multiple versions simultaneously for comparison
+  </Card>
+
+  <Card title="Change Tracking" icon="timeline">
+    Complete audit trail of all configuration changes
+  </Card>
+</CardGroup>
+
+## How Versioning Works
+
+### Version Structure
+
+Each version is a complete snapshot of agent configuration:
+
+1. **System Prompt**: The exact system prompt used
+2. **Tools**: MCP server configurations and custom tools
+3. **Rules**: All rules and constraints
+4. **Parameters**: Model selection, temperature, mode settings
+5. **Metadata**: Version number, timestamp, description, author
+
+### Version Lifecycle
+
+Versions follow a controlled lifecycle:
+
+1. **Creation**: Capture current configuration as new version
+2. **Testing**: Validate version in non-production environment
+3. **Deployment**: Promote version to production
+4. **Monitoring**: Track performance and issues
+5. **Rollback**: Revert to previous version if needed
+6. **Archival**: Archive old versions for historical reference
+
+<Note>
+**Semantic Versioning**: Use semantic versioning (major.minor.patch) to communicate the nature of changes clearly.
+</Note>
+
+## Code Examples
+
+### Creating Versions
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Create a versioned agent configuration
+const v1 = await agentbase.createVersion({
+  name: "customer-support-v1.0.0",
+  description: "Initial customer support agent",
+  config: {
+    system: "You are a friendly customer support specialist.",
+    mode: "base",
+    rules: [
+      "Always be polite and professional",
+      "Verify user identity before sharing account details"
+    ]
+  }
+});
+
+console.log('Version created:', v1.version);  // "1.0.0"
+
+// Use the versioned configuration
+const result = await agentbase.runAgent({
+  message: "I need help with my account",
+  version: "customer-support-v1.0.0"
+});
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Create a versioned agent configuration
+v1 = agentbase.create_version(
+    name="customer-support-v1.0.0",
+    description="Initial customer support agent",
+    config={
+        'system': "You are a friendly customer support specialist.",
+        'mode': "base",
+        'rules': [
+            "Always be polite and professional",
+            "Verify user identity before sharing account details"
+        ]
+    }
+)
+
+print(f"Version created: {v1.version}")  # "1.0.0"
+
+# Use the versioned configuration
+result = agentbase.run_agent(
+    message="I need help with my account",
+    version="customer-support-v1.0.0"
+)
+```
+
+</CodeGroup>
+
+### Updating Versions
+
+<CodeGroup>
+
+```typescript TypeScript
+// Create new version with improvements
+const v2 = await agentbase.createVersion({
+  name: "customer-support-v1.1.0",
+  description: "Added empathy and faster response guidelines",
+  basedOn: "customer-support-v1.0.0",  // Track lineage
+  config: {
+    system: `You are a friendly and empathetic customer support specialist.
+
+    Guidelines:
+    - Respond quickly and efficiently
+    - Show empathy for customer frustrations
+    - Provide step-by-step solutions
+    - Always verify identity before sharing account details`,
+
+    mode: "base",
+    rules: [
+      "Always be polite, professional, and empathetic",
+      "Verify user identity before sharing account details",
+      "Provide solutions in clear, numbered steps"
+    ]
+  },
+  changelog: [
+    "Added empathy guidance to system prompt",
+    "Expanded guidelines for better clarity",
+    "Added rule for step-by-step solutions"
+  ]
+});
+
+// Test new version
+const testResult = await agentbase.runAgent({
+  message: "I'm frustrated, my order hasn't arrived",
+  version: "customer-support-v1.1.0"
+});
+```
+
+```python Python
+# Create new version with improvements
+v2 = agentbase.create_version(
+    name="customer-support-v1.1.0",
+    description="Added empathy and faster response guidelines",
+    based_on="customer-support-v1.0.0",  # Track lineage
+    config={
+        'system': """You are a friendly and empathetic customer support specialist.
+
+        Guidelines:
+        - Respond quickly and efficiently
+        - Show empathy for customer frustrations
+        - Provide step-by-step solutions
+        - Always verify identity before sharing account details""",
+
+        'mode': "base",
+        'rules': [
+            "Always be polite, professional, and empathetic",
+            "Verify user identity before sharing account details",
+            "Provide solutions in clear, numbered steps"
+        ]
+    },
+    changelog=[
+        "Added empathy guidance to system prompt",
+        "Expanded guidelines for better clarity",
+        "Added rule for step-by-step solutions"
+    ]
+)
+
+# Test new version
+test_result = agentbase.run_agent(
+    message="I'm frustrated, my order hasn't arrived",
+    version="customer-support-v1.1.0"
+)
+```
+
+</CodeGroup>
+
+### Version Comparison
+
+<CodeGroup>
+
+```typescript TypeScript
+// Compare two versions side-by-side
+async function compareVersions(
+  message: string,
+  versionA: string,
+  versionB: string
+) {
+  const [resultA, resultB] = await Promise.all([
+    agentbase.runAgent({ message, version: versionA }),
+    agentbase.runAgent({ message, version: versionB })
+  ]);
+
+  return {
+    versionA: {
+      version: versionA,
+      response: resultA.message,
+      cost: resultA.cost
+    },
+    versionB: {
+      version: versionB,
+      response: resultB.message,
+      cost: resultB.cost
+    }
+  };
+}
+
+// A/B test versions
+const comparison = await compareVersions(
+  "How do I reset my password?",
+  "customer-support-v1.0.0",
+  "customer-support-v1.1.0"
+);
+
+console.log('Version A:', comparison.versionA.response);
+console.log('Version B:', comparison.versionB.response);
+```
+
+```python Python
+# Compare two versions side-by-side
+async def compare_versions(message: str, version_a: str, version_b: str):
+    result_a, result_b = await asyncio.gather(
+        agentbase.run_agent(message=message, version=version_a),
+        agentbase.run_agent(message=message, version=version_b)
+    )
+
+    return {
+        'version_a': {
+            'version': version_a,
+            'response': result_a.message,
+            'cost': result_a.cost
+        },
+        'version_b': {
+            'version': version_b,
+            'response': result_b.message,
+            'cost': result_b.cost
+        }
+    }
+
+# A/B test versions
+comparison = await compare_versions(
+    "How do I reset my password?",
+    "customer-support-v1.0.0",
+    "customer-support-v1.1.0"
+)
+
+print(f"Version A: {comparison['version_a']['response']}")
+print(f"Version B: {comparison['version_b']['response']}")
+```
+
+</CodeGroup>
+
+### Rollback
+
+<CodeGroup>
+
+```typescript TypeScript
+// Production is on v2.0.0, but issues detected
+const productionVersion = "customer-support-v2.0.0";
+
+try {
+  // Attempt to use current production version
+  const result = await agentbase.runAgent({
+    message: "Test production version",
+    version: productionVersion
+  });
+} catch (error) {
+  console.error('Production version failed:', error);
+
+  // Rollback to previous stable version
+  await agentbase.setProductionVersion({
+    name: "customer-support",
+    version: "customer-support-v1.1.0"  // Last known good version
+  });
+
+  console.log('Rolled back to v1.1.0');
+
+  // Log rollback for audit trail
+  await logRollback({
+    from: "customer-support-v2.0.0",
+    to: "customer-support-v1.1.0",
+    reason: "Production errors detected",
+    timestamp: new Date()
+  });
+}
+```
+
+```python Python
+# Production is on v2.0.0, but issues detected
+production_version = "customer-support-v2.0.0"
+
+try:
+    # Attempt to use current production version
+    result = agentbase.run_agent(
+        message="Test production version",
+        version=production_version
+    )
+except Exception as error:
+    print(f"Production version failed: {error}")
+
+    # Rollback to previous stable version
+    agentbase.set_production_version(
+        name="customer-support",
+        version="customer-support-v1.1.0"  # Last known good version
+    )
+
+    print("Rolled back to v1.1.0")
+
+    # Log rollback for audit trail
+    await log_rollback({
+        'from': "customer-support-v2.0.0",
+        'to': "customer-support-v1.1.0",
+        'reason': "Production errors detected",
+        'timestamp': datetime.now()
+    })
+```
+
+</CodeGroup>
+
+### Environment-Based Versions
+
+<CodeGroup>
+
+```typescript TypeScript
+// Manage versions across environments
+class VersionManager {
+  private environments = {
+    development: "customer-support-dev",
+    staging: "customer-support-staging",
+    production: "customer-support-prod"
+  };
+
+  async getVersionForEnvironment(env: string): Promise<string> {
+    const config = await agentbase.getVersionConfig(this.environments[env]);
+    return config.currentVersion;
+  }
+
+  async promoteVersion(version: string, fromEnv: string, toEnv: string) {
+    // Validate in source environment first
+    const validation = await this.validateVersion(version, fromEnv);
+
+    if (!validation.passed) {
+      throw new Error(`Version ${version} failed validation in ${fromEnv}`);
+    }
+
+    // Promote to target environment
+    await agentbase.setEnvironmentVersion({
+      environment: this.environments[toEnv],
+      version
+    });
+
+    console.log(`Promoted ${version} from ${fromEnv} to ${toEnv}`);
+  }
+
+  async validateVersion(version: string, env: string): Promise<any> {
+    // Run test suite against version
+    const testCases = await loadTestCases();
+
+    const results = await Promise.all(
+      testCases.map(test =>
+        agentbase.runAgent({
+          message: test.input,
+          version
+        })
+      )
+    );
+
+    const passed = results.every((r, i) =>
+      validateResponse(r, testCases[i].expected)
+    );
+
+    return { passed, results };
+  }
+}
+
+// Usage
+const versionMgr = new VersionManager();
+
+// Develop and test in dev
+await versionMgr.promoteVersion("v1.2.0", "development", "staging");
+
+// After staging validation
+await versionMgr.promoteVersion("v1.2.0", "staging", "production");
+```
+
+</CodeGroup>
+
+## Version Management Patterns
+
+### Semantic Versioning
+
+Follow semantic versioning conventions:
+
+<AccordionGroup>
+  <Accordion title="Major Version (X.0.0)">
+    **Breaking Changes**: Fundamental changes to agent behavior or interface
+
+    ```typescript
+    // v1.0.0 → v2.0.0
+    const v2 = await agentbase.createVersion({
+      name: "support-agent-v2.0.0",
+      description: "Complete rewrite with new capabilities",
+      config: {
+        system: "You are an AI-powered support specialist with access to advanced troubleshooting tools.",
+        mcpServers: [
+          { serverName: "diagnostics", serverUrl: "https://api.company.com/mcp" }
+        ],
+        // Completely new approach and capabilities
+      },
+      breaking: true,
+      changelog: [
+        "BREAKING: Changed from basic support to advanced troubleshooting",
+        "BREAKING: Added diagnostic tool requirements",
+        "BREAKING: Modified response format"
+      ]
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Minor Version (x.Y.0)">
+    **New Features**: Backwards-compatible improvements
+
+    ```typescript
+    // v1.0.0 → v1.1.0
+    const v1_1 = await agentbase.createVersion({
+      name: "support-agent-v1.1.0",
+      description: "Added multilingual support",
+      basedOn: "support-agent-v1.0.0",
+      config: {
+        system: `You are a customer support specialist.
+
+        NEW: Support multiple languages:
+        - Auto-detect customer language
+        - Respond in their preferred language
+        - Maintain professional tone across languages`,
+
+        // All previous capabilities maintained
+      },
+      changelog: [
+        "Added multilingual support",
+        "Improved language detection",
+        "Maintained all v1.0.0 capabilities"
+      ]
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Patch Version (x.y.Z)">
+    **Bug Fixes**: Backwards-compatible bug fixes
+
+    ```typescript
+    // v1.1.0 → v1.1.1
+    const v1_1_1 = await agentbase.createVersion({
+      name: "support-agent-v1.1.1",
+      description: "Fixed response formatting issue",
+      basedOn: "support-agent-v1.1.0",
+      config: {
+        // Same configuration as v1.1.0
+        // with minor prompt adjustment
+        system: `You are a customer support specialist.
+
+        Support multiple languages...
+
+        FIX: Always format responses with proper markdown`,
+      },
+      changelog: [
+        "Fixed markdown formatting in responses",
+        "Corrected edge case in language detection"
+      ]
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Branching Strategies
+
+Manage parallel development:
+
+```typescript
+// Main production line
+const main = "support-agent-v1.5.0";
+
+// Experimental branch for new features
+const experimental = await agentbase.createVersion({
+  name: "support-agent-v2.0.0-beta.1",
+  description: "Experimental: AI-driven sentiment analysis",
+  basedOn: main,
+  branch: "experimental-sentiment",
+  config: {
+    system: `${mainConfig.system}
+
+    EXPERIMENTAL: Analyze customer sentiment and adapt response tone accordingly.`,
+  }
+});
+
+// Hotfix branch for urgent fixes
+const hotfix = await agentbase.createVersion({
+  name: "support-agent-v1.5.1",
+  description: "Hotfix: Security validation issue",
+  basedOn: main,
+  branch: "hotfix-security",
+  priority: "urgent"
+});
+```
+
+## Use Cases
+
+### 1. Safe Production Deployment
+
+Deploy new versions without risk:
+
+```typescript
+async function safeDeployment() {
+  // Current production version
+  const production = "support-agent-v1.0.0";
+
+  // Create new version
+  const newVersion = await agentbase.createVersion({
+    name: "support-agent-v1.1.0",
+    description: "Improved response quality",
+    config: { /* new configuration */ }
+  });
+
+  // Test in staging
+  const stagingTests = await runTestSuite("support-agent-v1.1.0");
+
+  if (stagingTests.passRate < 0.95) {
+    console.log('Staging tests failed, not deploying');
+    return;
+  }
+
+  // Canary deployment: 5% of traffic
+  await agentbase.setVersionTrafficSplit({
+    "support-agent-v1.0.0": 0.95,  // 95% on old version
+    "support-agent-v1.1.0": 0.05   // 5% on new version
+  });
+
+  // Monitor canary performance
+  await sleep(1 * 60 * 60 * 1000);  // 1 hour
+
+  const canaryMetrics = await getVersionMetrics("support-agent-v1.1.0");
+
+  if (canaryMetrics.errorRate < 0.01 && canaryMetrics.satisfaction > 4.0) {
+    // Gradually increase traffic
+    await agentbase.setVersionTrafficSplit({
+      "support-agent-v1.0.0": 0.50,
+      "support-agent-v1.1.0": 0.50
+    });
+
+    await sleep(30 * 60 * 1000);  // 30 minutes
+
+    // Full rollout
+    await agentbase.setVersionTrafficSplit({
+      "support-agent-v1.1.0": 1.0
+    });
+
+    console.log('Successfully deployed v1.1.0');
+  } else {
+    // Rollback
+    await agentbase.setVersionTrafficSplit({
+      "support-agent-v1.0.0": 1.0
+    });
+
+    console.log('Canary failed, rolled back');
+  }
+}
+```
+
+### 2. A/B Testing for Optimization
+
+Test different approaches to find what works best:
+
+```typescript
+async function abTestPrompts() {
+  // Version A: Concise style
+  const versionA = await agentbase.createVersion({
+    name: "support-agent-concise",
+    config: {
+      system: "You are a customer support specialist. Be concise and direct.",
+      rules: ["Keep responses under 100 words"]
+    }
+  });
+
+  // Version B: Detailed style
+  const versionB = await agentbase.createVersion({
+    name: "support-agent-detailed",
+    config: {
+      system: "You are a customer support specialist. Provide thorough explanations.",
+      rules: ["Include detailed step-by-step instructions"]
+    }
+  });
+
+  // Split traffic 50/50
+  await agentbase.setVersionTrafficSplit({
+    "support-agent-concise": 0.5,
+    "support-agent-detailed": 0.5
+  });
+
+  // Collect metrics for 1 week
+  await sleep(7 * 24 * 60 * 60 * 1000);
+
+  // Analyze results
+  const metricsA = await getVersionMetrics("support-agent-concise");
+  const metricsB = await getVersionMetrics("support-agent-detailed");
+
+  console.log('Version A (Concise):');
+  console.log('  Satisfaction:', metricsA.satisfaction);
+  console.log('  Resolution Rate:', metricsA.resolutionRate);
+  console.log('  Avg Response Time:', metricsA.avgResponseTime);
+
+  console.log('Version B (Detailed):');
+  console.log('  Satisfaction:', metricsB.satisfaction);
+  console.log('  Resolution Rate:', metricsB.resolutionRate);
+  console.log('  Avg Response Time:', metricsB.avgResponseTime);
+
+  // Choose winner
+  const winner = metricsA.satisfaction > metricsB.satisfaction ? 'A' : 'B';
+  console.log(`Winner: Version ${winner}`);
+
+  // Promote winner to production
+  await agentbase.setProductionVersion({
+    name: "support-agent",
+    version: winner === 'A' ? "support-agent-concise" : "support-agent-detailed"
+  });
+}
+```
+
+### 3. Emergency Rollback
+
+Quickly revert problematic versions:
+
+```typescript
+// Monitor production version
+async function monitorProduction() {
+  const currentVersion = await agentbase.getProductionVersion("support-agent");
+
+  const metrics = await getVersionMetrics(currentVersion, {
+    window: '5m'  // Last 5 minutes
+  });
+
+  // Check for issues
+  if (metrics.errorRate > 0.05 || metrics.avgResponseTime > 10000) {
+    console.error('Production issues detected!');
+
+    // Automatic rollback
+    const previousVersion = await agentbase.getPreviousVersion(currentVersion);
+
+    await agentbase.setProductionVersion({
+      name: "support-agent",
+      version: previousVersion
+    });
+
+    // Alert team
+    await sendAlert({
+      severity: 'critical',
+      message: `Auto-rolled back from ${currentVersion} to ${previousVersion}`,
+      reason: `Error rate: ${metrics.errorRate}, Response time: ${metrics.avgResponseTime}ms`
+    });
+
+    // Create incident
+    await createIncident({
+      title: `Production rollback: ${currentVersion}`,
+      version: currentVersion,
+      metrics
+    });
+  }
+}
+
+// Run monitoring every minute
+setInterval(monitorProduction, 60 * 1000);
+```
+
+### 4. Multi-Tenant Versioning
+
+Different versions for different customers:
+
+```typescript
+async function getCustomerVersion(customerId: string): Promise<string> {
+  const customer = await db.customers.findById(customerId);
+
+  // Enterprise customers get latest features
+  if (customer.tier === 'enterprise') {
+    return "support-agent-v2.0.0";
+  }
+
+  // Premium customers get stable version
+  if (customer.tier === 'premium') {
+    return "support-agent-v1.5.0";
+  }
+
+  // Free tier gets basic version
+  return "support-agent-v1.0.0";
+}
+
+// Use customer-specific version
+const result = await agentbase.runAgent({
+  message: customerMessage,
+  version: await getCustomerVersion(customerId)
+});
+```
+
+### 5. Feature Flags via Versioning
+
+Enable features selectively:
+
+```typescript
+// Create versions with different feature sets
+const versions = {
+  base: "support-agent-v1.0.0",
+  withSentiment: "support-agent-v1.0.0-sentiment",
+  withMultilingual: "support-agent-v1.0.0-multilingual",
+  withBoth: "support-agent-v1.0.0-full"
+};
+
+async function getVersionWithFeatures(features: string[]): Promise<string> {
+  if (features.includes('sentiment') && features.includes('multilingual')) {
+    return versions.withBoth;
+  }
+  if (features.includes('sentiment')) {
+    return versions.withSentiment;
+  }
+  if (features.includes('multilingual')) {
+    return versions.withMultilingual;
+  }
+  return versions.base;
+}
+
+// Use version based on enabled features
+const enabledFeatures = await getFeatureFlags(userId);
+const version = await getVersionWithFeatures(enabledFeatures);
+
+const result = await agentbase.runAgent({
+  message: userMessage,
+  version
+});
+```
+
+## Best Practices
+
+### Version Naming
+
+<AccordionGroup>
+  <Accordion title="Use Semantic Versioning">
+    ```typescript
+    // Good: Clear semantic version
+    "customer-support-v1.2.3"
+    "data-analyst-v2.0.0"
+    "content-gen-v1.0.0-beta.1"
+
+    // Avoid: Unclear or inconsistent naming
+    "customer-support-new"
+    "agent-v2"
+    "prod-version"
+    ```
+  </Accordion>
+
+  <Accordion title="Include Descriptive Names">
+    ```typescript
+    // Good: Descriptive version metadata
+    await agentbase.createVersion({
+      name: "support-agent-v1.2.0",
+      description: "Added multilingual support and improved empathy",
+      tags: ["multilingual", "empathy", "production-ready"]
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Maintain Changelog">
+    ```typescript
+    // Comprehensive changelog
+    await agentbase.createVersion({
+      name: "support-agent-v1.2.0",
+      changelog: [
+        "Added support for Spanish, French, German",
+        "Improved empathy in frustration scenarios",
+        "Fixed response formatting issue",
+        "Updated security validation rules"
+      ]
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Testing Strategy
+
+Test versions thoroughly before production:
+
+```typescript
+// Comprehensive version testing
+async function testVersion(version: string): Promise<TestReport> {
+  const tests = {
+    functional: await runFunctionalTests(version),
+    performance: await runPerformanceTests(version),
+    security: await runSecurityTests(version),
+    regression: await runRegressionTests(version)
+  };
+
+  const passedAll = Object.values(tests).every(t => t.passed);
+
+  return {
+    version,
+    passed: passedAll,
+    tests,
+    timestamp: new Date()
+  };
+}
+```
+
+### Deployment Pipeline
+
+Implement structured deployment process:
+
+```typescript
+// Deployment pipeline
+class VersionDeploymentPipeline {
+  async deploy(version: string) {
+    // 1. Validate version exists
+    await this.validateVersion(version);
+
+    // 2. Run test suite
+    const testResults = await testVersion(version);
+    if (!testResults.passed) {
+      throw new Error('Tests failed');
+    }
+
+    // 3. Deploy to staging
+    await this.deployToStaging(version);
+
+    // 4. Run staging validation
+    await this.validateStaging(version);
+
+    // 5. Canary deployment
+    await this.canaryDeploy(version, 0.05);
+
+    // 6. Monitor canary
+    await this.monitorCanary(version, 60 * 60 * 1000);  // 1 hour
+
+    // 7. Gradual rollout
+    await this.gradualRollout(version);
+
+    // 8. Full production
+    await this.setProduction(version);
+
+    // 9. Monitor production
+    await this.monitorProduction(version);
+  }
+}
+```
+
+## Integration with Other Primitives
+
+### With Evals
+
+Validate versions with automated testing:
+
+```typescript
+// Test version with eval suite
+const evalResults = await agentbase.runEvals({
+  version: "support-agent-v1.2.0",
+  evalSuite: "production-readiness"
+});
+
+if (evalResults.passRate > 0.95) {
+  await promoteToProduction("support-agent-v1.2.0");
+}
+```
+
+Learn more: [Evals Primitive](/primitives/essentials/evals)
+
+### With Traces
+
+Monitor version performance through traces:
+
+```typescript
+// Compare traces between versions
+const traceA = await agentbase.getTraces({ version: "v1.0.0" });
+const traceB = await agentbase.getTraces({ version: "v1.1.0" });
+
+console.log('V1.0.0 avg steps:', avgSteps(traceA));
+console.log('V1.1.0 avg steps:', avgSteps(traceB));
+```
+
+Learn more: [Traces Primitive](/primitives/essentials/traces)
+
+### With Persistence
+
+Maintain session state across version changes:
+
+```typescript
+// Session survives version changes
+const result1 = await agentbase.runAgent({
+  message: "Start project",
+  version: "v1.0.0",
+  session: mySession
+});
+
+// Upgrade version mid-session
+const result2 = await agentbase.runAgent({
+  message: "Continue project",
+  version: "v1.1.0",
+  session: mySession
+  // Session state preserved
+});
+```
+
+Learn more: [Persistence Primitive](/primitives/essentials/persistence)
+
+## Performance Considerations
+
+### Version Overhead
+
+- **Version Lookup**: < 10ms to resolve version
+- **Configuration Load**: < 50ms to load version config
+- **No Runtime Impact**: Version selection happens before execution
+
+### Storage and Retention
+
+- **Version Storage**: Unlimited versions per account
+- **Retention**: Versions retained indefinitely unless manually deleted
+- **Archive**: Old versions can be archived for historical reference
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Version Not Found">
+    **Problem**: Specified version doesn't exist
+
+    **Solution**: Verify version name and check available versions
+
+    ```typescript
+    // List available versions
+    const versions = await agentbase.listVersions("support-agent");
+    console.log('Available:', versions.map(v => v.name));
+
+    // Check if specific version exists
+    const exists = await agentbase.versionExists("support-agent-v1.2.0");
+    ```
+  </Accordion>
+
+  <Accordion title="Configuration Conflict">
+    **Problem**: Version configuration has conflicting settings
+
+    **Solution**: Validate configuration before creating version
+
+    ```typescript
+    // Validate configuration
+    const validation = await agentbase.validateVersionConfig({
+      system: "...",
+      rules: [...],
+      mcpServers: [...]
+    });
+
+    if (!validation.valid) {
+      console.error('Config errors:', validation.errors);
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Evals" icon="check-circle" href="/primitives/essentials/evals">
+    Test and validate versions
+  </Card>
+
+  <Card title="Traces" icon="bug" href="/primitives/essentials/traces">
+    Monitor version performance
+  </Card>
+
+  <Card title="Persistence" icon="database" href="/primitives/essentials/persistence">
+    Session state across versions
+  </Card>
+
+  <Card title="Hooks" icon="webhook" href="/primitives/essentials/hooks">
+    Version lifecycle callbacks
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Version parameters
+  </Card>
+
+  <Card title="Deployment Guide" icon="rocket" href="/deploy/overview">
+    Production deployment strategies
+  </Card>
+
+  <Card title="Best Practices" icon="star" href="/build/overview">
+    Version management patterns
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Use semantic versioning, test thoroughly, deploy gradually, and always maintain the ability to rollback quickly if issues arise.
+</Tip>

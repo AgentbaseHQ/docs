@@ -1,0 +1,1129 @@
+---
+title: "Traces"
+description: "Real-time execution visibility and debugging through comprehensive trace data"
+icon: "route"
+---
+
+> Traces provide complete visibility into agent execution, exposing every decision, tool call, and reasoning step as a primitive for debugging, monitoring, and optimization.
+
+## Overview
+
+The Traces primitive gives you real-time insight into agent execution by streaming detailed events about what the agent is thinking, which tools it's using, and how it's progressing toward task completion. Traces are the foundation for understanding, debugging, and optimizing agent behavior.
+
+Traces are essential for:
+
+- **Debugging**: Understand why agents make specific decisions or encounter errors
+- **Optimization**: Identify inefficiencies and opportunities for improvement
+- **Monitoring**: Track agent performance and behavior in production
+- **Audit**: Maintain detailed records of agent actions
+- **Learning**: Understand agent reasoning patterns and decision-making
+
+<CardGroup cols={2}>
+  <Card title="Real-Time Streaming" icon="signal-stream">
+    Receive execution events as they happen during agent processing
+  </Card>
+
+  <Card title="Complete Visibility" icon="eye">
+    See every thought, tool call, and intermediate result
+  </Card>
+
+  <Card title="Structured Events" icon="sitemap">
+    Well-defined event types make traces easy to parse and analyze
+  </Card>
+
+  <Card title="Zero Configuration" icon="wand-sparkles">
+    Traces available automatically for every agent request
+  </Card>
+</CardGroup>
+
+## How Traces Work
+
+### Event Stream
+
+Traces are delivered as a stream of events:
+
+1. **Agent Starts**: Execution begins
+2. **Thinking Events**: Agent reasons about the task
+3. **Tool Use Events**: Agent calls tools
+4. **Tool Response Events**: Tools return results
+5. **Step Completion**: Agent finishes a reasoning step
+6. **Cost Events**: Cost incurred for operations
+7. **Error Events**: Errors encountered during execution
+8. **Completion**: Agent finishes successfully
+
+### Event Structure
+
+Each trace event contains:
+
+- **Event Type**: What kind of event occurred
+- **Timestamp**: When the event happened
+- **Context**: Session ID, step number, etc.
+- **Payload**: Event-specific data
+- **Metadata**: Additional contextual information
+
+<Note>
+**Streaming by Default**: Set `stream: true` to receive events in real-time. Without streaming, you only get the final result.
+</Note>
+
+## Code Examples
+
+### Basic Trace Streaming
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Enable streaming to receive traces
+const result = await agentbase.runAgent({
+  message: "Analyze this data and create a report",
+  mode: "base",
+  stream: true  // Enable trace streaming
+});
+
+// Iterate over trace events
+for await (const event of result) {
+  console.log(`[${event.type}]`, event);
+
+  switch (event.type) {
+    case 'agent_thinking':
+      console.log('💭 Thinking:', event.content);
+      break;
+
+    case 'agent_tool_use':
+      console.log('🔧 Using tool:', event.tool);
+      console.log('   Input:', event.input);
+      break;
+
+    case 'agent_tool_response':
+      console.log('✅ Tool response received');
+      break;
+
+    case 'agent_step':
+      console.log(`📍 Completed step ${event.stepNumber}`);
+      break;
+
+    case 'agent_cost':
+      console.log(`💰 Cost: $${event.cost}`);
+      break;
+
+    case 'agent_message':
+      console.log('📨 Final message:', event.content);
+      break;
+
+    case 'agent_error':
+      console.error('❌ Error:', event.error);
+      break;
+  }
+}
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Enable streaming to receive traces
+result = agentbase.run_agent(
+    message="Analyze this data and create a report",
+    mode="base",
+    stream=True  # Enable trace streaming
+)
+
+# Iterate over trace events
+for event in result:
+    print(f"[{event.type}]", event)
+
+    if event.type == 'agent_thinking':
+        print(f"💭 Thinking: {event.content}")
+
+    elif event.type == 'agent_tool_use':
+        print(f"🔧 Using tool: {event.tool}")
+        print(f"   Input: {event.input}")
+
+    elif event.type == 'agent_tool_response':
+        print("✅ Tool response received")
+
+    elif event.type == 'agent_step':
+        print(f"📍 Completed step {event.step_number}")
+
+    elif event.type == 'agent_cost':
+        print(f"💰 Cost: ${event.cost}")
+
+    elif event.type == 'agent_message':
+        print(f"📨 Final message: {event.content}")
+
+    elif event.type == 'agent_error':
+        print(f"❌ Error: {event.error}")
+```
+
+</CodeGroup>
+
+### Trace Collection and Analysis
+
+<CodeGroup>
+
+```typescript TypeScript
+// Collect and analyze trace data
+class TraceAnalyzer {
+  private events: any[] = [];
+  private startTime: number = Date.now();
+
+  async analyzeExecution(message: string) {
+    this.events = [];
+    this.startTime = Date.now();
+
+    const result = await agentbase.runAgent({
+      message,
+      mode: "base",
+      stream: true
+    });
+
+    // Collect all events
+    for await (const event of result) {
+      this.events.push({
+        ...event,
+        relativeTime: Date.now() - this.startTime
+      });
+    }
+
+    // Analyze collected events
+    return this.generateAnalysis();
+  }
+
+  generateAnalysis() {
+    const thinking = this.events.filter(e => e.type === 'agent_thinking');
+    const toolUses = this.events.filter(e => e.type === 'agent_tool_use');
+    const steps = this.events.filter(e => e.type === 'agent_step');
+    const errors = this.events.filter(e => e.type === 'agent_error');
+
+    const totalDuration = Date.now() - this.startTime;
+    const toolsUsed = toolUses.map(t => t.tool);
+    const uniqueTools = [...new Set(toolsUsed)];
+
+    return {
+      totalDuration,
+      totalSteps: steps.length,
+      thinkingEvents: thinking.length,
+      toolCalls: toolUses.length,
+      toolsUsed: uniqueTools,
+      errors: errors.length,
+      avgStepDuration: totalDuration / steps.length,
+      events: this.events
+    };
+  }
+
+  getTimeline() {
+    return this.events.map(event => ({
+      time: event.relativeTime,
+      type: event.type,
+      summary: this.summarizeEvent(event)
+    }));
+  }
+
+  summarizeEvent(event: any): string {
+    switch (event.type) {
+      case 'agent_thinking':
+        return `Thinking: ${event.content.substring(0, 50)}...`;
+      case 'agent_tool_use':
+        return `Tool: ${event.tool}`;
+      case 'agent_step':
+        return `Step ${event.stepNumber} complete`;
+      case 'agent_error':
+        return `Error: ${event.error}`;
+      default:
+        return event.type;
+    }
+  }
+}
+
+// Usage
+const analyzer = new TraceAnalyzer();
+const analysis = await analyzer.analyzeExecution(
+  "Research AI trends and write summary"
+);
+
+console.log('Analysis:', analysis);
+console.log('Timeline:', analyzer.getTimeline());
+```
+
+```python Python
+# Collect and analyze trace data
+class TraceAnalyzer:
+    def __init__(self):
+        self.events = []
+        self.start_time = time.time()
+
+    async def analyze_execution(self, message: str):
+        self.events = []
+        self.start_time = time.time()
+
+        result = agentbase.run_agent(
+            message=message,
+            mode="base",
+            stream=True
+        )
+
+        # Collect all events
+        for event in result:
+            self.events.append({
+                **event.__dict__,
+                'relative_time': time.time() - self.start_time
+            })
+
+        # Analyze collected events
+        return self.generate_analysis()
+
+    def generate_analysis(self):
+        thinking = [e for e in self.events if e['type'] == 'agent_thinking']
+        tool_uses = [e for e in self.events if e['type'] == 'agent_tool_use']
+        steps = [e for e in self.events if e['type'] == 'agent_step']
+        errors = [e for e in self.events if e['type'] == 'agent_error']
+
+        total_duration = time.time() - self.start_time
+        tools_used = [t['tool'] for t in tool_uses]
+        unique_tools = list(set(tools_used))
+
+        return {
+            'total_duration': total_duration,
+            'total_steps': len(steps),
+            'thinking_events': len(thinking),
+            'tool_calls': len(tool_uses),
+            'tools_used': unique_tools,
+            'errors': len(errors),
+            'avg_step_duration': total_duration / len(steps) if steps else 0,
+            'events': self.events
+        }
+
+# Usage
+analyzer = TraceAnalyzer()
+analysis = await analyzer.analyze_execution(
+    "Research AI trends and write summary"
+)
+
+print(f"Analysis: {analysis}")
+```
+
+</CodeGroup>
+
+### Filtering and Focusing Traces
+
+<CodeGroup>
+
+```typescript TypeScript
+// Filter traces to specific event types
+async function focusedTracing(message: string, focusOn: string[]) {
+  const result = await agentbase.runAgent({
+    message,
+    mode: "base",
+    stream: true
+  });
+
+  const relevantEvents = [];
+
+  for await (const event of result) {
+    // Only process events we care about
+    if (focusOn.includes(event.type)) {
+      relevantEvents.push(event);
+
+      switch (event.type) {
+        case 'agent_tool_use':
+          console.log(`Tool: ${event.tool}`);
+          console.log(`Input: ${JSON.stringify(event.input, null, 2)}`);
+          break;
+
+        case 'agent_error':
+          console.error(`Error detected: ${event.error}`);
+          await notifyTeam('Agent error', event.error);
+          break;
+      }
+    }
+  }
+
+  return relevantEvents;
+}
+
+// Focus on tool usage only
+const toolEvents = await focusedTracing(
+  "Analyze customer data",
+  ['agent_tool_use', 'agent_tool_response']
+);
+
+// Focus on errors
+const errors = await focusedTracing(
+  "Risky operation",
+  ['agent_error']
+);
+```
+
+</CodeGroup>
+
+### Real-Time Progress Tracking
+
+<CodeGroup>
+
+```typescript TypeScript
+// Track progress in real-time
+async function trackProgress(message: string, onProgress: (progress: number) => void) {
+  const result = await agentbase.runAgent({
+    message,
+    mode: "base",
+    stream: true
+  });
+
+  let currentStep = 0;
+  let estimatedTotalSteps = 10;  // Will be updated
+
+  for await (const event of result) {
+    if (event.type === 'agent_step') {
+      currentStep = event.stepNumber;
+
+      // Calculate progress percentage
+      const progress = Math.min((currentStep / estimatedTotalSteps) * 100, 95);
+
+      // Call progress callback
+      onProgress(progress);
+    }
+
+    if (event.type === 'agent_message') {
+      // Task complete
+      onProgress(100);
+    }
+  }
+}
+
+// Usage with UI updates
+await trackProgress(
+  "Generate comprehensive report",
+  (progress) => {
+    updateProgressBar(progress);
+    console.log(`Progress: ${progress.toFixed(0)}%`);
+  }
+);
+```
+
+```python Python
+# Track progress in real-time
+async def track_progress(message: str, on_progress: callable):
+    result = agentbase.run_agent(
+        message=message,
+        mode="base",
+        stream=True
+    )
+
+    current_step = 0
+    estimated_total_steps = 10  # Will be updated
+
+    for event in result:
+        if event.type == 'agent_step':
+            current_step = event.step_number
+
+            # Calculate progress percentage
+            progress = min((current_step / estimated_total_steps) * 100, 95)
+
+            # Call progress callback
+            on_progress(progress)
+
+        if event.type == 'agent_message':
+            # Task complete
+            on_progress(100)
+
+# Usage with UI updates
+await track_progress(
+    "Generate comprehensive report",
+    lambda progress: update_progress_bar(progress)
+)
+```
+
+</CodeGroup>
+
+## Trace Event Types
+
+### Agent Thinking
+
+Shows agent's internal reasoning:
+
+```json
+{
+  "type": "agent_thinking",
+  "content": "I need to first load the data file, then analyze it for trends. I'll use the file reading tool.",
+  "timestamp": "2025-01-08T10:30:00Z",
+  "session": "agent_session_abc123"
+}
+```
+
+### Tool Use
+
+Agent calls a tool:
+
+```json
+{
+  "type": "agent_tool_use",
+  "tool": "file_read",
+  "input": {
+    "path": "/data/sales.csv"
+  },
+  "timestamp": "2025-01-08T10:30:01Z"
+}
+```
+
+### Tool Response
+
+Tool returns results:
+
+```json
+{
+  "type": "agent_tool_response",
+  "tool": "file_read",
+  "response": {
+    "content": "date,revenue,units\n2025-01-01,5000,100\n...",
+    "success": true
+  },
+  "duration": 45,
+  "timestamp": "2025-01-08T10:30:02Z"
+}
+```
+
+### Step Completion
+
+Agent completes a reasoning step:
+
+```json
+{
+  "type": "agent_step",
+  "stepNumber": 1,
+  "session": "agent_session_abc123",
+  "timestamp": "2025-01-08T10:30:05Z"
+}
+```
+
+### Cost Tracking
+
+Cost incurred:
+
+```json
+{
+  "type": "agent_cost",
+  "cost": "0.025",
+  "balance": 47.50,
+  "session": "agent_session_abc123",
+  "timestamp": "2025-01-08T10:30:05Z"
+}
+```
+
+### Errors
+
+Error encountered:
+
+```json
+{
+  "type": "agent_error",
+  "error": "File not found: /data/sales.csv",
+  "step": 1,
+  "recoverable": true,
+  "timestamp": "2025-01-08T10:30:03Z"
+}
+```
+
+## Use Cases
+
+### 1. Debugging Agent Behavior
+
+Understand why agents make specific decisions:
+
+<AccordionGroup>
+  <Accordion title="Debug Unexpected Tool Selection">
+    ```typescript
+    // Investigate why agent chose specific tool
+    async function debugToolChoice(message: string) {
+      const result = await agentbase.runAgent({
+        message,
+        mode: "base",
+        stream: true
+      });
+
+      const debugLog = [];
+
+      for await (const event of result) {
+        debugLog.push(event);
+
+        if (event.type === 'agent_thinking') {
+          console.log('🤔 Agent reasoning:', event.content);
+        }
+
+        if (event.type === 'agent_tool_use') {
+          // Find reasoning that led to this tool choice
+          const recentThinking = debugLog
+            .filter(e => e.type === 'agent_thinking')
+            .slice(-3);  // Last 3 thinking events
+
+          console.log('\n🔍 Why agent chose', event.tool);
+          console.log('Recent reasoning:');
+          recentThinking.forEach(t => {
+            console.log(`  - ${t.content}`);
+          });
+          console.log('\n');
+        }
+      }
+
+      return debugLog;
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Trace Error Origins">
+    ```typescript
+    // Track down source of errors
+    async function traceError(message: string) {
+      const result = await agentbase.runAgent({
+        message,
+        mode: "base",
+        stream: true
+      });
+
+      const context = [];
+
+      for await (const event of result) {
+        context.push(event);
+
+        if (event.type === 'agent_error') {
+          console.error('\n⚠️  Error detected:', event.error);
+          console.log('\n📝 Events leading to error:');
+
+          // Show last 5 events before error
+          const leadingEvents = context.slice(-6, -1);
+
+          leadingEvents.forEach((e, i) => {
+            console.log(`${i + 1}. [${e.type}]`, summarize(e));
+          });
+
+          console.log('\n💡 Error analysis:');
+          console.log('   Step:', event.step);
+          console.log('   Recoverable:', event.recoverable);
+          console.log('   Suggestion:', suggestFix(event, leadingEvents));
+        }
+      }
+    }
+
+    function suggestFix(error: any, leadingEvents: any[]): string {
+      // Analyze error context and suggest fixes
+      if (error.error.includes('not found')) {
+        return 'Check if file path is correct and file exists';
+      }
+      if (error.error.includes('permission')) {
+        return 'Verify file permissions and access rights';
+      }
+      return 'Review leading events for potential causes';
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 2. Performance Optimization
+
+Identify and eliminate bottlenecks:
+
+```typescript
+// Find performance bottlenecks
+class PerformanceProfiler {
+  async profileExecution(message: string) {
+    const result = await agentbase.runAgent({
+      message,
+      mode: "base",
+      stream: true
+    });
+
+    const profile = {
+      toolDurations: new Map<string, number[]>(),
+      stepDurations: [],
+      thinkingTime: 0,
+      totalTime: 0
+    };
+
+    let stepStart = Date.now();
+    let executionStart = Date.now();
+
+    for await (const event of result) {
+      const now = Date.now();
+
+      if (event.type === 'agent_tool_response') {
+        // Track tool performance
+        const durations = profile.toolDurations.get(event.tool) || [];
+        durations.push(event.duration || 0);
+        profile.toolDurations.set(event.tool, durations);
+      }
+
+      if (event.type === 'agent_step') {
+        // Track step duration
+        const stepDuration = now - stepStart;
+        profile.stepDurations.push(stepDuration);
+        stepStart = now;
+      }
+
+      if (event.type === 'agent_message') {
+        profile.totalTime = now - executionStart;
+      }
+    }
+
+    // Analyze bottlenecks
+    return this.analyzeBottlenecks(profile);
+  }
+
+  analyzeBottlenecks(profile: any) {
+    // Find slowest tools
+    const toolStats = Array.from(profile.toolDurations.entries()).map(([tool, durations]) => ({
+      tool,
+      calls: durations.length,
+      avgDuration: durations.reduce((a, b) => a + b, 0) / durations.length,
+      totalDuration: durations.reduce((a, b) => a + b, 0)
+    }));
+
+    toolStats.sort((a, b) => b.totalDuration - a.totalDuration);
+
+    // Find slowest steps
+    const avgStepDuration = profile.stepDurations.reduce((a, b) => a + b, 0) / profile.stepDurations.length;
+    const slowSteps = profile.stepDurations
+      .map((duration, index) => ({ step: index + 1, duration }))
+      .filter(s => s.duration > avgStepDuration * 1.5);
+
+    return {
+      totalDuration: profile.totalTime,
+      totalSteps: profile.stepDurations.length,
+      avgStepDuration,
+      bottlenecks: {
+        slowestTools: toolStats.slice(0, 3),
+        slowSteps
+      },
+      recommendations: this.generateRecommendations(toolStats, slowSteps)
+    };
+  }
+
+  generateRecommendations(toolStats: any[], slowSteps: any[]): string[] {
+    const recommendations = [];
+
+    // Recommend caching for frequently called slow tools
+    const frequentSlowTools = toolStats.filter(t => t.calls > 3 && t.avgDuration > 1000);
+    if (frequentSlowTools.length > 0) {
+      recommendations.push(
+        `Consider caching results for: ${frequentSlowTools.map(t => t.tool).join(', ')}`
+      );
+    }
+
+    // Recommend parallelization if many slow steps
+    if (slowSteps.length > 2) {
+      recommendations.push('Consider parallelizing independent operations to reduce total time');
+    }
+
+    return recommendations;
+  }
+}
+
+// Usage
+const profiler = new PerformanceProfiler();
+const report = await profiler.profileExecution("Complex data analysis task");
+console.log('Performance Report:', report);
+```
+
+### 3. Production Monitoring
+
+Monitor agent behavior in real-time:
+
+```typescript
+// Real-time production monitoring
+class ProductionMonitor {
+  private metrics: any = {
+    totalRequests: 0,
+    successfulRequests: 0,
+    failedRequests: 0,
+    avgSteps: 0,
+    avgDuration: 0,
+    toolUsage: new Map<string, number>()
+  };
+
+  async monitorRequest(message: string) {
+    this.metrics.totalRequests++;
+
+    const startTime = Date.now();
+    let stepCount = 0;
+    let success = false;
+
+    try {
+      const result = await agentbase.runAgent({
+        message,
+        mode: "base",
+        stream: true
+      });
+
+      for await (const event of result) {
+        // Track tool usage
+        if (event.type === 'agent_tool_use') {
+          const count = this.metrics.toolUsage.get(event.tool) || 0;
+          this.metrics.toolUsage.set(event.tool, count + 1);
+        }
+
+        // Track steps
+        if (event.type === 'agent_step') {
+          stepCount++;
+        }
+
+        // Track errors
+        if (event.type === 'agent_error') {
+          await this.recordError(event);
+        }
+
+        // Track success
+        if (event.type === 'agent_message') {
+          success = true;
+        }
+      }
+
+      if (success) {
+        this.metrics.successfulRequests++;
+      }
+
+      // Update averages
+      const duration = Date.now() - startTime;
+      this.updateAverages(stepCount, duration);
+
+      // Check for anomalies
+      await this.checkAnomalies(stepCount, duration);
+
+    } catch (error) {
+      this.metrics.failedRequests++;
+      await this.recordFailure(error);
+    }
+  }
+
+  updateAverages(steps: number, duration: number) {
+    const n = this.metrics.totalRequests;
+    this.metrics.avgSteps = ((this.metrics.avgSteps * (n - 1)) + steps) / n;
+    this.metrics.avgDuration = ((this.metrics.avgDuration * (n - 1)) + duration) / n;
+  }
+
+  async checkAnomalies(steps: number, duration: number) {
+    // Alert if execution significantly exceeds averages
+    if (steps > this.metrics.avgSteps * 2) {
+      await sendAlert({
+        type: 'anomaly',
+        message: `High step count: ${steps} (avg: ${this.metrics.avgSteps})`,
+        severity: 'warning'
+      });
+    }
+
+    if (duration > this.metrics.avgDuration * 3) {
+      await sendAlert({
+        type: 'anomaly',
+        message: `Slow execution: ${duration}ms (avg: ${this.metrics.avgDuration}ms)`,
+        severity: 'warning'
+      });
+    }
+  }
+
+  async recordError(event: any) {
+    await sendToErrorTracking({
+      error: event.error,
+      step: event.step,
+      timestamp: event.timestamp,
+      recoverable: event.recoverable
+    });
+  }
+
+  async recordFailure(error: any) {
+    await sendToErrorTracking({
+      error: error.message,
+      fatal: true,
+      timestamp: new Date()
+    });
+  }
+
+  getMetrics() {
+    return {
+      ...this.metrics,
+      successRate: this.metrics.successfulRequests / this.metrics.totalRequests,
+      errorRate: this.metrics.failedRequests / this.metrics.totalRequests
+    };
+  }
+}
+```
+
+### 4. Learning from Agent Behavior
+
+Analyze patterns to improve prompts:
+
+```typescript
+// Analyze agent patterns
+async function analyzePatterns(messages: string[]) {
+  const patterns = {
+    commonTools: new Map<string, number>(),
+    avgStepsByTaskType: new Map<string, number[]>(),
+    successfulApproaches: []
+  };
+
+  for (const message of messages) {
+    const result = await agentbase.runAgent({
+      message,
+      mode: "base",
+      stream: true
+    });
+
+    const trace = { tools: [], steps: 0, success: false };
+
+    for await (const event of result) {
+      if (event.type === 'agent_tool_use') {
+        trace.tools.push(event.tool);
+
+        const count = patterns.commonTools.get(event.tool) || 0;
+        patterns.commonTools.set(event.tool, count + 1);
+      }
+
+      if (event.type === 'agent_step') {
+        trace.steps++;
+      }
+
+      if (event.type === 'agent_message') {
+        trace.success = true;
+      }
+    }
+
+    // Categorize by task type
+    const taskType = categorizeTask(message);
+    const steps = patterns.avgStepsByTaskType.get(taskType) || [];
+    steps.push(trace.steps);
+    patterns.avgStepsByTaskType.set(taskType, steps);
+
+    // Record successful approaches
+    if (trace.success) {
+      patterns.successfulApproaches.push({
+        taskType,
+        tools: trace.tools,
+        steps: trace.steps
+      });
+    }
+  }
+
+  return generateInsights(patterns);
+}
+
+function generateInsights(patterns: any) {
+  // Find most common tools
+  const topTools = Array.from(patterns.commonTools.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+  // Find optimal approaches
+  const insights = {
+    mostUsedTools: topTools.map(([tool]) => tool),
+    taskTypePerformance: Array.from(patterns.avgStepsByTaskType.entries()).map(([type, steps]) => ({
+      taskType: type,
+      avgSteps: steps.reduce((a, b) => a + b, 0) / steps.length,
+      samples: steps.length
+    })),
+    recommendations: []
+  };
+
+  // Generate recommendations
+  for (const approach of patterns.successfulApproaches) {
+    if (approach.steps < 3) {
+      insights.recommendations.push(
+        `For ${approach.taskType}: Use tools ${approach.tools.join(', ')} (efficient approach)`
+      );
+    }
+  }
+
+  return insights;
+}
+```
+
+## Best Practices
+
+### Efficient Trace Processing
+
+<AccordionGroup>
+  <Accordion title="Process Events Incrementally">
+    ```typescript
+    // Good: Process events as they arrive
+    for await (const event of stream) {
+      processEvent(event);  // Handle immediately
+    }
+
+    // Avoid: Collecting all events in memory
+    const allEvents = [];
+    for await (const event of stream) {
+      allEvents.push(event);  // Memory intensive
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Filter Early">
+    ```typescript
+    // Filter to only relevant events
+    for await (const event of stream) {
+      // Only process events we care about
+      if (event.type === 'agent_error' || event.type === 'agent_tool_use') {
+        await handleImportantEvent(event);
+      }
+      // Ignore other events
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Errors Gracefully">
+    ```typescript
+    try {
+      for await (const event of stream) {
+        await processEvent(event);
+      }
+    } catch (error) {
+      console.error('Stream processing error:', error);
+      // Stream errors shouldn't crash application
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Primitives
+
+### With Hooks
+
+Combine traces with custom callbacks:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Task",
+  stream: true,  // Get traces
+  hooks: {       // Add custom logic
+    onToolUse: async (event) => {
+      // Hook called when trace event occurs
+      await customToolAnalysis(event);
+    }
+  }
+});
+```
+
+Learn more: [Hooks Primitive](/primitives/essentials/hooks)
+
+### With Evals
+
+Use traces to validate agent behavior:
+
+```typescript
+// Validate agent behavior via traces
+const trace = [];
+
+const result = await agentbase.runAgent({
+  message: "Test case",
+  stream: true
+});
+
+for await (const event of result) {
+  trace.push(event);
+}
+
+// Check that agent used expected tools
+const toolsUsed = trace
+  .filter(e => e.type === 'agent_tool_use')
+  .map(e => e.tool);
+
+expect(toolsUsed).toContain('database_query');
+```
+
+Learn more: [Evals Primitive](/primitives/essentials/evals)
+
+## Performance Considerations
+
+### Streaming Overhead
+
+- **Network**: Minimal overhead for event streaming
+- **Processing**: Depends on your event handlers
+- **Memory**: Incremental processing uses constant memory
+- **Latency**: No additional latency added to agent execution
+
+### Optimization Tips
+
+```typescript
+// Optimize trace processing
+const processedEvents = new Set();
+
+for await (const event of stream) {
+  // Deduplicate events if needed
+  const eventKey = `${event.type}-${event.timestamp}`;
+  if (processedEvents.has(eventKey)) continue;
+  processedEvents.add(eventKey);
+
+  // Async processing without blocking
+  processEventAsync(event).catch(console.error);
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Not Receiving Trace Events">
+    **Solution**: Ensure streaming is enabled
+
+    ```typescript
+    // Must set stream: true
+    const result = await agentbase.runAgent({
+      message: "Task",
+      stream: true  // Required for traces
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Missing Events">
+    **Solution**: Some events may not occur for all requests
+
+    ```typescript
+    // Not all requests will have errors
+    // Not all tasks use tools
+    // Handle optional events gracefully
+    if (event.type === 'agent_error') {
+      // May not occur
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Hooks" icon="webhook" href="/primitives/essentials/hooks">
+    Custom callbacks for trace events
+  </Card>
+
+  <Card title="Evals" icon="check-circle" href="/primitives/essentials/evals">
+    Test agents using trace data
+  </Card>
+
+  <Card title="Background Tasks" icon="clock" href="/primitives/essentials/background">
+    Monitor async task progress
+  </Card>
+
+  <Card title="Self-Healing" icon="shield-heart" href="/primitives/essentials/self-healing">
+    Debug error recovery with traces
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="Event Types Reference" icon="list" href="/deploy/api/message-events">
+    Complete event documentation
+  </Card>
+
+  <Card title="Debugging Guide" icon="bug" href="/improve/traces">
+    Advanced debugging techniques
+  </Card>
+
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Streaming parameters
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Traces are most powerful when processed incrementally. Stream events, filter to what matters, and handle them as they arrive for optimal performance and insights.
+</Tip>

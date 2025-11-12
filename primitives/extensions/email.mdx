@@ -1,0 +1,669 @@
+---
+title: "Email"
+description: "Send and process emails with AI agents"
+icon: "envelope"
+---
+
+## Overview
+
+The Email extension enables agents to send, receive, and process emails, allowing for automated communication, notifications, and email-based workflows. Agents can compose personalized emails, monitor inboxes, and respond intelligently to incoming messages.
+
+<CardGroup cols={2}>
+  <Card title="Send Emails" icon="paper-plane">
+    Compose and send personalized emails programmatically
+  </Card>
+
+  <Card title="Email Processing" icon="inbox">
+    Parse and analyze incoming emails
+  </Card>
+
+  <Card title="Smart Responses" icon="reply">
+    Generate contextual email responses
+  </Card>
+
+  <Card title="Automation" icon="robot">
+    Create email-based workflows and notifications
+  </Card>
+</CardGroup>
+
+## How It Works
+
+Email functionality integrates with your existing email infrastructure through APIs or SMTP/IMAP protocols. Agents can:
+
+1. **Compose emails** based on natural language instructions
+2. **Send emails** through configured email services
+3. **Monitor inboxes** for incoming messages
+4. **Parse email content** to extract information
+5. **Generate responses** based on email context
+
+## Setup
+
+Configure email integration with your email service provider:
+
+<Tabs>
+  <Tab title="SMTP/IMAP">
+    ```typescript
+    // Configure email tool via MCP
+    const agentbase = new Agentbase({
+      apiKey: process.env.AGENTBASE_API_KEY,
+      mcpServers: [{
+        name: "email-server",
+        transport: "http",
+        url: "http://localhost:3000",
+        authentication: {
+          type: "bearer",
+          token: process.env.EMAIL_MCP_TOKEN
+        }
+      }]
+    });
+    ```
+  </Tab>
+
+  <Tab title="Gmail API">
+    ```typescript
+    // Gmail API integration
+    const agentbase = new Agentbase({
+      apiKey: process.env.AGENTBASE_API_KEY,
+      mcpServers: [{
+        name: "gmail-server",
+        transport: "http",
+        url: "https://your-gmail-mcp-server.com",
+        authentication: {
+          type: "oauth",
+          clientId: process.env.GMAIL_CLIENT_ID,
+          clientSecret: process.env.GMAIL_CLIENT_SECRET
+        }
+      }]
+    });
+    ```
+  </Tab>
+
+  <Tab title="SendGrid">
+    ```typescript
+    // SendGrid integration
+    const agentbase = new Agentbase({
+      apiKey: process.env.AGENTBASE_API_KEY,
+      mcpServers: [{
+        name: "sendgrid-server",
+        transport: "http",
+        url: "https://your-sendgrid-mcp-server.com",
+        authentication: {
+          type: "bearer",
+          token: process.env.SENDGRID_API_KEY
+        }
+      }]
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Sending Emails
+
+### Basic Email Sending
+
+```typescript
+// Send a simple email
+const result = await agentbase.runAgent({
+  message: `Send an email to john@example.com with:
+    Subject: "Project Update"
+    Body: "The project is on track and will be completed by Friday."`,
+  mode: "base"
+});
+```
+
+### Personalized Emails
+
+```typescript
+// Send personalized email with data
+const customer = {
+  name: "Jane Smith",
+  email: "jane@example.com",
+  orderNumber: "12345",
+  deliveryDate: "2025-01-15"
+};
+
+const result = await agentbase.runAgent({
+  message: `Send a personalized order confirmation email to ${customer.email}:
+
+    Hi ${customer.name},
+
+    Your order #${customer.orderNumber} has been confirmed and will be delivered by ${customer.deliveryDate}.
+
+    Thank you for your purchase!`,
+  mode: "base"
+});
+```
+
+### HTML Emails
+
+```typescript
+// Send HTML formatted email
+const result = await agentbase.runAgent({
+  message: `Send an HTML email to team@example.com with:
+    Subject: "Weekly Report"
+
+    Create an HTML email with:
+    - A header with our logo
+    - A summary of this week's metrics
+    - A table showing top performers
+    - A footer with unsubscribe link
+
+    Use professional styling with our brand colors.`,
+  mode: "base"
+});
+```
+
+### Email with Attachments
+
+```typescript
+// Send email with attachments
+const result = await agentbase.runAgent({
+  message: `Send an email to client@example.com with:
+    Subject: "Monthly Report"
+    Body: "Please find attached the monthly report."
+    Attachments: report.pdf, data.xlsx
+
+    The files are in the current directory.`,
+  mode: "base"
+});
+```
+
+## Email Processing
+
+### Parse Incoming Emails
+
+```typescript
+// Process received emails
+const result = await agentbase.runAgent({
+  message: `Check my inbox for unread emails and:
+    1. Extract sender, subject, and content
+    2. Categorize by type (support, sales, general)
+    3. Extract action items
+    4. Summarize each email
+
+    Return as JSON.`,
+  mode: "base"
+});
+
+const emails = JSON.parse(result.content);
+```
+
+### Extract Information
+
+```typescript
+// Extract structured data from emails
+const result = await agentbase.runAgent({
+  message: `Read the email from orders@supplier.com and extract:
+    - Order number
+    - Items ordered
+    - Total amount
+    - Expected delivery date
+
+    Return as JSON.`,
+  mode: "base"
+});
+
+const orderData = JSON.parse(result.content);
+```
+
+## Use Cases
+
+### 1. Automated Customer Support
+
+Respond to customer inquiries automatically:
+
+```typescript
+async function processCustomerEmails() {
+  // Get unread support emails
+  const result = await agentbase.runAgent({
+    message: `Check support@example.com inbox for unread emails and:
+      1. Read each email
+      2. Categorize the issue type
+      3. Generate an appropriate response
+      4. Send the response
+      5. Mark as read
+
+      For complex issues, mark for manual review.`,
+    mode: "base"
+  });
+
+  return result.content;
+}
+
+// Run periodically
+setInterval(processCustomerEmails, 5 * 60 * 1000); // Every 5 minutes
+```
+
+### 2. Lead Nurturing
+
+Send personalized follow-up emails:
+
+```typescript
+interface Lead {
+  email: string;
+  name: string;
+  company: string;
+  interests: string[];
+  stage: string;
+}
+
+async function nurtureLead(lead: Lead) {
+  const result = await agentbase.runAgent({
+    message: `Compose a personalized follow-up email for ${lead.name} at ${lead.company}.
+
+      Context:
+      - Stage: ${lead.stage}
+      - Interests: ${lead.interests.join(', ')}
+
+      Email should:
+      - Reference their interests
+      - Provide relevant resources
+      - Include a soft call-to-action
+      - Sound natural and helpful
+
+      Send to ${lead.email}.`,
+    mode: "base"
+  });
+
+  return result;
+}
+```
+
+### 3. Report Distribution
+
+Automatically send periodic reports:
+
+```typescript
+async function sendWeeklyReport() {
+  // Generate report
+  const metrics = await getWeeklyMetrics();
+
+  const result = await agentbase.runAgent({
+    message: `Create and send a weekly report email to team@example.com:
+
+      Subject: Weekly Performance Report - ${new Date().toLocaleDateString()}
+
+      Include:
+      - Executive summary
+      - Key metrics: ${JSON.stringify(metrics)}
+      - Charts showing trends
+      - Top achievements
+      - Areas for improvement
+
+      Make it visually appealing with HTML formatting.`,
+    mode: "base"
+  });
+
+  return result;
+}
+
+// Schedule weekly
+cron.schedule('0 9 * * MON', sendWeeklyReport);
+```
+
+### 4. Email-Based Workflows
+
+Trigger actions based on incoming emails:
+
+```typescript
+async function processWorkflowEmails() {
+  const result = await agentbase.runAgent({
+    message: `Check workflow@example.com for new emails and process:
+
+      If subject contains "APPROVE":
+        - Extract approval details
+        - Update database
+        - Send confirmation email
+
+      If subject contains "REJECT":
+        - Log rejection
+        - Notify requestor
+
+      If subject contains "URGENT":
+        - Send SMS alert to on-call team
+        - Create high-priority ticket`,
+    mode: "base"
+  });
+
+  return result.content;
+}
+```
+
+### 5. Newsletter Management
+
+Send personalized newsletters:
+
+```typescript
+interface Subscriber {
+  email: string;
+  name: string;
+  preferences: string[];
+  engagement: number;
+}
+
+async function sendNewsletter(subscribers: Subscriber[], content: any) {
+  for (const subscriber of subscribers) {
+    const result = await agentbase.runAgent({
+      message: `Send personalized newsletter to ${subscriber.email}:
+
+        Hi ${subscriber.name},
+
+        Customize this content based on their preferences: ${subscriber.preferences.join(', ')}
+
+        Base content: ${JSON.stringify(content)}
+
+        Include:
+        - Personalized greeting
+        - Content matching preferences
+        - Recommended articles
+        - Unsubscribe link`,
+      mode: "base"
+    });
+
+    // Rate limit
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+}
+```
+
+### 6. Order Confirmations
+
+Send transactional emails:
+
+```typescript
+interface Order {
+  id: string;
+  customerEmail: string;
+  customerName: string;
+  items: Array<{ name: string; price: number; quantity: number }>;
+  total: number;
+  deliveryDate: string;
+}
+
+async function sendOrderConfirmation(order: Order) {
+  const result = await agentbase.runAgent({
+    message: `Send order confirmation email to ${order.customerEmail}:
+
+      Subject: Order Confirmation #${order.id}
+
+      Hi ${order.customerName},
+
+      Your order has been confirmed!
+
+      Order Details:
+      ${order.items.map(item =>
+        `${item.quantity}x ${item.name} - $${item.price}`
+      ).join('\n')}
+
+      Total: $${order.total}
+      Expected Delivery: ${order.deliveryDate}
+
+      Include:
+      - Professional HTML formatting
+      - Order tracking link
+      - Customer support contact
+      - Thank you message`,
+    mode: "base"
+  });
+
+  return result;
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Personalization" icon="user">
+    Personalize emails for better engagement:
+
+    ```typescript
+    // ✅ Good: Personalized
+    const result = await agentbase.runAgent({
+      message: `Send email to ${user.email}:
+        Hi ${user.name},
+        Based on your interest in ${user.interests[0]}, ...`,
+      mode: "base"
+    });
+
+    // ❌ Bad: Generic
+    const result = await agentbase.runAgent({
+      message: "Send email to all users: Dear Customer, ...",
+      mode: "base"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Email Validation" icon="check">
+    Validate email addresses before sending:
+
+    ```typescript
+    function isValidEmail(email: string): boolean {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    async function sendSafeEmail(to: string, content: string) {
+      if (!isValidEmail(to)) {
+        throw new Error(`Invalid email address: ${to}`);
+      }
+
+      return await agentbase.runAgent({
+        message: `Send email to ${to}: ${content}`,
+        mode: "base"
+      });
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Error Handling" icon="shield">
+    Handle email failures gracefully:
+
+    ```typescript
+    async function sendWithRetry(email: string, content: string, maxRetries: number = 3) {
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+          const result = await agentbase.runAgent({
+            message: `Send email to ${email}: ${content}`,
+            mode: "base"
+          });
+
+          return result;
+
+        } catch (error) {
+          console.error(`Attempt ${attempt + 1} failed:`, error);
+
+          if (attempt === maxRetries - 1) {
+            // Log failed email for manual review
+            await logFailedEmail({ email, content, error });
+            throw error;
+          }
+
+          // Wait before retry
+          await new Promise(resolve =>
+            setTimeout(resolve, 1000 * Math.pow(2, attempt))
+          );
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Rate Limiting" icon="gauge">
+    Respect email sending limits:
+
+    ```typescript
+    import { RateLimiter } from 'limiter';
+
+    // 10 emails per second max
+    const limiter = new RateLimiter({
+      tokensPerInterval: 10,
+      interval: 'second'
+    });
+
+    async function sendRateLimited(emails: string[], content: string) {
+      for (const email of emails) {
+        await limiter.removeTokens(1);
+
+        await agentbase.runAgent({
+          message: `Send email to ${email}: ${content}`,
+          mode: "base"
+        });
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Unsubscribe Links" icon="link">
+    Always include unsubscribe options:
+
+    ```typescript
+    async function sendMarketingEmail(subscriber: any, content: string) {
+      const unsubscribeLink = `https://example.com/unsubscribe?email=${subscriber.email}`;
+
+      const result = await agentbase.runAgent({
+        message: `Send email to ${subscriber.email}:
+          ${content}
+
+          Include unsubscribe link at bottom: ${unsubscribeLink}`,
+        mode: "base"
+      });
+
+      return result;
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Track Engagement" icon="chart-line">
+    Monitor email performance:
+
+    ```typescript
+    interface EmailMetrics {
+      sent: number;
+      delivered: number;
+      opened: number;
+      clicked: number;
+      bounced: number;
+    }
+
+    async function trackEmailMetrics(campaignId: string): Promise<EmailMetrics> {
+      // Track opens, clicks, bounces
+      // Use email service provider's analytics API
+
+      return {
+        sent: 1000,
+        delivered: 980,
+        opened: 450,
+        clicked: 120,
+        bounced: 20
+      };
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Primitives
+
+<CardGroup cols={2}>
+  <Card title="Hooks" icon="webhook" href="/primitives/essentials/hooks">
+    Trigger emails based on events
+  </Card>
+
+  <Card title="Scheduling" icon="calendar" href="/primitives/extensions/scheduling">
+    Send emails at specific times
+  </Card>
+
+  <Card title="Background" icon="clock" href="/primitives/essentials/background">
+    Process emails asynchronously
+  </Card>
+
+  <Card title="Data Connectors" icon="database" href="/primitives/extensions/data-connectors">
+    Store email data and metrics
+  </Card>
+
+  <Card title="Triggers" icon="bolt" href="/primitives/extensions/trigger">
+    Automated email workflows
+  </Card>
+
+  <Card title="Authentication" icon="key" href="/primitives/extensions/authentication">
+    Secure email access
+  </Card>
+</CardGroup>
+
+## Performance Considerations
+
+<CardGroup cols={2}>
+  <Card title="Batch Sending" icon="layer-group">
+    Send multiple emails in batches:
+    ```typescript
+    // Process in batches of 100
+    const batches = chunk(emails, 100);
+    ```
+  </Card>
+
+  <Card title="Async Processing" icon="clock">
+    Use background tasks for large sends
+  </Card>
+
+  <Card title="Template Caching" icon="database">
+    Cache email templates for reuse
+  </Card>
+
+  <Card title="Queue Management" icon="list">
+    Use queues for high-volume sending
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Emails Not Sending" icon="exclamation-triangle">
+    **Problem:** Emails fail to send
+
+    **Solutions:**
+    - Verify SMTP/API credentials
+    - Check email service provider limits
+    - Validate recipient email addresses
+    - Review bounce and error logs
+    - Check spam filters
+  </Accordion>
+
+  <Accordion title="Emails Going to Spam" icon="ban">
+    **Problem:** Emails marked as spam
+
+    **Solutions:**
+    - Set up SPF, DKIM, DMARC records
+    - Use reputable email service provider
+    - Avoid spam trigger words
+    - Include unsubscribe link
+    - Maintain good sender reputation
+  </Accordion>
+
+  <Accordion title="Slow Sending" icon="hourglass">
+    **Problem:** Email sending is slow
+
+    **Solutions:**
+    - Use batch processing
+    - Implement async sending
+    - Use email service provider's bulk API
+    - Optimize email content size
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Scheduling" icon="calendar" href="/primitives/extensions/scheduling">
+    Schedule email campaigns
+  </Card>
+
+  <Card title="Triggers" icon="bolt" href="/primitives/extensions/trigger">
+    Automated email workflows
+  </Card>
+
+  <Card title="Custom Tools" icon="wrench" href="/primitives/essentials/custom-tools">
+    Build email integration via MCP
+  </Card>
+
+  <Card title="Background Tasks" icon="clock" href="/primitives/essentials/background">
+    Process emails asynchronously
+  </Card>
+</CardGroup>

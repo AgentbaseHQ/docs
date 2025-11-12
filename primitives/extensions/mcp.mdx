@@ -1,0 +1,65 @@
+---
+title: "MCP (Model Context Protocol)"
+description: "Connect agents to external tools, APIs, and services using the open Model Context Protocol standard"
+icon: "plug"
+---
+
+> Connect external tools and services using Model Context Protocol
+
+> MCP (Model Context Protocol) allows agents to access your external tools, APIs, and databases seamlessly. Learn more at [modelcontextprotocol.io](https://modelcontextprotocol.io/docs/getting-started/intro).
+
+## Basic Usage
+
+```javascript  theme={null}
+const response = await agentbase.runAgent({
+  message: "Get customer data for user ID 12345",
+  mcpServers: [
+    {
+      serverName: "customer-api",
+      serverUrl: "https://api.yourcompany.com/mcp"
+    }
+  ]
+});
+```
+
+## Common Use Cases
+
+**Database Integration:**
+
+```javascript  theme={null}
+mcpServers: [{ 
+  serverName: "company-db", 
+  serverUrl: "https://db-mcp.yourcompany.com" 
+}]
+```
+
+**API Integration:**
+
+```javascript  theme={null}
+mcpServers: [{ 
+  serverName: "inventory-api", 
+  serverUrl: "https://inventory-mcp.yourcompany.com" 
+}]
+```
+
+**Multiple MCP Servers:**
+
+```javascript  theme={null}
+mcpServers: [
+  { serverName: "crm-tools", serverUrl: "https://crm-mcp.yourcompany.com" },
+  { serverName: "payment-gateway", serverUrl: "https://payments-mcp.yourcompany.com" }
+]
+```
+
+## MCP Server Requirements
+
+Your MCP server needs:
+
+* HTTP endpoint accepting MCP-formatted requests
+* Tool definitions with parameters
+* Authentication handling
+* Standard response format
+
+<Tip>
+  **Pro tip**: Start with simple MCP integrations and gradually add complexity. Test MCP server connectivity and tool availability before deploying to production.
+</Tip>

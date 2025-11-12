@@ -1,0 +1,18 @@
+---
+title: "Message Events"
+---
+
+| Type                   | Description                                               |
+| ---------------------- | --------------------------------------------------------- |
+| `agent_started`        | Agent session started                                     |
+| `agent_thinking_start` | Agent started thinking (only when streaming is enabled)   |
+| `agent_thinking`       | Agent thinking with content                               |
+| `agent_response_start` | Agent started responding (only when streaming is enabled) |
+| `agent_response`       | Agent response with content                               |
+| `agent_tool_use_start` | Tool call started (only when streaming is enabled)        |
+| `agent_tool_use`       | Tool call with tool name and input                        |
+| `agent_tool_response`  | Tool result with tool name and result                     |
+| `agent_cost`           | Agent step cost info                                      |
+| `agent_step`           | Step completed with step number                           |
+| `agent_completed`      | Agent session finished                                    |
+| `agent_error`          | Agent error                                               |

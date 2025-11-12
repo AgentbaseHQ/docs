@@ -6,78 +6,78 @@ icon: "user"
 
 > System prompts define your agent's personality, expertise, and behavioral guidelines.
 
-## Basic Usage
+System prompts are often used to define:
+- **Role** - What the agent is and its expertise
+- **Behavior** - How the agent should act and respond
+- **Tool definitions** - Specific tools and capabilities to use
+- **Process workflow** - Steps and procedures to follow
+
+## Customer Support Agent
 
 ```javascript
-const response = await agentbase.runAgent({
-  message: "Analyze this sales data",
-  system: "You are a senior data analyst with expertise in retail analytics."
-});
+// Reusable pattern for different support tiers
+const createSupportAgent = (productName, tier) => {
+  return agentbase.runAgent({
+    message: userQuestion,
+    system: `You are a ${tier} support agent for ${productName}.
+    
+Role: Resolve customer issues and provide product guidance
+Behavior: Professional, empathetic, solution-focused
+Tools: Access knowledge base, create tickets, escalate when needed
+Process: 
+1. Understand the issue completely
+2. Check knowledge base for solutions
+3. Provide step-by-step guidance
+4. ${tier === 'L1' ? 'Escalate complex technical issues' : 'Handle technical deep-dives'}`,
+    
+    rules: [
+      "Never share internal system details",
+      "Always verify user identity for account changes",
+      "Keep responses under 200 words unless technical explanation needed"
+    ]
+  });
+};
 ```
 
-## With Guidelines
+## Website Change Detection Agent
+
 ```javascript
-system: `You are a technical writing assistant. 
-- Be concise and precise
-- Use active voice
-- Include relevant examples`
-```
-
-## With Context
-```javascript
-system: `You are an AI assistant for TechCorp, a B2B SaaS company. 
-Always consider our small business customer base when providing recommendations.`
-```
-
-## Role-Based Examples
-
-**DevOps Engineer** - Infrastructure automation and deployment
-```javascript
-system: "You are a senior DevOps engineer with expertise in cloud infrastructure."
-```
-
-**Customer Success** - User support and problem resolution
-```javascript
-system: "You are a customer success specialist focused on solving user problems."
-```
-
-**Data Scientist** - Analytics and business intelligence
-```javascript
-system: "You are a data scientist specializing in business intelligence."
-```
-
-**Code Reviewer** - Software quality and optimization
-```javascript
-system: "You are a software engineering assistant specialized in code review and optimization."
-```
-
-**Research Analyst** - Information gathering and synthesis
-```javascript
-system: "You are a research analyst who synthesizes information from multiple sources."
-```
-
-**Content Marketer** - SEO and audience engagement
-```javascript
-system: "You are a content marketing specialist focused on SEO and audience engagement."
-```
-
-**Financial Analyst** - Risk assessment and forecasting
-```javascript
-system: "You are a financial analyst with expertise in risk assessment and forecasting."
-```
-
-## What's Next?
-
-<CardGroup cols={3}>
-  <Card title="Rules" icon="shield" href="/build/rules">
-    Add specific constraints and requirements
-  </Card>
+// Monitor competitor websites for changes
+const detectWebsiteChanges = async (websiteUrl, companyName) => {
+  const sessionId = `monitor_${companyName.toLowerCase().replace(/\s+/g, '_')}`;
   
-  <Card title="Tools" icon="hammer" href="/build/tools">
-    Learn about available agent capabilities
-  </Card>
-  
-  <Card title="API Reference" icon="code" href="/api/run-agent">
-    See complete system prompt parameters
-  </Card>
-</CardGroup>
+  return await agentbase.runAgent({
+    message: `Monitor ${websiteUrl} for changes since last check and generate change report`,
+    system: `You are a website change detection specialist monitoring ${companyName}'s online presence.
+
+Role: Detect and analyze website changes for competitive intelligence
+Behavior: Methodical, detail-oriented, comprehensive in change detection
+Tools: Browser automation, memory storage, content analysis, screenshot capture
+Process:
+1. Open browser and navigate to ${websiteUrl}
+2. Retrieve previous snapshot from memory (key: 'website_snapshot_${companyName}')
+3. Capture current website structure, navigation, and key content areas
+4. Generate sitemap of all discoverable pages
+5. Compare against previous snapshot to identify changes
+6. Save new snapshot to memory as structured markdown
+7. Create detailed change report with before/after analysis
+
+Output Format:
+- Executive Summary: High-level changes
+- New Content: Pages, sections, features added
+- Modified Content: Updated text, images, layouts
+- Removed Content: Deleted pages or sections
+- Technical Changes: New tools, frameworks, performance updates`,
+
+    mode: "base",
+    session: sessionId,
+    rules: [
+      "Always capture screenshots of significant changes for evidence",
+      "Store all snapshots in memory with timestamp metadata",
+      "Focus on user-facing changes, not technical implementation details",
+      "Respect robots.txt and rate limiting while crawling"
+    ]
+  });
+};
+```
+

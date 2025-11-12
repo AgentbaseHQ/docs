@@ -1,0 +1,1254 @@
+---
+title: "Data Connectors"
+description: "Connect agents to databases, data warehouses, and data sources"
+icon: "database"
+---
+
+> Data Connectors enable agents to read from and write to databases, data warehouses, and various data sources, making it easy to work with structured and unstructured data across your organization.
+
+## Overview
+
+The Data Connectors primitive provides agents with direct access to your data infrastructure. Whether you're working with SQL databases, NoSQL stores, data warehouses, or cloud storage, agents can query, analyze, and manipulate data using natural language.
+
+Data Connectors are essential for:
+
+- **Database Access**: Query and update SQL and NoSQL databases
+- **Data Analysis**: Analyze data across multiple sources
+- **Data Synchronization**: Keep data in sync across systems
+- **Reporting**: Generate reports from live data
+- **ETL Operations**: Extract, transform, and load data
+- **Data Validation**: Verify data integrity and quality
+
+<CardGroup cols={2}>
+  <Card title="SQL Databases" icon="table">
+    Connect to PostgreSQL, MySQL, SQL Server, and more
+  </Card>
+
+  <Card title="NoSQL Stores" icon="diagram-project">
+    Access MongoDB, Redis, DynamoDB, and other NoSQL databases
+  </Card>
+
+  <Card title="Data Warehouses" icon="warehouse">
+    Query Snowflake, BigQuery, Redshift, and analytics platforms
+  </Card>
+
+  <Card title="Cloud Storage" icon="cloud">
+    Read and write to S3, GCS, Azure Blob, and object storage
+  </Card>
+</CardGroup>
+
+## How Data Connectors Work
+
+When you configure data connectors for an agent:
+
+1. **Connection**: Agent establishes secure connection to data source
+2. **Schema Discovery**: Automatically detects tables, columns, and relationships
+3. **Query Generation**: Converts natural language to appropriate queries (SQL, NoSQL, etc.)
+4. **Execution**: Runs queries with proper security and access controls
+5. **Result Processing**: Formats and returns results in structured format
+6. **Connection Pooling**: Maintains efficient connection management
+
+<Note>
+**Security First**: All database credentials are encrypted at rest and in transit. Connections use SSL/TLS when available.
+</Note>
+
+## Supported Data Sources
+
+### SQL Databases
+
+```typescript
+{
+  dataConnectors: {
+    postgres: { enabled: true },
+    mysql: { enabled: true },
+    sqlserver: { enabled: true },
+    oracle: { enabled: true },
+    sqlite: { enabled: true }
+  }
+}
+```
+
+### NoSQL Databases
+
+```typescript
+{
+  dataConnectors: {
+    mongodb: { enabled: true },
+    redis: { enabled: true },
+    dynamodb: { enabled: true },
+    cassandra: { enabled: true },
+    firebase: { enabled: true }
+  }
+}
+```
+
+### Data Warehouses
+
+```typescript
+{
+  dataConnectors: {
+    snowflake: { enabled: true },
+    bigquery: { enabled: true },
+    redshift: { enabled: true },
+    databricks: { enabled: true }
+  }
+}
+```
+
+### Cloud Storage
+
+```typescript
+{
+  dataConnectors: {
+    s3: { enabled: true },
+    gcs: { enabled: true },
+    azureBlob: { enabled: true }
+  }
+}
+```
+
+## Code Examples
+
+### Basic SQL Query
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Query PostgreSQL database
+const result = await agentbase.runAgent({
+  message: "Show me all customers who signed up in the last 30 days",
+  dataConnectors: {
+    postgres: {
+      enabled: true,
+      connection: {
+        host: process.env.DB_HOST,
+        port: 5432,
+        database: "production",
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        ssl: true
+      }
+    }
+  }
+});
+
+console.log('Results:', result.data);
+// Agent generates and executes SQL query
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Query PostgreSQL database
+result = agentbase.run_agent(
+    message="Show me all customers who signed up in the last 30 days",
+    data_connectors={
+        "postgres": {
+            "enabled": True,
+            "connection": {
+                "host": os.environ['DB_HOST'],
+                "port": 5432,
+                "database": "production",
+                "user": os.environ['DB_USER'],
+                "password": os.environ['DB_PASSWORD'],
+                "ssl": True
+            }
+        }
+    }
+)
+
+print(f"Results: {result.data}")
+```
+
+</CodeGroup>
+
+### Connection String
+
+<CodeGroup>
+
+```typescript TypeScript
+// Use connection string format
+const result = await agentbase.runAgent({
+  message: "Count total orders by status",
+  dataConnectors: {
+    postgres: {
+      enabled: true,
+      connectionString: process.env.DATABASE_URL
+      // Format: postgresql://user:password@host:port/database
+    }
+  }
+});
+```
+
+```python Python
+# Use connection string format
+result = agentbase.run_agent(
+    message="Count total orders by status",
+    data_connectors={
+        "postgres": {
+            "enabled": True,
+            "connection_string": os.environ['DATABASE_URL']
+            # Format: postgresql://user:password@host:port/database
+        }
+    }
+)
+```
+
+</CodeGroup>
+
+### NoSQL Query
+
+<CodeGroup>
+
+```typescript TypeScript
+// Query MongoDB
+const result = await agentbase.runAgent({
+  message: "Find all products with rating above 4.5 stars",
+  dataConnectors: {
+    mongodb: {
+      enabled: true,
+      connection: {
+        uri: process.env.MONGODB_URI,
+        database: "ecommerce",
+        collection: "products"
+      }
+    }
+  }
+});
+
+// Agent generates MongoDB query
+console.log('Products:', result.data);
+```
+
+```python Python
+# Query MongoDB
+result = agentbase.run_agent(
+    message="Find all products with rating above 4.5 stars",
+    data_connectors={
+        "mongodb": {
+            "enabled": True,
+            "connection": {
+                "uri": os.environ['MONGODB_URI'],
+                "database": "ecommerce",
+                "collection": "products"
+            }
+        }
+    }
+)
+
+print(f"Products: {result.data}")
+```
+
+</CodeGroup>
+
+### Data Warehouse Query
+
+<CodeGroup>
+
+```typescript TypeScript
+// Query Snowflake data warehouse
+const result = await agentbase.runAgent({
+  message: "Show me total sales by region for Q4 2024",
+  dataConnectors: {
+    snowflake: {
+      enabled: true,
+      connection: {
+        account: process.env.SNOWFLAKE_ACCOUNT,
+        username: process.env.SNOWFLAKE_USER,
+        password: process.env.SNOWFLAKE_PASSWORD,
+        warehouse: "COMPUTE_WH",
+        database: "ANALYTICS",
+        schema: "SALES"
+      }
+    }
+  }
+});
+
+console.log('Sales data:', result.data);
+```
+
+```python Python
+# Query Snowflake data warehouse
+result = agentbase.run_agent(
+    message="Show me total sales by region for Q4 2024",
+    data_connectors={
+        "snowflake": {
+            "enabled": True,
+            "connection": {
+                "account": os.environ['SNOWFLAKE_ACCOUNT'],
+                "username": os.environ['SNOWFLAKE_USER'],
+                "password": os.environ['SNOWFLAKE_PASSWORD'],
+                "warehouse": "COMPUTE_WH",
+                "database": "ANALYTICS",
+                "schema": "SALES"
+            }
+        }
+    }
+)
+
+print(f"Sales data: {result.data}")
+```
+
+</CodeGroup>
+
+### Multiple Data Sources
+
+<CodeGroup>
+
+```typescript TypeScript
+// Query across multiple databases
+const result = await agentbase.runAgent({
+  message: "Compare customer data between production DB and analytics warehouse",
+  dataConnectors: {
+    postgres: {
+      enabled: true,
+      connectionString: process.env.PRODUCTION_DB_URL,
+      alias: "production"
+    },
+    snowflake: {
+      enabled: true,
+      connection: snowflakeConfig,
+      alias: "analytics"
+    }
+  },
+  system: `You have access to two databases:
+  - production: Live PostgreSQL database
+  - analytics: Snowflake data warehouse
+
+  Compare customer counts and identify any discrepancies.`
+});
+
+// Agent queries both sources and compares
+```
+
+```python Python
+# Query across multiple databases
+result = agentbase.run_agent(
+    message="Compare customer data between production DB and analytics warehouse",
+    data_connectors={
+        "postgres": {
+            "enabled": True,
+            "connection_string": os.environ['PRODUCTION_DB_URL'],
+            "alias": "production"
+        },
+        "snowflake": {
+            "enabled": True,
+            "connection": snowflake_config,
+            "alias": "analytics"
+        }
+    },
+    system="""You have access to two databases:
+    - production: Live PostgreSQL database
+    - analytics: Snowflake data warehouse
+
+    Compare customer counts and identify any discrepancies."""
+)
+```
+
+</CodeGroup>
+
+### Write Operations
+
+<CodeGroup>
+
+```typescript TypeScript
+// Insert and update data
+const result = await agentbase.runAgent({
+  message: "Create a new customer record for John Doe (john@example.com)",
+  dataConnectors: {
+    postgres: {
+      enabled: true,
+      connectionString: process.env.DATABASE_URL,
+      permissions: {
+        read: true,
+        write: true // Enable write operations
+      }
+    }
+  }
+});
+
+// Agent generates INSERT statement
+console.log('Customer created:', result.data);
+```
+
+```python Python
+# Insert and update data
+result = agentbase.run_agent(
+    message="Create a new customer record for John Doe (john@example.com)",
+    data_connectors={
+        "postgres": {
+            "enabled": True,
+            "connection_string": os.environ['DATABASE_URL'],
+            "permissions": {
+                "read": True,
+                "write": True  # Enable write operations
+            }
+        }
+    }
+)
+
+print(f"Customer created: {result.data}")
+```
+
+</CodeGroup>
+
+### Cloud Storage Access
+
+<CodeGroup>
+
+```typescript TypeScript
+// Read from S3
+const result = await agentbase.runAgent({
+  message: "Read the latest sales report from S3",
+  dataConnectors: {
+    s3: {
+      enabled: true,
+      connection: {
+        region: "us-east-1",
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        bucket: "company-reports"
+      }
+    }
+  }
+});
+
+// Agent lists and reads files from S3
+console.log('Report data:', result.data);
+```
+
+```python Python
+# Read from S3
+result = agentbase.run_agent(
+    message="Read the latest sales report from S3",
+    data_connectors={
+        "s3": {
+            "enabled": True,
+            "connection": {
+                "region": "us-east-1",
+                "access_key_id": os.environ['AWS_ACCESS_KEY_ID'],
+                "secret_access_key": os.environ['AWS_SECRET_ACCESS_KEY'],
+                "bucket": "company-reports"
+            }
+        }
+    }
+)
+
+print(f"Report data: {result.data}")
+```
+
+</CodeGroup>
+
+### Caching Queries
+
+<CodeGroup>
+
+```typescript TypeScript
+// Cache expensive queries
+const result = await agentbase.runAgent({
+  message: "Show me top 10 selling products this month",
+  dataConnectors: {
+    postgres: {
+      enabled: true,
+      connectionString: process.env.DATABASE_URL,
+      caching: {
+        enabled: true,
+        ttl: 3600 // Cache for 1 hour
+      }
+    }
+  }
+});
+
+// Subsequent identical queries use cached results
+```
+
+```python Python
+# Cache expensive queries
+result = agentbase.run_agent(
+    message="Show me top 10 selling products this month",
+    data_connectors={
+        "postgres": {
+            "enabled": True,
+            "connection_string": os.environ['DATABASE_URL'],
+            "caching": {
+                "enabled": True,
+                "ttl": 3600  # Cache for 1 hour
+            }
+        }
+    }
+)
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Analytics Dashboard
+
+Generate real-time analytics from data warehouse:
+
+<CodeGroup>
+
+```typescript TypeScript
+const analyticsAgent = await agentbase.runAgent({
+  message: "Create a summary of key business metrics for this week",
+  dataConnectors: {
+    snowflake: {
+      enabled: true,
+      connection: snowflakeConfig
+    }
+  },
+  system: `Generate analytics report including:
+
+  1. Total revenue this week vs last week
+  2. New customer signups
+  3. Top 5 products by sales
+  4. Average order value
+  5. Customer churn rate
+
+  Present results in a structured format with percentage changes.`
+});
+
+// Agent queries warehouse and generates comprehensive report
+console.log('Analytics:', analyticsAgent.report);
+```
+
+```python Python
+analytics_agent = agentbase.run_agent(
+    message="Create a summary of key business metrics for this week",
+    data_connectors={
+        "snowflake": {
+            "enabled": True,
+            "connection": snowflake_config
+        }
+    },
+    system="""Generate analytics report including:
+
+    1. Total revenue this week vs last week
+    2. New customer signups
+    3. Top 5 products by sales
+    4. Average order value
+    5. Customer churn rate
+
+    Present results in a structured format with percentage changes."""
+)
+
+print(f"Analytics: {analytics_agent.report}")
+```
+
+</CodeGroup>
+
+### 2. Data Quality Validation
+
+Validate data integrity across systems:
+
+```typescript
+const validationAgent = await agentbase.runAgent({
+  message: "Check data quality in customer table",
+  dataConnectors: {
+    postgres: {
+      enabled: true,
+      connectionString: process.env.DATABASE_URL
+    }
+  },
+  system: `Perform data quality checks:
+
+  1. Find duplicate email addresses
+  2. Identify missing required fields
+  3. Check for invalid phone number formats
+  4. Find customers with future birth dates
+  5. Detect orphaned records (references to non-existent data)
+
+  Report issues with counts and examples.`
+});
+
+// Agent runs validation queries and reports issues
+if (validationAgent.issues.length > 0) {
+  console.log('Data quality issues:', validationAgent.issues);
+}
+```
+
+### 3. ETL Pipeline
+
+Extract, transform, and load data:
+
+```typescript
+const etlAgent = await agentbase.runAgent({
+  message: "Sync customer data from production to analytics warehouse",
+  dataConnectors: {
+    postgres: {
+      enabled: true,
+      connectionString: process.env.PRODUCTION_DB_URL,
+      alias: "source"
+    },
+    snowflake: {
+      enabled: true,
+      connection: snowflakeConfig,
+      alias: "destination",
+      permissions: {
+        read: true,
+        write: true
+      }
+    }
+  },
+  system: `ETL Process:
+
+  1. Extract: Get customers modified in last 24 hours from source
+  2. Transform: Clean data, standardize formats, enrich with metadata
+  3. Load: Upsert into destination warehouse
+  4. Verify: Validate row counts match
+  5. Log: Record sync statistics`
+});
+
+console.log('ETL completed:', etlAgent.stats);
+```
+
+### 4. Customer Lookup
+
+Build customer service tools:
+
+```typescript
+const customerLookup = await agentbase.runAgent({
+  message: "Find customer information for email: customer@example.com",
+  dataConnectors: {
+    postgres: {
+      enabled: true,
+      connectionString: process.env.DATABASE_URL
+    }
+  },
+  system: `Look up customer and return:
+
+  - Basic info (name, email, phone)
+  - Account status and tier
+  - Recent orders (last 5)
+  - Support tickets (open and recent closed)
+  - Lifetime value
+  - Last interaction date
+
+  Format as a customer profile card.`
+});
+
+// Returns comprehensive customer data
+console.log('Customer profile:', customerLookup.profile);
+```
+
+### 5. Report Generation
+
+Generate custom reports from data:
+
+```typescript
+const reportAgent = await agentbase.runAgent({
+  message: "Generate monthly sales report for January 2024",
+  dataConnectors: {
+    postgres: {
+      enabled: true,
+      connectionString: process.env.DATABASE_URL
+    }
+  },
+  system: `Generate comprehensive sales report:
+
+  1. Total sales by product category
+  2. Sales by region
+  3. Top 10 customers by revenue
+  4. Sales rep performance
+  5. Month-over-month growth
+  6. Forecast for next month based on trends
+
+  Include visualizations and insights.`
+});
+
+// Agent queries data and generates formatted report
+```
+
+### 6. Database Migration
+
+Migrate data between databases:
+
+```typescript
+const migrationAgent = await agentbase.runAgent({
+  message: "Migrate users table from MySQL to PostgreSQL",
+  dataConnectors: {
+    mysql: {
+      enabled: true,
+      connection: mysqlConfig,
+      alias: "source"
+    },
+    postgres: {
+      enabled: true,
+      connection: postgresConfig,
+      alias: "destination",
+      permissions: {
+        read: true,
+        write: true
+      }
+    }
+  },
+  system: `Migration process:
+
+  1. Read schema from source users table
+  2. Create equivalent table in destination if not exists
+  3. Copy data in batches of 1000
+  4. Validate data integrity
+  5. Create indexes
+  6. Report migration statistics`
+});
+```
+
+## Best Practices
+
+### Security
+
+<Warning>
+**Read-Only by Default**: Data connectors are read-only by default. Explicitly enable write permissions only when needed.
+</Warning>
+
+<AccordionGroup>
+  <Accordion title="Use Read-Only Accounts">
+    ```typescript
+    // Good: Read-only database user
+    dataConnectors: {
+      postgres: {
+        enabled: true,
+        connection: {
+          user: "readonly_user", // User with SELECT only
+          password: process.env.DB_READONLY_PASSWORD
+        }
+      }
+    }
+
+    // For write operations, use dedicated user
+    dataConnectors: {
+      postgres: {
+        enabled: true,
+        connection: {
+          user: "app_writer",
+          password: process.env.DB_WRITER_PASSWORD
+        },
+        permissions: {
+          read: true,
+          write: true
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Limit Access Scope">
+    ```typescript
+    // Restrict to specific schemas or tables
+    dataConnectors: {
+      postgres: {
+        enabled: true,
+        connectionString: process.env.DATABASE_URL,
+        scope: {
+          schemas: ["public", "analytics"],
+          tables: ["customers", "orders", "products"],
+          excludeTables: ["admin_users", "api_keys"]
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Use Connection Pooling">
+    ```typescript
+    // Configure connection pool
+    dataConnectors: {
+      postgres: {
+        enabled: true,
+        connectionString: process.env.DATABASE_URL,
+        pool: {
+          min: 2,
+          max: 10,
+          acquireTimeout: 30000,
+          idleTimeout: 10000
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Enable Query Logging">
+    ```typescript
+    // Log all queries for audit trail
+    dataConnectors: {
+      postgres: {
+        enabled: true,
+        connectionString: process.env.DATABASE_URL,
+        logging: {
+          enabled: true,
+          logQueries: true,
+          logResults: false, // Don't log sensitive data
+          logErrors: true
+        }
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Performance
+
+<Tip>
+**Cache Frequently Accessed Data**: Enable caching for queries that run frequently and don't need real-time data.
+</Tip>
+
+<AccordionGroup>
+  <Accordion title="Use Query Timeouts">
+    ```typescript
+    dataConnectors: {
+      postgres: {
+        enabled: true,
+        connectionString: process.env.DATABASE_URL,
+        timeout: 30000, // 30 second timeout
+        statementTimeout: 20000 // 20 second query timeout
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Limit Result Sets">
+    ```typescript
+    system: `When querying data:
+    - Always use LIMIT clause for large tables
+    - Default to 100 rows unless more are specifically needed
+    - Use pagination for large result sets
+    - Warn if query would return more than 1000 rows`
+    ```
+  </Accordion>
+
+  <Accordion title="Use Indexes Effectively">
+    ```typescript
+    message: `Analyze query performance and suggest indexes`,
+    system: `When running queries:
+    - Use EXPLAIN to analyze query plans
+    - Identify missing indexes
+    - Suggest index creation for slow queries
+    - Avoid table scans on large tables`
+    ```
+  </Accordion>
+
+  <Accordion title="Batch Operations">
+    ```typescript
+    // Process data in batches
+    const result = await agentbase.runAgent({
+      message: "Update all customer records to add loyalty_points field",
+      dataConnectors: {
+        postgres: {
+          enabled: true,
+          connectionString: process.env.DATABASE_URL,
+          permissions: { write: true }
+        }
+      },
+      system: `Update customers in batches:
+      - Process 1000 records at a time
+      - Use transactions for consistency
+      - Commit after each batch
+      - Log progress`
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Data Integrity
+
+<AccordionGroup>
+  <Accordion title="Use Transactions">
+    ```typescript
+    system: `For write operations:
+    - Always use transactions
+    - Validate data before commit
+    - Rollback on any error
+    - Log transaction details`
+    ```
+  </Accordion>
+
+  <Accordion title="Validate Before Write">
+    ```typescript
+    system: `Before inserting/updating data:
+    - Validate required fields are present
+    - Check data types match schema
+    - Verify foreign key references exist
+    - Ensure unique constraints won't be violated
+    - Confirm data is within valid ranges`
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Errors Gracefully">
+    ```typescript
+    dataConnectors: {
+      postgres: {
+        enabled: true,
+        connectionString: process.env.DATABASE_URL,
+        errorHandling: {
+          retryOnConnectionError: true,
+          maxRetries: 3,
+          retryDelay: 1000,
+          logErrors: true
+        }
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Primitives
+
+### With RAG
+
+Combine database queries with semantic search:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Find similar customer support cases to this one",
+  dataConnectors: {
+    postgres: {
+      enabled: true,
+      connectionString: process.env.DATABASE_URL
+    }
+  },
+  datastores: [{
+    id: "ds_support_cases",
+    name: "Support Cases Knowledge Base"
+  }]
+});
+
+// Agent queries database and semantic knowledge base
+```
+
+Learn more: [RAG Primitive](/primitives/extensions/rag)
+
+### With Workflow
+
+Automate data processing workflows:
+
+```typescript
+const dataWorkflow = {
+  name: "daily_data_sync",
+  steps: [
+    {
+      id: "extract",
+      type: "agent_task",
+      config: {
+        message: "Extract new records from source database",
+        dataConnectors: { mysql: { enabled: true } }
+      }
+    },
+    {
+      id: "transform",
+      type: "agent_task",
+      config: {
+        message: "Transform and clean data"
+      }
+    },
+    {
+      id: "load",
+      type: "agent_task",
+      config: {
+        message: "Load into destination warehouse",
+        dataConnectors: { snowflake: { enabled: true } }
+      }
+    }
+  ]
+};
+```
+
+Learn more: [Workflow Primitive](/primitives/extensions/workflow)
+
+### With Memory
+
+Remember query patterns and preferences:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Show me the usual sales report",
+  memory: {
+    namespace: `user_${userId}`,
+    enabled: true
+  },
+  dataConnectors: {
+    postgres: {
+      enabled: true,
+      connectionString: process.env.DATABASE_URL
+    }
+  }
+});
+
+// Agent remembers user's preferred report format and filters
+```
+
+Learn more: [Memory Primitive](/primitives/extensions/memory)
+
+## Performance Considerations
+
+### Query Optimization
+
+- **Query Planning**: Analyze query plans before execution
+- **Index Usage**: Ensure queries use appropriate indexes
+- **Result Limiting**: Always limit result sets to needed rows
+- **Caching**: Cache frequently accessed, slowly changing data
+
+```typescript
+// Monitor query performance
+const metrics = await agentbase.getDataConnectorMetrics({
+  connector: "postgres",
+  timeRange: "1h"
+});
+
+console.log('Avg query time:', metrics.avgQueryTime);
+console.log('Slow queries:', metrics.slowQueries);
+console.log('Cache hit rate:', metrics.cacheHitRate);
+```
+
+### Connection Management
+
+- **Pool Size**: Configure appropriate connection pool sizes
+- **Connection Reuse**: Reuse connections across queries
+- **Timeout Management**: Set appropriate timeouts
+- **Cleanup**: Close idle connections
+
+```typescript
+dataConnectors: {
+  postgres: {
+    enabled: true,
+    pool: {
+      min: 2,
+      max: 10,
+      acquireTimeout: 30000,
+      idleTimeout: 10000,
+      evictionRunInterval: 10000
+    }
+  }
+}
+```
+
+### Cost Optimization
+
+<Tip>
+**Monitor Warehouse Usage**: Data warehouse queries can be expensive. Monitor usage and optimize expensive queries.
+</Tip>
+
+```typescript
+// Set query cost limits
+dataConnectors: {
+  snowflake: {
+    enabled: true,
+    connection: snowflakeConfig,
+    costLimits: {
+      maxQueryCost: 10.00, // USD
+      alertThreshold: 0.8,
+      blockExpensiveQueries: true
+    }
+  }
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Connection Failures">
+    **Problem**: Cannot connect to database
+
+    **Solutions**:
+    - Verify connection credentials are correct
+    - Check network connectivity and firewall rules
+    - Ensure database server is running
+    - Verify SSL/TLS settings match requirements
+    - Check IP whitelist if applicable
+
+    ```typescript
+    // Test connection
+    const test = await agentbase.testDataConnector({
+      type: "postgres",
+      connectionString: process.env.DATABASE_URL
+    });
+
+    if (!test.success) {
+      console.error('Connection error:', test.error);
+      console.log('Suggestion:', test.suggestion);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Query Timeouts">
+    **Problem**: Queries timing out
+
+    **Solutions**:
+    - Increase timeout limits
+    - Optimize slow queries with indexes
+    - Reduce result set size
+    - Use query caching
+    - Consider breaking into smaller queries
+
+    ```typescript
+    dataConnectors: {
+      postgres: {
+        enabled: true,
+        connectionString: process.env.DATABASE_URL,
+        timeout: 60000, // Increase to 60 seconds
+        statementTimeout: 45000
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Permission Errors">
+    **Problem**: Access denied errors
+
+    **Solutions**:
+    - Verify user has required permissions
+    - Check table/schema access rights
+    - Enable write permissions if needed
+    - Review database user grants
+    - Check row-level security policies
+
+    ```typescript
+    // Grant appropriate permissions
+    dataConnectors: {
+      postgres: {
+        enabled: true,
+        connectionString: process.env.DATABASE_URL,
+        permissions: {
+          read: true,
+          write: true, // Enable if needed
+          delete: false // Explicitly disable dangerous operations
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Schema Discovery Issues">
+    **Problem**: Agent can't see tables or columns
+
+    **Solutions**:
+    - Verify user has permissions to read schema
+    - Check search_path for PostgreSQL
+    - Specify schemas explicitly
+    - Refresh schema cache
+
+    ```typescript
+    // Explicitly specify schemas
+    dataConnectors: {
+      postgres: {
+        enabled: true,
+        connectionString: process.env.DATABASE_URL,
+        scope: {
+          schemas: ["public", "app_schema"],
+          refreshSchema: true
+        }
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Patterns
+
+### Query Result Streaming
+
+Stream large result sets:
+
+```typescript
+dataConnectors: {
+  postgres: {
+    enabled: true,
+    connectionString: process.env.DATABASE_URL,
+    streaming: {
+      enabled: true,
+      batchSize: 1000
+    }
+  }
+}
+
+// Agent streams results in batches
+```
+
+### Multi-tenancy
+
+Isolate data by tenant:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Show customer orders",
+  dataConnectors: {
+    postgres: {
+      enabled: true,
+      connectionString: process.env.DATABASE_URL,
+      tenantIsolation: {
+        enabled: true,
+        tenantId: currentTenant.id,
+        tenantColumn: "tenant_id"
+      }
+    }
+  }
+});
+
+// Agent automatically filters all queries by tenant_id
+```
+
+### Change Data Capture
+
+Monitor database changes:
+
+```typescript
+const cdc = await agentbase.createDataConnectorListener({
+  connector: "postgres",
+  tables: ["orders", "customers"],
+  events: ["insert", "update", "delete"],
+  callback: async (change) => {
+    await agentbase.runAgent({
+      message: `Process database change: ${change.operation} on ${change.table}`,
+      context: { change }
+    });
+  }
+});
+```
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="RAG" icon="book" href="/primitives/extensions/rag">
+    Combine with semantic search on database content
+  </Card>
+
+  <Card title="Integrations" icon="plug" href="/primitives/extensions/integrations">
+    Connect to external APIs and services
+  </Card>
+
+  <Card title="Workflow" icon="diagram-project" href="/primitives/extensions/workflow">
+    Automate data processing workflows
+  </Card>
+
+  <Card title="Tasks" icon="list-check" href="/primitives/extensions/tasks">
+    Schedule recurring data operations
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code">
+    Complete data connectors API documentation
+  </Card>
+
+  <Card title="Supported Databases" icon="database">
+    Full list of supported data sources
+  </Card>
+
+  <Card title="Security Guide" icon="shield">
+    Best practices for secure database access
+  </Card>
+</CardGroup>
+
+<Tip>
+**Pro Tip**: Use read-only replicas for analytics queries to avoid impacting production database performance. Agent can automatically route queries to appropriate databases.
+</Tip>

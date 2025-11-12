@@ -1,0 +1,1038 @@
+---
+title: "Background Tasks"
+description: "Execute long-running agent tasks asynchronously with status tracking and result retrieval"
+icon: "clock"
+---
+
+> Background Tasks enable agents to execute long-running operations asynchronously, allowing your application to remain responsive while complex work continues in the background.
+
+## Overview
+
+The Background Tasks primitive allows agents to perform time-intensive operations without blocking your application. Instead of waiting for completion, you can initiate a background task, receive a task ID, and check status or retrieve results later.
+
+Background tasks are essential for:
+
+- **Long-Running Operations**: Multi-hour data processing, analysis, or generation tasks
+- **Async Workflows**: Decouple request initiation from result consumption
+- **Batch Processing**: Process large datasets without timeout constraints
+- **Scheduled Jobs**: Execute recurring agent tasks on a schedule
+- **Resource-Intensive Tasks**: Complex computations without blocking other operations
+
+<CardGroup cols={2}>
+  <Card title="Non-Blocking Execution" icon="forward">
+    Initiate tasks and continue without waiting for completion
+  </Card>
+
+  <Card title="Status Tracking" icon="list-check">
+    Monitor progress, check status, and receive notifications when complete
+  </Card>
+
+  <Card title="Reliable Completion" icon="shield-check">
+    Tasks continue running even if client disconnects or crashes
+  </Card>
+
+  <Card title="Result Retrieval" icon="inbox">
+    Fetch results when ready, with full session context preserved
+  </Card>
+</CardGroup>
+
+## How Background Tasks Work
+
+### Task Lifecycle
+
+Background tasks follow a well-defined lifecycle:
+
+1. **Initiation**: Submit task request with `background: true` parameter
+2. **Task Creation**: System creates background job and returns task ID immediately
+3. **Execution**: Agent processes task asynchronously in background
+4. **Progress Updates**: Task status updates as execution proceeds
+5. **Completion**: Task finishes with success or error state
+6. **Result Retrieval**: Results remain available for retrieval
+7. **Cleanup**: Completed tasks eventually expire and clean up
+
+### Task States
+
+Tasks transition through these states:
+
+- **`queued`**: Task accepted, waiting to start
+- **`running`**: Task currently executing
+- **`completed`**: Task finished successfully
+- **`failed`**: Task encountered error and stopped
+- **`cancelled`**: Task was manually cancelled
+
+<Note>
+**Persistent Execution**: Background tasks continue running even if your application disconnects. Results remain available until you retrieve them.
+</Note>
+
+## Code Examples
+
+### Basic Background Task
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Start long-running task in background
+const task = await agentbase.runAgent({
+  message: "Analyze all customer feedback from the past year and create comprehensive report",
+  background: true  // Run asynchronously
+});
+
+console.log('Task ID:', task.taskId);
+console.log('Status:', task.status);  // 'queued' or 'running'
+
+// Continue with other work...
+// Task executes in background
+
+// Later, check status
+const status = await agentbase.getTaskStatus(task.taskId);
+console.log('Current status:', status.state);
+console.log('Progress:', status.progress);
+
+// When complete, get results
+if (status.state === 'completed') {
+  const result = await agentbase.getTaskResult(task.taskId);
+  console.log('Result:', result.message);
+}
+```
+
+```python Python
+from agentbase import Agentbase
+import time
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Start long-running task in background
+task = agentbase.run_agent(
+    message="Analyze all customer feedback from the past year and create comprehensive report",
+    background=True  # Run asynchronously
+)
+
+print(f"Task ID: {task.task_id}")
+print(f"Status: {task.status}")  # 'queued' or 'running'
+
+# Continue with other work...
+# Task executes in background
+
+# Later, check status
+status = agentbase.get_task_status(task.task_id)
+print(f"Current status: {status.state}")
+print(f"Progress: {status.progress}")
+
+# When complete, get results
+if status.state == 'completed':
+    result = agentbase.get_task_result(task.task_id)
+    print(f"Result: {result.message}")
+```
+
+```bash cURL
+# Start background task
+curl -X POST https://api.agentbase.sh \
+  -H "Authorization: Bearer $AGENTBASE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Analyze all customer feedback from the past year",
+    "background": true
+  }'
+
+# Response: { "taskId": "task_abc123", "status": "queued" }
+
+# Check status
+curl https://api.agentbase.sh/tasks/task_abc123 \
+  -H "Authorization: Bearer $AGENTBASE_API_KEY"
+
+# Get results when complete
+curl https://api.agentbase.sh/tasks/task_abc123/result \
+  -H "Authorization: Bearer $AGENTBASE_API_KEY"
+```
+
+</CodeGroup>
+
+### Polling for Completion
+
+<CodeGroup>
+
+```typescript TypeScript
+// Poll until task completes
+async function waitForTask(taskId: string): Promise<any> {
+  while (true) {
+    const status = await agentbase.getTaskStatus(taskId);
+
+    console.log(`Status: ${status.state} - Progress: ${status.progress}%`);
+
+    if (status.state === 'completed') {
+      return await agentbase.getTaskResult(taskId);
+    }
+
+    if (status.state === 'failed') {
+      throw new Error(`Task failed: ${status.error}`);
+    }
+
+    // Wait before next check
+    await new Promise(resolve => setTimeout(resolve, 5000)); // 5 seconds
+  }
+}
+
+// Usage
+const task = await agentbase.runAgent({
+  message: "Generate 100 product descriptions",
+  background: true
+});
+
+const result = await waitForTask(task.taskId);
+console.log('All descriptions:', result.message);
+```
+
+```python Python
+import time
+
+# Poll until task completes
+async def wait_for_task(task_id: str):
+    while True:
+        status = agentbase.get_task_status(task_id)
+
+        print(f"Status: {status.state} - Progress: {status.progress}%")
+
+        if status.state == 'completed':
+            return agentbase.get_task_result(task_id)
+
+        if status.state == 'failed':
+            raise Exception(f"Task failed: {status.error}")
+
+        # Wait before next check
+        time.sleep(5)  # 5 seconds
+
+# Usage
+task = agentbase.run_agent(
+    message="Generate 100 product descriptions",
+    background=True
+)
+
+result = await wait_for_task(task.task_id)
+print(f"All descriptions: {result.message}")
+```
+
+</CodeGroup>
+
+### Webhook Notifications
+
+<CodeGroup>
+
+```typescript TypeScript
+// Get notified when task completes
+const task = await agentbase.runAgent({
+  message: "Process large dataset",
+  background: true,
+  webhook: {
+    url: "https://api.yourapp.com/webhooks/task-complete",
+    events: ["completed", "failed"]
+  }
+});
+
+// Your webhook endpoint receives:
+// POST https://api.yourapp.com/webhooks/task-complete
+// {
+//   "taskId": "task_abc123",
+//   "status": "completed",
+//   "timestamp": "2025-01-08T10:30:00Z"
+// }
+
+// Webhook handler
+app.post('/webhooks/task-complete', async (req, res) => {
+  const { taskId, status } = req.body;
+
+  if (status === 'completed') {
+    const result = await agentbase.getTaskResult(taskId);
+    await processResult(result);
+  }
+
+  res.sendStatus(200);
+});
+```
+
+```python Python
+from flask import Flask, request
+
+app = Flask(__name__)
+
+# Get notified when task completes
+task = agentbase.run_agent(
+    message="Process large dataset",
+    background=True,
+    webhook={
+        'url': 'https://api.yourapp.com/webhooks/task-complete',
+        'events': ['completed', 'failed']
+    }
+)
+
+# Your webhook endpoint receives:
+# POST https://api.yourapp.com/webhooks/task-complete
+# {
+#   "taskId": "task_abc123",
+#   "status": "completed",
+#   "timestamp": "2025-01-08T10:30:00Z"
+# }
+
+# Webhook handler
+@app.route('/webhooks/task-complete', methods=['POST'])
+async def task_complete():
+    data = request.json
+    task_id = data['taskId']
+    status = data['status']
+
+    if status == 'completed':
+        result = agentbase.get_task_result(task_id)
+        await process_result(result)
+
+    return '', 200
+```
+
+</CodeGroup>
+
+### Batch Background Processing
+
+<CodeGroup>
+
+```typescript TypeScript
+// Process multiple items in background
+async function batchProcess(items: string[]): Promise<string[]> {
+  // Start all tasks
+  const tasks = await Promise.all(
+    items.map(item =>
+      agentbase.runAgent({
+        message: `Process item: ${item}`,
+        background: true
+      })
+    )
+  );
+
+  console.log(`Started ${tasks.length} background tasks`);
+
+  // Collect results as they complete
+  const results = [];
+
+  for (const task of tasks) {
+    const result = await waitForTask(task.taskId);
+    results.push(result);
+    console.log(`Completed ${results.length}/${tasks.length}`);
+  }
+
+  return results;
+}
+
+// Process 100 items in parallel
+const items = Array.from({ length: 100 }, (_, i) => `item-${i}`);
+const results = await batchProcess(items);
+```
+
+```python Python
+# Process multiple items in background
+async def batch_process(items: list) -> list:
+    # Start all tasks
+    tasks = await asyncio.gather(*[
+        agentbase.run_agent(
+            message=f"Process item: {item}",
+            background=True
+        )
+        for item in items
+    ])
+
+    print(f"Started {len(tasks)} background tasks")
+
+    # Collect results as they complete
+    results = []
+
+    for task in tasks:
+        result = await wait_for_task(task.task_id)
+        results.append(result)
+        print(f"Completed {len(results)}/{len(tasks)}")
+
+    return results
+
+# Process 100 items in parallel
+items = [f"item-{i}" for i in range(100)]
+results = await batch_process(items)
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Large-Scale Data Analysis
+
+Process massive datasets without timeout constraints:
+
+<AccordionGroup>
+  <Accordion title="Customer Analytics">
+    ```typescript
+    async function analyzeAllCustomers() {
+      const task = await agentbase.runAgent({
+        message: `
+          Analyze all customer data:
+          1. Load customer database (2M+ records)
+          2. Segment customers by behavior patterns
+          3. Calculate lifetime value for each segment
+          4. Identify churn risk factors
+          5. Generate actionable insights
+          6. Create detailed report with visualizations
+
+          This will take 2-3 hours to complete.
+        `,
+        background: true,
+        webhook: {
+          url: 'https://api.company.com/webhooks/analysis-complete',
+          events: ['completed']
+        }
+      });
+
+      // Store task for monitoring
+      await db.tasks.create({
+        taskId: task.taskId,
+        type: 'customer-analysis',
+        startedAt: new Date()
+      });
+
+      return task.taskId;
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Financial Modeling">
+    ```typescript
+    async function runFinancialSimulations() {
+      const task = await agentbase.runAgent({
+        message: `
+          Run Monte Carlo simulations:
+          - 10,000 simulation iterations
+          - Model portfolio performance over 30 years
+          - Test various market scenarios
+          - Calculate risk metrics and confidence intervals
+          - Generate comprehensive investment report
+
+          Estimated time: 4-6 hours
+        `,
+        background: true
+      });
+
+      // Check progress periodically
+      setInterval(async () => {
+        const status = await agentbase.getTaskStatus(task.taskId);
+        console.log(`Progress: ${status.progress}% - ${status.currentStep}`);
+      }, 60000); // Every minute
+
+      return task.taskId;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 2. Content Generation at Scale
+
+Generate large volumes of content asynchronously:
+
+```typescript
+async function generateProductContent(productIds: string[]) {
+  const task = await agentbase.runAgent({
+    message: `
+      Generate content for ${productIds.length} products:
+      - Product descriptions (200-300 words each)
+      - SEO meta descriptions
+      - Social media posts (3 per product)
+      - Email marketing copy
+
+      Products: ${productIds.join(', ')}
+
+      Estimated time: 2-3 hours for ${productIds.length} products
+    `,
+    background: true,
+    webhook: {
+      url: 'https://api.company.com/webhooks/content-ready',
+      events: ['completed', 'failed']
+    }
+  });
+
+  // Update products database
+  await db.products.updateMany(
+    { id: { $in: productIds } },
+    { contentGenerationTask: task.taskId, status: 'generating' }
+  );
+
+  return task.taskId;
+}
+```
+
+### 3. Scheduled Reports
+
+Generate periodic reports in background:
+
+```typescript
+// Daily report generation
+async function generateDailyReport() {
+  const task = await agentbase.runAgent({
+    message: `
+      Generate comprehensive daily report:
+      1. Collect data from all sources
+      2. Analyze sales, traffic, conversions
+      3. Compare to previous day and week
+      4. Identify trends and anomalies
+      5. Create executive summary
+      6. Generate detailed charts and tables
+      7. Export to PDF and send to stakeholders
+    `,
+    background: true,
+    session: await getReportingSession() // Maintains historical context
+  });
+
+  // Store for tracking
+  await db.reports.create({
+    date: new Date(),
+    taskId: task.taskId,
+    type: 'daily',
+    status: 'generating'
+  });
+}
+
+// Schedule with cron
+cron.schedule('0 6 * * *', generateDailyReport); // Daily at 6 AM
+```
+
+### 4. ETL Pipelines
+
+Run complex data pipelines asynchronously:
+
+```typescript
+async function runETLPipeline() {
+  const task = await agentbase.runAgent({
+    message: `
+      Execute ETL pipeline:
+
+      EXTRACT:
+      - Download data from 15 different APIs
+      - Fetch files from S3 buckets
+      - Query production database snapshots
+
+      TRANSFORM:
+      - Clean and normalize data
+      - Apply business logic transformations
+      - Merge data from different sources
+      - Calculate derived metrics
+
+      LOAD:
+      - Validate transformed data
+      - Load into data warehouse
+      - Update materialized views
+      - Trigger downstream processes
+
+      Handle errors gracefully and create detailed log.
+    `,
+    background: true,
+    webhook: {
+      url: 'https://api.company.com/webhooks/etl-complete',
+      events: ['completed', 'failed']
+    }
+  });
+
+  return task.taskId;
+}
+```
+
+### 5. Machine Learning Training
+
+Train models in background:
+
+```typescript
+async function trainMLModel(datasetId: string) {
+  const task = await agentbase.runAgent({
+    message: `
+      Train machine learning model:
+      1. Load dataset ${datasetId}
+      2. Split into train/validation/test sets
+      3. Train multiple model architectures
+      4. Perform hyperparameter tuning
+      5. Evaluate on test set
+      6. Select best performing model
+      7. Save model artifacts
+      8. Generate performance report
+
+      Expected training time: 6-12 hours
+    `,
+    background: true
+  });
+
+  // Monitor training progress
+  const monitor = setInterval(async () => {
+    const status = await agentbase.getTaskStatus(task.taskId);
+
+    await db.mlTraining.update(datasetId, {
+      status: status.state,
+      progress: status.progress,
+      currentEpoch: status.metadata?.currentEpoch,
+      bestAccuracy: status.metadata?.bestAccuracy
+    });
+
+    if (status.state === 'completed' || status.state === 'failed') {
+      clearInterval(monitor);
+    }
+  }, 30000); // Every 30 seconds
+
+  return task.taskId;
+}
+```
+
+### 6. Web Scraping Jobs
+
+Large-scale web scraping operations:
+
+```typescript
+async function scrapeCompetitorData(urls: string[]) {
+  const task = await agentbase.runAgent({
+    message: `
+      Scrape competitor websites:
+      - URLs: ${urls.join(', ')}
+      - Extract: pricing, products, features
+      - Handle rate limits and retries
+      - Respect robots.txt
+      - Parse and structure data
+      - Store in database
+
+      ${urls.length} sites to scrape, estimated 3-4 hours
+    `,
+    background: true,
+    webhook: {
+      url: 'https://api.company.com/webhooks/scraping-complete',
+      events: ['completed']
+    }
+  });
+
+  return task.taskId;
+}
+```
+
+## Best Practices
+
+### Task Design
+
+<AccordionGroup>
+  <Accordion title="Make Tasks Self-Contained">
+    ```typescript
+    // Good: Complete instructions with all context
+    const task = await agentbase.runAgent({
+      message: `
+        Process dataset located at: s3://bucket/data.csv
+        Credentials: Use IAM role arn:aws:iam::123:role/processor
+        Output: Save results to s3://bucket/results/
+        Notification: Email team@company.com when complete
+      `,
+      background: true
+    });
+
+    // Avoid: Incomplete instructions requiring interaction
+    const bad = await agentbase.runAgent({
+      message: "Process the dataset",  // Which dataset? Where?
+      background: true
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Set Realistic Timeouts">
+    ```typescript
+    // Configure appropriate timeout for task duration
+    const task = await agentbase.runAgent({
+      message: "Long-running analysis (expected: 4-6 hours)",
+      background: true,
+      timeout: 8 * 60 * 60 * 1000  // 8 hours in milliseconds
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Include Progress Checkpoints">
+    ```typescript
+    // Design tasks with progress reporting
+    const task = await agentbase.runAgent({
+      message: `
+        Process 10,000 records.
+
+        Report progress after every 1,000 records:
+        - Log completion count
+        - Update progress percentage
+        - Report any errors encountered
+        - Estimate time remaining
+      `,
+      background: true
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Implement Error Recovery">
+    ```typescript
+    // Design for resilience
+    const task = await agentbase.runAgent({
+      message: `
+        Process all files in directory.
+
+        Error handling:
+        - If file fails, log error and continue
+        - Save progress after each file
+        - If total errors exceed 10%, stop and report
+        - Create summary of successful and failed files
+      `,
+      background: true
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Monitoring and Management
+
+```typescript
+// Comprehensive task management
+class BackgroundTaskManager {
+  async submitTask(message: string, options = {}) {
+    const task = await agentbase.runAgent({
+      message,
+      background: true,
+      ...options
+    });
+
+    // Store task metadata
+    await db.tasks.create({
+      taskId: task.taskId,
+      message,
+      status: 'queued',
+      createdAt: new Date(),
+      ...options
+    });
+
+    // Start monitoring
+    this.monitorTask(task.taskId);
+
+    return task.taskId;
+  }
+
+  async monitorTask(taskId: string) {
+    const interval = setInterval(async () => {
+      const status = await agentbase.getTaskStatus(taskId);
+
+      // Update database
+      await db.tasks.update(taskId, {
+        status: status.state,
+        progress: status.progress,
+        updatedAt: new Date()
+      });
+
+      // Handle completion
+      if (status.state === 'completed') {
+        clearInterval(interval);
+        await this.handleCompletion(taskId);
+      }
+
+      // Handle failure
+      if (status.state === 'failed') {
+        clearInterval(interval);
+        await this.handleFailure(taskId, status.error);
+      }
+    }, 10000); // Check every 10 seconds
+  }
+
+  async handleCompletion(taskId: string) {
+    const result = await agentbase.getTaskResult(taskId);
+
+    await db.tasks.update(taskId, {
+      status: 'completed',
+      result: result.message,
+      completedAt: new Date()
+    });
+
+    // Notify stakeholders
+    await notifyCompletion(taskId);
+  }
+
+  async handleFailure(taskId: string, error: string) {
+    await db.tasks.update(taskId, {
+      status: 'failed',
+      error,
+      failedAt: new Date()
+    });
+
+    // Alert team
+    await alertFailure(taskId, error);
+  }
+
+  async cancelTask(taskId: string) {
+    await agentbase.cancelTask(taskId);
+
+    await db.tasks.update(taskId, {
+      status: 'cancelled',
+      cancelledAt: new Date()
+    });
+  }
+
+  async listActiveTasks() {
+    return await db.tasks.find({
+      status: { $in: ['queued', 'running'] }
+    });
+  }
+}
+```
+
+### Resource Management
+
+```typescript
+// Limit concurrent background tasks
+class TaskQueue {
+  private maxConcurrent = 10;
+  private active = 0;
+  private queue: Array<() => Promise<any>> = [];
+
+  async submit(message: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const taskFn = async () => {
+        try {
+          this.active++;
+
+          const task = await agentbase.runAgent({
+            message,
+            background: true
+          });
+
+          resolve(task.taskId);
+        } catch (error) {
+          reject(error);
+        } finally {
+          this.active--;
+          this.processQueue();
+        }
+      };
+
+      if (this.active < this.maxConcurrent) {
+        taskFn();
+      } else {
+        this.queue.push(taskFn);
+      }
+    });
+  }
+
+  private processQueue() {
+    while (this.active < this.maxConcurrent && this.queue.length > 0) {
+      const taskFn = this.queue.shift();
+      if (taskFn) taskFn();
+    }
+  }
+}
+```
+
+## Integration with Other Primitives
+
+### With Persistence
+
+Background tasks maintain session state:
+
+```typescript
+// Use persistent session for background work
+const reportingSession = await getReportingSession();
+
+const task = await agentbase.runAgent({
+  message: "Generate monthly report using historical data",
+  session: reportingSession,  // Access to all previous reports
+  background: true
+});
+```
+
+Learn more: [Persistence Primitive](/primitives/essentials/persistence)
+
+### With Hooks
+
+Execute callbacks during background task lifecycle:
+
+```typescript
+const task = await agentbase.runAgent({
+  message: "Long-running task",
+  background: true,
+  hooks: {
+    onStart: async () => {
+      await metrics.increment('tasks.started');
+    },
+    onProgress: async (progress) => {
+      await updateUI(progress);
+    },
+    onComplete: async (result) => {
+      await processResult(result);
+      await metrics.increment('tasks.completed');
+    },
+    onError: async (error) => {
+      await logger.error('Task failed', { error });
+      await metrics.increment('tasks.failed');
+    }
+  }
+});
+```
+
+Learn more: [Hooks Primitive](/primitives/essentials/hooks)
+
+### With Traces
+
+Monitor background task execution:
+
+```typescript
+// Stream trace events from background task
+const task = await agentbase.runAgent({
+  message: "Background analysis",
+  background: true,
+  stream: true  // Stream events even for background task
+});
+
+// Receive real-time updates
+for await (const event of task.events) {
+  console.log(`[${event.type}]`, event);
+
+  if (event.type === 'agent_progress') {
+    console.log(`Progress: ${event.progress}%`);
+  }
+}
+```
+
+Learn more: [Traces Primitive](/primitives/essentials/traces)
+
+## Performance Considerations
+
+### Task Overhead
+
+- **Submission**: < 100ms to queue task
+- **Status Check**: < 50ms to check task status
+- **Result Retrieval**: 100-500ms depending on result size
+
+### Concurrency Limits
+
+- **Default Limit**: 50 concurrent background tasks per account
+- **Enterprise Limit**: Configurable based on needs
+- **Queue Depth**: Unlimited queued tasks
+
+### Resource Optimization
+
+```typescript
+// Optimize background task resource usage
+const task = await agentbase.runAgent({
+  message: "Process data efficiently",
+  background: true,
+  resources: {
+    priority: "low",        // Use lower priority for background work
+    memory: "medium",       // Request appropriate memory
+    cpu: "low",            // Most background tasks don't need high CPU
+    timeout: 12 * 60 * 60  // 12 hour timeout
+  }
+});
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Task Stuck in 'queued' State">
+    **Problem**: Task not starting execution
+
+    **Solutions**:
+    - Check concurrent task limits
+    - Verify account has available resources
+    - Review task priority settings
+
+    ```typescript
+    // Check active tasks
+    const active = await agentbase.listTasks({ status: 'running' });
+    console.log(`Active tasks: ${active.length}`);
+
+    // Increase priority if needed
+    await agentbase.updateTask(taskId, { priority: 'high' });
+    ```
+  </Accordion>
+
+  <Accordion title="Cannot Retrieve Results">
+    **Problem**: Results not available after completion
+
+    **Solutions**:
+    - Verify task actually completed successfully
+    - Check result retention period (typically 7 days)
+    - Ensure using correct task ID
+
+    ```typescript
+    const status = await agentbase.getTaskStatus(taskId);
+    console.log('Status:', status);
+
+    if (status.state === 'completed') {
+      try {
+        const result = await agentbase.getTaskResult(taskId);
+      } catch (error) {
+        console.error('Result no longer available:', error);
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Task Timeout">
+    **Problem**: Task fails with timeout error
+
+    **Solutions**:
+    - Increase timeout setting
+    - Break into smaller subtasks
+    - Optimize task execution
+
+    ```typescript
+    // Longer timeout
+    const task = await agentbase.runAgent({
+      message: "Very long task",
+      background: true,
+      timeout: 24 * 60 * 60 * 1000  // 24 hours
+    });
+
+    // Or break into smaller tasks
+    const subtasks = await Promise.all([
+      agentbase.runAgent({ message: "Part 1", background: true }),
+      agentbase.runAgent({ message: "Part 2", background: true }),
+      agentbase.runAgent({ message: "Part 3", background: true })
+    ]);
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Persistence" icon="database" href="/primitives/essentials/persistence">
+    Session state for background tasks
+  </Card>
+
+  <Card title="Hooks" icon="webhook" href="/primitives/essentials/hooks">
+    Lifecycle callbacks for tasks
+  </Card>
+
+  <Card title="Traces" icon="bug" href="/primitives/essentials/traces">
+    Monitor background execution
+  </Card>
+
+  <Card title="Self-Healing" icon="shield-heart" href="/primitives/essentials/self-healing">
+    Automatic error recovery in tasks
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Background task parameters
+  </Card>
+
+  <Card title="API Events" icon="webhook" href="/deploy/api/message-events">
+    Configure webhook notifications
+  </Card>
+
+  <Card title="Use Cases" icon="lightbulb" href="/build/use-cases">
+    Background task examples
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Background tasks are perfect for operations that take more than a few seconds. Use webhooks for notifications and implement proper monitoring for production workloads.
+</Tip>

@@ -1,0 +1,914 @@
+---
+title: "Computer"
+description: "Full Linux environment with shell access, development tools, and runtime environments"
+icon: "desktop"
+---
+
+> Agentbase provides agents with complete Linux computer environments featuring shell access, multiple programming runtimes, package managers, and development tools for complex workflows.
+
+## Overview
+
+The Computer primitive represents the full Linux operating system environment that agents can access for executing code, running commands, installing packages, and performing system-level operations. Unlike simple code execution, the computer environment provides:
+
+- **Shell Access**: Full bash shell for running any command
+- **Multiple Runtimes**: Python, Node.js, and more pre-installed
+- **Package Management**: apt, pip, npm for installing dependencies
+- **Development Tools**: git, curl, wget, vim, and standard Unix utilities
+- **Internet Access**: Download packages, make API calls, clone repositories
+- **Persistent State**: Installed packages and files persist across requests
+
+<CardGroup cols={2}>
+  <Card title="Full Linux OS" icon="linux">
+    Debian GNU/Linux 12 (bookworm) with kernel 6.1.134 x86_64
+  </Card>
+
+  <Card title="Pre-installed Runtimes" icon="code">
+    Python 3.11.2, Node.js 18.20.4, and essential development tools
+  </Card>
+
+  <Card title="Package Managers" icon="box">
+    apt for system packages, pip for Python, npm for Node.js
+  </Card>
+
+  <Card title="Internet Enabled" icon="wifi">
+    Full outbound internet access for downloads and API calls
+  </Card>
+</CardGroup>
+
+## When Computer Environments Are Created
+
+Computer environments are created automatically when agents need to perform tasks that require:
+
+<CardGroup cols={2}>
+  <Card title="Code & Development" icon="code">
+    Python, Node.js, or other language execution, package installation, testing, and debugging
+  </Card>
+
+  <Card title="File Operations" icon="file">
+    Creating, reading, writing, or processing files, data transformation, and file system management
+  </Card>
+
+  <Card title="Web Interaction" icon="globe">
+    Web scraping, browser automation, form submission, and website testing
+  </Card>
+
+  <Card title="System Operations" icon="terminal">
+    Shell commands, system configuration, process management, and tool installation
+  </Card>
+</CardGroup>
+
+<Note>
+**Automatic Creation**: You don't need to explicitly request a computer - agents create them automatically when tasks require persistent state or system access.
+</Note>
+
+## System Specifications
+
+### Operating System
+
+```bash
+# System details
+OS: Debian GNU/Linux 12 (bookworm)
+Kernel: 6.1.134 x86_64
+Architecture: x86_64
+Working Directory: /home/pointer
+```
+
+### Pre-installed Software
+
+<AccordionGroup>
+  <Accordion title="Programming Languages">
+    - **Python 3.11.2**: Full Python runtime with pip package manager
+    - **Node.js 18.20.4**: JavaScript runtime with npm
+    - **Bash 5.2.15**: Shell scripting and command execution
+
+    ```bash
+    python --version  # Python 3.11.2
+    node --version    # v18.20.4
+    npm --version     # 9.5.0
+    ```
+  </Accordion>
+
+  <Accordion title="Development Tools">
+    - **git**: Version control system
+    - **curl/wget**: HTTP clients for downloading files
+    - **vim/nano**: Text editors
+    - **grep/sed/awk**: Text processing utilities
+    - **tar/gzip**: Archive and compression tools
+    - **gcc/make**: Compilation tools (available via apt)
+
+    ```bash
+    git --version     # git version 2.39.2
+    curl --version    # curl 7.88.1
+    ```
+  </Accordion>
+
+  <Accordion title="Package Managers">
+    - **apt**: Debian package manager for system packages
+    - **pip**: Python package installer
+    - **npm**: Node.js package manager
+
+    ```bash
+    apt --version     # apt 2.6.1
+    pip --version     # pip 23.0.1
+    npm --version     # 9.5.0
+    ```
+  </Accordion>
+
+  <Accordion title="Web Browser">
+    - **Google Chrome 140.0.7339.127**: Full browser for web automation
+    - Headless and GUI modes supported
+    - ChromeDriver included for Selenium automation
+
+    ```bash
+    google-chrome --version  # 140.0.7339.127
+    ```
+  </Accordion>
+
+  <Accordion title="System Utilities">
+    - **ps/top**: Process monitoring
+    - **df/du**: Disk usage
+    - **netstat/ss**: Network statistics
+    - **chmod/chown**: File permissions
+    - **find/locate**: File search
+    - **cat/less/more**: File viewing
+  </Accordion>
+</AccordionGroup>
+
+### Resource Allocation
+
+- **CPU**: Shared allocation based on agent mode
+- **Memory**: 2GB for flash/base modes, 4GB for max mode
+- **Disk**: 10GB persistent storage per session
+- **Network**: Unlimited bandwidth with rate limiting
+- **File Descriptors**: Standard Linux limits
+
+## Code Examples
+
+### Running Shell Commands
+
+<CodeGroup>
+
+```typescript TypeScript
+// Simple command execution
+const result = await agentbase.runAgent({
+  message: "Run 'ls -la' to list all files"
+});
+
+// Command with pipes
+const pipeline = await agentbase.runAgent({
+  message: "List all Python files and count them"
+});
+
+// Multiple commands
+const multi = await agentbase.runAgent({
+  message: "Create a directory, navigate to it, and create a file"
+});
+```
+
+```python Python
+# Simple command execution
+result = agentbase.run_agent(
+    message="Run 'ls -la' to list all files"
+)
+
+# Command with pipes
+pipeline = agentbase.run_agent(
+    message="List all Python files and count them"
+)
+
+# Multiple commands
+multi = agentbase.run_agent(
+    message="Create a directory, navigate to it, and create a file"
+)
+```
+
+```bash cURL
+# Shell commands via API
+curl -X POST https://api.agentbase.sh \
+  -H "Authorization: Bearer $AGENTBASE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Check disk usage with df -h"
+  }'
+```
+
+</CodeGroup>
+
+### Installing and Using Packages
+
+<CodeGroup>
+
+```typescript TypeScript
+// Install Python packages
+const installPython = await agentbase.runAgent({
+  message: "Install pandas, numpy, and matplotlib using pip"
+});
+
+// Install Node.js packages
+const installNode = await agentbase.runAgent({
+  message: "Install express and axios using npm"
+});
+
+// Install system packages
+const installSystem = await agentbase.runAgent({
+  message: "Install imagemagick using apt"
+});
+
+// Use installed packages (same session)
+const usePackage = await agentbase.runAgent({
+  message: "Use pandas to read a CSV file and create a summary",
+  session: installPython.session
+});
+```
+
+```python Python
+# Install Python packages
+install_python = agentbase.run_agent(
+    message="Install pandas, numpy, and matplotlib using pip"
+)
+
+# Install Node.js packages
+install_node = agentbase.run_agent(
+    message="Install express and axios using npm"
+)
+
+# Install system packages
+install_system = agentbase.run_agent(
+    message="Install imagemagick using apt"
+)
+
+# Use installed packages (same session)
+use_package = agentbase.run_agent(
+    message="Use pandas to read a CSV file and create a summary",
+    session=install_python.session
+)
+```
+
+</CodeGroup>
+
+### Running Scripts
+
+<CodeGroup>
+
+```typescript TypeScript
+// Run Python script
+const python = await agentbase.runAgent({
+  message: "Create and run a Python script that analyzes data.csv"
+});
+
+// Run Node.js script
+const node = await agentbase.runAgent({
+  message: "Create a Node.js script to fetch data from an API and save it"
+});
+
+// Run bash script
+const bash = await agentbase.runAgent({
+  message: "Create a bash script to backup all .txt files"
+});
+```
+
+```python Python
+# Run Python script
+python = agentbase.run_agent(
+    message="Create and run a Python script that analyzes data.csv"
+)
+
+# Run Node.js script
+node = agentbase.run_agent(
+    message="Create a Node.js script to fetch data from an API and save it"
+)
+
+# Run bash script
+bash = agentbase.run_agent(
+    message="Create a bash script to backup all .txt files"
+)
+```
+
+</CodeGroup>
+
+### Git Operations
+
+<CodeGroup>
+
+```typescript TypeScript
+// Clone repository
+const clone = await agentbase.runAgent({
+  message: "Clone the repository from https://github.com/user/repo.git"
+});
+
+// Work with git (same session)
+const gitOps = await agentbase.runAgent({
+  message: "Navigate to the cloned repo, check the branches, and list recent commits",
+  session: clone.session
+});
+
+// Make changes
+const changes = await agentbase.runAgent({
+  message: "Create a new file in the repo and show git status",
+  session: clone.session
+});
+```
+
+```python Python
+# Clone repository
+clone = agentbase.run_agent(
+    message="Clone the repository from https://github.com/user/repo.git"
+)
+
+# Work with git (same session)
+git_ops = agentbase.run_agent(
+    message="Navigate to the cloned repo, check the branches, and list recent commits",
+    session=clone.session
+)
+
+# Make changes
+changes = agentbase.run_agent(
+    message="Create a new file in the repo and show git status",
+    session=clone.session
+)
+```
+
+</CodeGroup>
+
+### System Monitoring
+
+<CodeGroup>
+
+```typescript TypeScript
+// Check disk usage
+const disk = await agentbase.runAgent({
+  message: "Show disk usage with df -h"
+});
+
+// Monitor processes
+const processes = await agentbase.runAgent({
+  message: "Show running Python processes"
+});
+
+// Check memory
+const memory = await agentbase.runAgent({
+  message: "Display memory usage with free -h"
+});
+
+// Network information
+const network = await agentbase.runAgent({
+  message: "Show network connections and listening ports"
+});
+```
+
+```python Python
+# Check disk usage
+disk = agentbase.run_agent(
+    message="Show disk usage with df -h"
+)
+
+# Monitor processes
+processes = agentbase.run_agent(
+    message="Show running Python processes"
+)
+
+# Check memory
+memory = agentbase.run_agent(
+    message="Display memory usage with free -h"
+)
+
+# Network information
+network = agentbase.run_agent(
+    message="Show network connections and listening ports"
+)
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Software Development
+
+Complete development workflows:
+
+```typescript
+const development = await agentbase.runAgent({
+  message: `Create a Python web scraper project:
+  1. Create project structure (src/, tests/, requirements.txt)
+  2. Install beautifulsoup4 and requests
+  3. Create scraper.py with basic scraping logic
+  4. Create tests for the scraper
+  5. Run the tests to verify everything works`
+});
+```
+
+### 2. Data Analysis
+
+Process and analyze data files:
+
+```typescript
+const analysis = await agentbase.runAgent({
+  message: `Analyze sales data:
+  1. Install pandas and matplotlib
+  2. Read sales.csv
+  3. Calculate monthly totals and trends
+  4. Create visualization charts
+  5. Generate a summary report as PDF`
+});
+```
+
+### 3. System Administration
+
+Automate system tasks:
+
+```typescript
+const sysadmin = await agentbase.runAgent({
+  message: `System maintenance tasks:
+  1. Check disk usage and identify large files
+  2. Clean up temporary files older than 7 days
+  3. Check for available system updates
+  4. Generate a system health report`
+});
+```
+
+### 4. CI/CD Workflows
+
+Build and test pipelines:
+
+```typescript
+const cicd = await agentbase.runAgent({
+  message: `Run CI/CD pipeline:
+  1. Clone the repository
+  2. Install dependencies
+  3. Run linting and code quality checks
+  4. Execute test suite
+  5. Build the application
+  6. Generate coverage report`
+});
+```
+
+### 5. Web Scraping and Automation
+
+Extract data from websites:
+
+```typescript
+const scraping = await agentbase.runAgent({
+  message: `Scrape product data:
+  1. Install selenium and beautifulsoup4
+  2. Navigate to product listing pages
+  3. Extract product names, prices, and reviews
+  4. Save data to products.json
+  5. Create a CSV summary`
+});
+```
+
+### 6. Machine Learning
+
+Train and evaluate models:
+
+```typescript
+const ml = await agentbase.runAgent({
+  message: `Build ML model:
+  1. Install scikit-learn and tensorflow
+  2. Load and preprocess training data
+  3. Train a classification model
+  4. Evaluate model performance
+  5. Save the trained model
+  6. Create prediction script`
+});
+```
+
+## Core Capabilities & Tools
+
+The computer environment provides comprehensive built-in capabilities:
+
+<AccordionGroup>
+  <Accordion title="Shell & Command Execution">
+    **Bash access**: Full shell command execution for system operations, package installation, and process management.
+
+    **Use cases**: Installing dependencies, running scripts, system configuration, file operations
+
+    ```typescript
+    const shell = await agentbase.runAgent({
+      message: "Use bash to find all log files and compress them"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="File System Operations">
+    **Complete file access**: Read, write, create, and manage files across the entire Linux filesystem.
+
+    **Use cases**: Code development, data processing, configuration management, artifact storage
+
+    ```typescript
+    const files = await agentbase.runAgent({
+      message: "Create a project with multiple files and organize them"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Web Browser Automation">
+    **Full browser capabilities**: Navigate websites, interact with web applications, and extract data from web pages.
+
+    **Use cases**: Web scraping, testing web applications, research, form automation
+
+    ```typescript
+    const browser = await agentbase.runAgent({
+      message: "Open Chrome, navigate to a website, and extract data"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Screenshot & Visual Tools">
+    **Screen capture**: Take screenshots of the desktop, applications, or specific regions for visual debugging.
+
+    **Use cases**: UI testing, visual verification, debugging graphical applications
+
+    ```typescript
+    const screenshot = await agentbase.runAgent({
+      message: "Take a screenshot of the website homepage"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Network Operations">
+    **Internet access**: Make HTTP requests, download files, clone repositories, access APIs.
+
+    **Use cases**: API integration, data fetching, package downloads, repository cloning
+
+    ```typescript
+    const network = await agentbase.runAgent({
+      message: "Download data from API and save to file"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Process Management">
+    **Process control**: Start, stop, monitor processes and background jobs.
+
+    **Use cases**: Running servers, background tasks, monitoring applications
+
+    ```typescript
+    const process = await agentbase.runAgent({
+      message: "Start a development server in the background"
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+### Package Management
+
+<AccordionGroup>
+  <Accordion title="Install Packages in First Request">
+    ```typescript
+    // Good: Install once, use across multiple requests
+    const setup = await agentbase.runAgent({
+      message: "Install pandas, numpy, scikit-learn"
+    });
+
+    // Reuse session for subsequent operations
+    const analyze = await agentbase.runAgent({
+      message: "Use pandas to analyze data.csv",
+      session: setup.session
+    });
+
+    // Packages still installed
+    const visualize = await agentbase.runAgent({
+      message: "Use matplotlib to create charts",
+      session: setup.session
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Use Requirements Files">
+    ```typescript
+    // Good: Use requirements.txt for Python dependencies
+    const setup = await agentbase.runAgent({
+      message: `Create requirements.txt with:
+      pandas==2.0.0
+      numpy==1.24.0
+      Then install with pip install -r requirements.txt`
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Version Pin Important Packages">
+    ```typescript
+    // Good: Pin versions for reproducibility
+    const install = await agentbase.runAgent({
+      message: "Install tensorflow==2.13.0 numpy==1.24.0"
+    });
+
+    // Avoid: Unpinned versions may cause issues
+    const install = await agentbase.runAgent({
+      message: "Install tensorflow numpy"
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Command Execution
+
+<Tip>
+**Error Handling**: Always check command exit codes and handle errors appropriately. Agents do this automatically but you can be explicit in your instructions.
+</Tip>
+
+```typescript
+// Explicit error handling in instructions
+const result = await agentbase.runAgent({
+  message: `Run the test suite. If tests fail, show the error details
+  and suggest fixes. If they pass, show the coverage report.`
+});
+```
+
+### Resource Management
+
+Monitor resource usage to avoid limits:
+
+```typescript
+// Check resources before heavy operations
+const check = await agentbase.runAgent({
+  message: "Check available disk space and memory before processing large files"
+});
+
+// Clean up after operations
+const cleanup = await agentbase.runAgent({
+  message: "Remove temporary files and cached data after processing",
+  session: check.session
+});
+```
+
+### Security Considerations
+
+<Warning>
+**Sensitive Data**: Be cautious with secrets and credentials. While the environment is isolated, avoid hardcoding sensitive information in files.
+</Warning>
+
+```typescript
+// Good: Use environment variables or secure parameters
+const secure = await agentbase.runAgent({
+  message: "Connect to database using environment variable DATABASE_URL",
+  system: `Environment: DATABASE_URL=${process.env.DATABASE_URL}`
+});
+
+// Avoid: Hardcoding secrets
+const insecure = await agentbase.runAgent({
+  message: "Create config.json with password: secret123"
+});
+```
+
+## Integration with Other Primitives
+
+### With Sandbox
+
+The computer environment runs within a sandbox:
+
+```typescript
+// Each session has its own computer environment
+const session1 = await agentbase.runAgent({
+  message: "Install package and run script"
+});
+
+const session2 = await agentbase.runAgent({
+  message: "Install different package and run different script"
+});
+
+// Completely isolated computer environments
+```
+
+Learn more: [Sandbox Primitive](/primitives/environment/sandbox)
+
+### With File System
+
+Shell commands interact with the file system:
+
+```typescript
+const combined = await agentbase.runAgent({
+  message: "Create files, organize them into directories, and run a script on them"
+});
+```
+
+Learn more: [File System Primitive](/primitives/environment/file-system)
+
+### With Browser
+
+Use shell to control browser automation:
+
+```typescript
+const webAutomation = await agentbase.runAgent({
+  message: "Install selenium, write a script to scrape data, and run it"
+});
+```
+
+Learn more: [Browser Primitive](/primitives/environment/browser)
+
+### With Custom Tools
+
+Combine system commands with custom tools:
+
+```typescript
+const integration = await agentbase.runAgent({
+  message: "Use bash to download data, then use custom tool to process it"
+});
+```
+
+Learn more: [Custom Tools](/primitives/essentials/custom-tools)
+
+## Performance Considerations
+
+### Execution Speed
+
+- **Command execution**: Milliseconds for simple commands
+- **Package installation**: Varies (30s - 5min depending on package)
+- **Script execution**: Depends on script complexity
+- **File operations**: Near-instant for files under 10MB
+
+### Optimization Strategies
+
+<CardGroup cols={2}>
+  <Card title="Cache Dependencies" icon="database">
+    Install packages once per session and reuse
+  </Card>
+
+  <Card title="Parallel Operations" icon="arrows-split-up-and-left">
+    Use background processes for concurrent tasks
+  </Card>
+
+  <Card title="Efficient Scripts" icon="code">
+    Optimize scripts for speed and resource usage
+  </Card>
+
+  <Card title="Minimal Installs" icon="circle-minus">
+    Only install required packages, not full suites
+  </Card>
+</CardGroup>
+
+### Performance Example
+
+```typescript
+// Efficient: Parallel installation
+const efficient = await agentbase.runAgent({
+  message: "Install multiple packages in parallel using & and wait"
+});
+
+// Efficient: Reuse session
+const step1 = await agentbase.runAgent({
+  message: "Install dependencies"
+});
+
+const step2 = await agentbase.runAgent({
+  message: "Run analysis",
+  session: step1.session  // Dependencies already installed
+});
+```
+
+## Advanced Usage
+
+### Working Directory
+
+Default working directory is `/home/pointer`:
+
+```typescript
+// Check current directory
+const pwd = await agentbase.runAgent({
+  message: "Show current working directory with pwd"
+});
+
+// Navigate directories
+const navigate = await agentbase.runAgent({
+  message: "Create projects folder, navigate to it, and create files there"
+});
+```
+
+### Environment Variables
+
+Set and use environment variables:
+
+```typescript
+const env = await agentbase.runAgent({
+  message: "Set environment variable API_KEY=xyz and use it in a script"
+});
+```
+
+### Background Processes
+
+Run processes in the background:
+
+```typescript
+const background = await agentbase.runAgent({
+  message: "Start a development server in the background and show logs"
+});
+```
+
+### Cron Jobs and Scheduling
+
+While cron isn't directly supported, use sessions for scheduled tasks:
+
+```typescript
+// Not recommended (cron not persistent)
+// Instead, use Agentbase scheduling:
+const scheduled = await agentbase.runAgent({
+  message: "Run this analysis task",
+  schedules: [{
+    schedule: "0 0 * * *",  // Daily at midnight
+    message: "Run daily analysis"
+  }]
+});
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Command Not Found">
+    **Problem**: Command or package not available
+
+    **Solution**: Install the package first
+    ```typescript
+    const fix = await agentbase.runAgent({
+      message: "Install the missing package using apt, pip, or npm"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Permission Denied">
+    **Problem**: Insufficient permissions for operation
+
+    **Solution**: Use sudo or adjust file permissions
+    ```typescript
+    const fix = await agentbase.runAgent({
+      message: "Use sudo for system-level operations or chmod for file permissions"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Out of Memory">
+    **Problem**: Process exceeds memory limits
+
+    **Solution**: Optimize script or use max mode
+    ```typescript
+    const optimized = await agentbase.runAgent({
+      message: "Process data in chunks to reduce memory usage",
+      mode: "max"  // More memory available
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Package Installation Fails">
+    **Problem**: pip or npm installation errors
+
+    **Solution**: Check error messages and dependencies
+    ```typescript
+    const debug = await agentbase.runAgent({
+      message: "Show detailed error from package installation and suggest fixes"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Disk Space Issues">
+    **Problem**: Running out of storage
+
+    **Solution**: Clean up unnecessary files
+    ```typescript
+    const cleanup = await agentbase.runAgent({
+      message: "Find and remove large temporary files and caches"
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Sandbox" icon="box" href="/primitives/environment/sandbox">
+    Isolated execution environment hosting the computer
+  </Card>
+
+  <Card title="File System" icon="folder" href="/primitives/environment/file-system">
+    Persistent file storage and operations
+  </Card>
+
+  <Card title="Browser" icon="browser" href="/primitives/environment/browser">
+    Web automation and interaction
+  </Card>
+
+  <Card title="Sessions" icon="link" href="/primitives/essentials/sessions">
+    Maintain computer state across requests
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="Tools Reference" icon="hammer" href="/build/tools">
+    All available tools and commands
+  </Card>
+
+  <Card title="Persistence Guide" icon="database" href="/build/persistence">
+    How computer state persists
+  </Card>
+
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Complete API documentation
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Computer environments are created automatically when tasks require them. Simply describe your goal - agents will handle provisioning, tool selection, and environment management.
+</Tip>

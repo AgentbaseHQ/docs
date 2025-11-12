@@ -1,0 +1,985 @@
+---
+title: "Browser"
+description: "Web browser automation for scraping, testing, and web interaction"
+icon: "browser"
+---
+
+> Agentbase provides agents with full Chrome browser capabilities for navigating websites, interacting with web applications, extracting data, and automating web workflows.
+
+## Overview
+
+The Browser primitive gives agents access to a full Google Chrome browser running within their execution environment. This enables sophisticated web automation, data extraction, and testing capabilities without any additional setup:
+
+- **Web Navigation**: Visit any website and navigate through pages
+- **Element Interaction**: Click buttons, fill forms, submit data
+- **Data Extraction**: Scrape content, tables, images, and structured data
+- **JavaScript Execution**: Run custom JavaScript in the browser context
+- **Screenshots**: Capture full pages or specific elements
+- **Session Management**: Handle cookies, authentication, and multi-page workflows
+
+<CardGroup cols={2}>
+  <Card title="Full Chrome Browser" icon="chrome">
+    Google Chrome 140.0.7339.127 with complete rendering and JavaScript support
+  </Card>
+
+  <Card title="Headless & GUI Modes" icon="eye">
+    Run browser invisibly for automation or with display for debugging
+  </Card>
+
+  <Card title="Automation Tools" icon="robot">
+    Built-in support for Selenium, Playwright, and Puppeteer
+  </Card>
+
+  <Card title="Internet Access" icon="wifi">
+    Full access to the web with cookies, sessions, and authentication
+  </Card>
+</CardGroup>
+
+## How Browser Automation Works
+
+Agents use browser capabilities automatically when you request web-based tasks:
+
+```typescript
+// Agent automatically uses browser tools
+const result = await agentbase.runAgent({
+  message: "Navigate to example.com and extract the main heading"
+});
+
+// Browser is launched, page is loaded, data is extracted
+```
+
+### Browser Lifecycle
+
+1. **Launch**: Browser starts when needed (headless by default)
+2. **Navigate**: Open URLs and wait for page load
+3. **Interact**: Click, type, scroll, execute JavaScript
+4. **Extract**: Scrape data, take screenshots, save content
+5. **Close**: Browser closes automatically after task completion
+
+## Browser Specifications
+
+### Software Details
+
+- **Browser**: Google Chrome 140.0.7339.127 (Official Build) (64-bit)
+- **ChromeDriver**: Compatible version for Selenium automation
+- **Rendering Engine**: Chromium Blink
+- **JavaScript**: V8 engine with full ES6+ support
+- **Modes**: Headless (default) and GUI available
+
+### Capabilities
+
+<AccordionGroup>
+  <Accordion title="Page Navigation">
+    - Load any URL
+    - Follow links and redirects
+    - Handle single-page applications (SPAs)
+    - Wait for dynamic content
+    - Navigate browser history (back/forward)
+
+    ```typescript
+    const nav = await agentbase.runAgent({
+      message: "Visit github.com/trending and extract top repositories"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Element Interaction">
+    - Click buttons and links
+    - Fill input fields and text areas
+    - Select dropdown options
+    - Check/uncheck checkboxes
+    - Submit forms
+    - Hover over elements
+
+    ```typescript
+    const interact = await agentbase.runAgent({
+      message: "Go to the search page, enter 'AI tools', and submit the search"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Data Extraction">
+    - Extract text content
+    - Parse HTML structure
+    - Extract links and images
+    - Scrape tables and lists
+    - Get element attributes
+    - Access page metadata
+
+    ```typescript
+    const scrape = await agentbase.runAgent({
+      message: "Extract all product names and prices from the e-commerce page"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="JavaScript Execution">
+    - Run custom JavaScript
+    - Inject scripts into pages
+    - Access window and document objects
+    - Interact with page JavaScript
+    - Return values from executed scripts
+
+    ```typescript
+    const js = await agentbase.runAgent({
+      message: "Execute JavaScript to scroll to the bottom of the page"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Screenshots">
+    - Capture full page screenshots
+    - Screenshot specific elements
+    - Save as PNG or JPEG
+    - Different viewport sizes
+    - Mobile and desktop views
+
+    ```typescript
+    const screenshot = await agentbase.runAgent({
+      message: "Take a screenshot of the homepage and save it"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Session Management">
+    - Handle cookies
+    - Maintain authentication
+    - Session persistence
+    - Local storage access
+    - Cache management
+
+    ```typescript
+    const session = await agentbase.runAgent({
+      message: "Login to the website and navigate to the dashboard"
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Code Examples
+
+### Basic Web Navigation
+
+<CodeGroup>
+
+```typescript TypeScript
+// Simple page visit
+const visit = await agentbase.runAgent({
+  message: "Navigate to https://example.com and show the page title"
+});
+
+// Navigate and extract
+const extract = await agentbase.runAgent({
+  message: "Go to news.ycombinator.com and extract the top 5 story titles"
+});
+
+// Follow links
+const follow = await agentbase.runAgent({
+  message: "Visit the homepage, click on the About link, and show the content"
+});
+```
+
+```python Python
+# Simple page visit
+visit = agentbase.run_agent(
+    message="Navigate to https://example.com and show the page title"
+)
+
+# Navigate and extract
+extract = agentbase.run_agent(
+    message="Go to news.ycombinator.com and extract the top 5 story titles"
+)
+
+# Follow links
+follow = agentbase.run_agent(
+    message="Visit the homepage, click on the About link, and show the content"
+)
+```
+
+</CodeGroup>
+
+### Web Scraping
+
+<CodeGroup>
+
+```typescript TypeScript
+// Scrape structured data
+const scrape = await agentbase.runAgent({
+  message: `Visit https://example-store.com/products and extract:
+  - Product names
+  - Prices
+  - Availability status
+  Save the data as products.json`
+});
+
+// Multi-page scraping
+const multiPage = await agentbase.runAgent({
+  message: `Scrape the first 3 pages of search results:
+  1. Visit the search page
+  2. Extract results from page 1
+  3. Click next and scrape page 2
+  4. Click next and scrape page 3
+  5. Combine all results into a CSV file`
+});
+
+// Table extraction
+const table = await agentbase.runAgent({
+  message: "Extract the data table from the page and convert to CSV"
+});
+```
+
+```python Python
+# Scrape structured data
+scrape = agentbase.run_agent(
+    message="""Visit https://example-store.com/products and extract:
+    - Product names
+    - Prices
+    - Availability status
+    Save the data as products.json"""
+)
+
+# Multi-page scraping
+multi_page = agentbase.run_agent(
+    message="""Scrape the first 3 pages of search results:
+    1. Visit the search page
+    2. Extract results from page 1
+    3. Click next and scrape page 2
+    4. Click next and scrape page 3
+    5. Combine all results into a CSV file"""
+)
+
+# Table extraction
+table = agentbase.run_agent(
+    message="Extract the data table from the page and convert to CSV"
+)
+```
+
+</CodeGroup>
+
+### Form Interaction
+
+<CodeGroup>
+
+```typescript TypeScript
+// Fill and submit form
+const form = await agentbase.runAgent({
+  message: `Fill out the contact form:
+  - Name: John Doe
+  - Email: john@example.com
+  - Message: Hello, I have a question
+  Then submit the form and confirm submission`
+});
+
+// Login workflow
+const login = await agentbase.runAgent({
+  message: `Login to the website:
+  1. Navigate to /login
+  2. Enter username: testuser
+  3. Enter password: testpass
+  4. Click submit
+  5. Verify successful login`
+});
+
+// Search and filter
+const search = await agentbase.runAgent({
+  message: `Use the search and filter:
+  1. Enter "laptops" in search box
+  2. Select "Price: Low to High" from dropdown
+  3. Check "In Stock Only" checkbox
+  4. Click Search
+  5. Extract the results`
+});
+```
+
+```python Python
+# Fill and submit form
+form = agentbase.run_agent(
+    message="""Fill out the contact form:
+    - Name: John Doe
+    - Email: john@example.com
+    - Message: Hello, I have a question
+    Then submit the form and confirm submission"""
+)
+
+# Login workflow
+login = agentbase.run_agent(
+    message="""Login to the website:
+    1. Navigate to /login
+    2. Enter username: testuser
+    3. Enter password: testpass
+    4. Click submit
+    5. Verify successful login"""
+)
+
+# Search and filter
+search = agentbase.run_agent(
+    message="""Use the search and filter:
+    1. Enter "laptops" in search box
+    2. Select "Price: Low to High" from dropdown
+    3. Check "In Stock Only" checkbox
+    4. Click Search
+    5. Extract the results"""
+)
+```
+
+</CodeGroup>
+
+### Screenshots and Visual Testing
+
+<CodeGroup>
+
+```typescript TypeScript
+// Full page screenshot
+const screenshot = await agentbase.runAgent({
+  message: "Navigate to homepage and take a full page screenshot"
+});
+
+// Element screenshot
+const element = await agentbase.runAgent({
+  message: "Take a screenshot of just the navigation menu"
+});
+
+// Multiple screenshots
+const comparison = await agentbase.runAgent({
+  message: `Take screenshots for visual testing:
+  1. Desktop view (1920x1080)
+  2. Tablet view (768x1024)
+  3. Mobile view (375x667)
+  Save all three screenshots`
+});
+
+// Before/after comparison
+const changes = await agentbase.runAgent({
+  message: `Compare page changes:
+  1. Take screenshot of current state
+  2. Click "Show More" button
+  3. Take screenshot of new state
+  4. Highlight differences`
+});
+```
+
+```python Python
+# Full page screenshot
+screenshot = agentbase.run_agent(
+    message="Navigate to homepage and take a full page screenshot"
+)
+
+# Element screenshot
+element = agentbase.run_agent(
+    message="Take a screenshot of just the navigation menu"
+)
+
+# Multiple screenshots
+comparison = agentbase.run_agent(
+    message="""Take screenshots for visual testing:
+    1. Desktop view (1920x1080)
+    2. Tablet view (768x1024)
+    3. Mobile view (375x667)
+    Save all three screenshots"""
+)
+
+# Before/after comparison
+changes = agentbase.run_agent(
+    message="""Compare page changes:
+    1. Take screenshot of current state
+    2. Click "Show More" button
+    3. Take screenshot of new state
+    4. Highlight differences"""
+)
+```
+
+</CodeGroup>
+
+### JavaScript Execution
+
+<CodeGroup>
+
+```typescript TypeScript
+// Execute custom JavaScript
+const executeJS = await agentbase.runAgent({
+  message: "Run JavaScript to get the page's scroll height"
+});
+
+// Interact with page JavaScript
+const interact = await agentbase.runAgent({
+  message: "Execute JavaScript to trigger the page's custom modal"
+});
+
+// Extract dynamic data
+const dynamic = await agentbase.runAgent({
+  message: `Use JavaScript to:
+  1. Wait for data to load via AJAX
+  2. Extract the dynamically loaded content
+  3. Return as JSON`
+});
+
+// Modify page content
+const modify = await agentbase.runAgent({
+  message: "Execute JavaScript to highlight all external links on the page"
+});
+```
+
+```python Python
+# Execute custom JavaScript
+execute_js = agentbase.run_agent(
+    message="Run JavaScript to get the page's scroll height"
+)
+
+# Interact with page JavaScript
+interact = agentbase.run_agent(
+    message="Execute JavaScript to trigger the page's custom modal"
+)
+
+# Extract dynamic data
+dynamic = agentbase.run_agent(
+    message="""Use JavaScript to:
+    1. Wait for data to load via AJAX
+    2. Extract the dynamically loaded content
+    3. Return as JSON"""
+)
+
+# Modify page content
+modify = agentbase.run_agent(
+    message="Execute JavaScript to highlight all external links on the page"
+)
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Competitive Intelligence
+
+Monitor competitor websites:
+
+```typescript
+const competitive = await agentbase.runAgent({
+  message: `Competitor analysis:
+  1. Visit competitor website
+  2. Extract current pricing for all products
+  3. Screenshot their homepage
+  4. Extract featured products
+  5. Save all data to competitor_data.json
+  6. Compare with our pricing`
+});
+```
+
+### 2. Web Testing
+
+Automated UI and functionality testing:
+
+```typescript
+const testing = await agentbase.runAgent({
+  message: `Test user registration flow:
+  1. Navigate to /signup
+  2. Fill registration form with test data
+  3. Submit form
+  4. Verify email confirmation page
+  5. Take screenshot of confirmation
+  6. Check for any errors or issues
+  7. Generate test report`
+});
+```
+
+### 3. Data Collection
+
+Gather data from multiple sources:
+
+```typescript
+const collection = await agentbase.runAgent({
+  message: `Collect real estate listings:
+  1. Visit property listing site
+  2. Search for "apartments in San Francisco"
+  3. Extract all listings (address, price, bedrooms, etc.)
+  4. Visit each listing for detailed info
+  5. Save all data to properties.csv
+  6. Create summary statistics`
+});
+```
+
+### 4. Research and Monitoring
+
+Track information over time:
+
+```typescript
+const research = await agentbase.runAgent({
+  message: `Research trending topics:
+  1. Visit top tech news sites
+  2. Extract today's headlines
+  3. Identify trending topics
+  4. Visit each article and extract summary
+  5. Create a consolidated report
+  6. Save as research_report.md`
+});
+```
+
+### 5. Form Automation
+
+Automate repetitive form submissions:
+
+```typescript
+const automation = await agentbase.runAgent({
+  message: `Submit bulk job applications:
+  1. Read applicant_data.csv
+  2. For each application:
+     - Navigate to application form
+     - Fill in all fields from CSV
+     - Upload resume.pdf
+     - Submit form
+     - Save confirmation number
+  3. Generate submission report`
+});
+```
+
+### 6. Content Verification
+
+Verify website content and links:
+
+```typescript
+const verification = await agentbase.runAgent({
+  message: `Website health check:
+  1. Visit all pages listed in sitemap.xml
+  2. Check for broken links
+  3. Verify images load correctly
+  4. Check page load times
+  5. Screenshot any error pages
+  6. Generate health report`
+});
+```
+
+## Best Practices
+
+### Reliable Web Scraping
+
+<AccordionGroup>
+  <Accordion title="Wait for Content to Load">
+    ```typescript
+    // Good: Wait for dynamic content
+    const good = await agentbase.runAgent({
+      message: `Visit the page and wait for the products to load
+      before extracting data`
+    });
+
+    // Avoid: Extracting before content loads
+    const bad = await agentbase.runAgent({
+      message: "Quickly visit page and extract data"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Pagination Correctly">
+    ```typescript
+    // Good: Navigate through all pages
+    const good = await agentbase.runAgent({
+      message: `Scrape all pages:
+      - Extract data from current page
+      - Click next button
+      - Repeat until no more pages
+      - Combine all results`
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Be Specific About Selectors">
+    ```typescript
+    // Good: Specific instructions
+    const good = await agentbase.runAgent({
+      message: "Extract prices from elements with class 'product-price'"
+    });
+
+    // Avoid: Vague instructions
+    const bad = await agentbase.runAgent({
+      message: "Get all the prices"
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Error Handling
+
+<Tip>
+**Graceful Failures**: Instruct agents to handle common web issues like timeouts, missing elements, and navigation errors.
+</Tip>
+
+```typescript
+// Robust error handling
+const robust = await agentbase.runAgent({
+  message: `Scrape data with error handling:
+  - If page doesn't load, retry up to 3 times
+  - If element not found, log and continue
+  - If data format unexpected, note in output
+  - Generate report of successful and failed extractions`
+});
+```
+
+### Performance Optimization
+
+<CardGroup cols={2}>
+  <Card title="Minimize Page Loads" icon="gauge">
+    Extract all needed data in one visit when possible
+  </Card>
+
+  <Card title="Use Headless Mode" icon="eye-slash">
+    Headless is faster - use GUI only for debugging
+  </Card>
+
+  <Card title="Parallel Scraping" icon="arrows-split-up-and-left">
+    Scrape multiple pages concurrently when appropriate
+  </Card>
+
+  <Card title="Cache Responses" icon="database">
+    Save scraped data to avoid re-scraping
+  </Card>
+</CardGroup>
+
+```typescript
+// Efficient: Extract all data at once
+const efficient = await agentbase.runAgent({
+  message: `Visit the page and extract:
+  - All product names
+  - All prices
+  - All descriptions
+  - All images
+  In a single visit`
+});
+
+// Inefficient: Multiple visits
+const inefficient = await agentbase.runAgent({
+  message: "Visit page, get names, then visit again for prices..."
+});
+```
+
+### Ethical Considerations
+
+<Warning>
+**Respect Robots.txt**: Always respect website terms of service and robots.txt. Be mindful of scraping frequency and server load.
+</Warning>
+
+```typescript
+// Responsible scraping
+const responsible = await agentbase.runAgent({
+  message: `Scrape responsibly:
+  - Check robots.txt first
+  - Add delays between requests
+  - Respect rate limits
+  - Don't overload the server`
+});
+```
+
+## Integration with Other Primitives
+
+### With File System
+
+Save scraped data to files:
+
+```typescript
+const combined = await agentbase.runAgent({
+  message: `Scrape product data and save:
+  1. Extract data from website
+  2. Save as products.json
+  3. Also create products.csv
+  4. Generate summary report as report.md`
+});
+```
+
+Learn more: [File System Primitive](/primitives/environment/file-system)
+
+### With Computer
+
+Use programming tools with browser automation:
+
+```typescript
+const automation = await agentbase.runAgent({
+  message: `Create web scraping script:
+  1. Install selenium and beautifulsoup4
+  2. Write Python script for scraping
+  3. Run the script
+  4. Save results to database`
+});
+```
+
+Learn more: [Computer Primitive](/primitives/environment/computer)
+
+### With Web Search
+
+Combine search with browsing:
+
+```typescript
+const research = await agentbase.runAgent({
+  message: `Research topic:
+  1. Search web for "topic"
+  2. Visit top 5 results
+  3. Extract key information from each
+  4. Create comprehensive summary`
+});
+```
+
+Learn more: [Web Search Extension](/primitives/extensions/web-search)
+
+### With Sessions
+
+Maintain browser state across requests:
+
+```typescript
+// Login persists across requests
+const login = await agentbase.runAgent({
+  message: "Login to the website"
+});
+
+const authenticated = await agentbase.runAgent({
+  message: "Navigate to account dashboard and extract data",
+  session: login.session  // Maintains login state
+});
+```
+
+Learn more: [Sessions Primitive](/primitives/essentials/sessions)
+
+## Performance Considerations
+
+### Browser Startup
+
+- **Cold Start**: First browser launch ~2-3 seconds
+- **Warm Start**: Subsequent pages in same session are faster
+- **Headless Mode**: 20-30% faster than GUI mode
+
+### Page Load Times
+
+- **Simple Pages**: 1-3 seconds
+- **Complex SPAs**: 3-10 seconds
+- **Heavy Content**: 10+ seconds
+
+### Optimization Tips
+
+```typescript
+// Fast: Headless mode (default)
+const base = await agentbase.runAgent({
+  message: "Scrape data quickly in headless mode"
+});
+
+// Slow: GUI mode (only when needed)
+const slow = await agentbase.runAgent({
+  message: "Open browser with display for debugging"
+});
+```
+
+### Resource Usage
+
+- **Memory**: 200-500MB per browser instance
+- **CPU**: Varies with page complexity
+- **Network**: Depends on page size and requests
+
+## Advanced Techniques
+
+### Handling Dynamic Content
+
+```typescript
+const dynamic = await agentbase.runAgent({
+  message: `Handle dynamic content:
+  1. Wait for AJAX calls to complete
+  2. Scroll to trigger lazy loading
+  3. Wait for animations to finish
+  4. Extract the fully loaded content`
+});
+```
+
+### Cookie and Session Management
+
+```typescript
+const session = await agentbase.runAgent({
+  message: `Manage sessions:
+  1. Login and save cookies
+  2. Navigate to protected pages using saved session
+  3. Extract user-specific data
+  4. Logout when done`
+});
+```
+
+### Handling Popups and Alerts
+
+```typescript
+const popups = await agentbase.runAgent({
+  message: `Handle popups:
+  1. Navigate to page
+  2. If popup appears, close it
+  3. If alert shows, accept it
+  4. Continue with main task`
+});
+```
+
+### Mobile Emulation
+
+```typescript
+const mobile = await agentbase.runAgent({
+  message: `Test mobile view:
+  1. Set viewport to mobile size (375x667)
+  2. Set mobile user agent
+  3. Navigate to website
+  4. Take screenshots
+  5. Extract mobile-specific content`
+});
+```
+
+### Proxy and Network Control
+
+```typescript
+const network = await agentbase.runAgent({
+  message: `Monitor network:
+  1. Start network monitoring
+  2. Navigate to page
+  3. Capture all API requests
+  4. Extract request/response data
+  5. Save network log`
+});
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Page Not Loading">
+    **Problem**: Browser cannot load the page
+
+    **Solutions**:
+    - Check URL is correct and accessible
+    - Wait longer for page load
+    - Check for JavaScript errors
+    - Try different user agent
+
+    ```typescript
+    const fix = await agentbase.runAgent({
+      message: `If page doesn't load:
+      - Wait up to 30 seconds
+      - Check for error messages
+      - Try loading a different page to test connection`
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Element Not Found">
+    **Problem**: Cannot find element to interact with
+
+    **Solutions**:
+    - Wait for element to appear
+    - Check selector is correct
+    - Verify element is visible
+    - Check if it's in an iframe
+
+    ```typescript
+    const fix = await agentbase.runAgent({
+      message: `Find element with retry:
+      - Wait for element to appear (up to 10s)
+      - If not found, check page source
+      - List available elements for debugging`
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="JavaScript Errors">
+    **Problem**: Page JavaScript errors affect functionality
+
+    **Solutions**:
+    - Check browser console for errors
+    - Try different approach
+    - Use direct JavaScript execution
+
+    ```typescript
+    const fix = await agentbase.runAgent({
+      message: "Check console for JavaScript errors and try alternative approach"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Timeout Errors">
+    **Problem**: Operations timing out
+
+    **Solutions**:
+    - Increase wait time
+    - Check network connection
+    - Simplify task
+
+    ```typescript
+    const fix = await agentbase.runAgent({
+      message: "If timeout occurs, wait longer and retry with simpler approach"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Anti-Scraping Measures">
+    **Problem**: Website blocking automation
+
+    **Solutions**:
+    - Add delays between requests
+    - Use realistic user agent
+    - Respect rate limits
+    - Consider alternative data sources
+
+    ```typescript
+    const respectful = await agentbase.runAgent({
+      message: `Scrape respectfully:
+      - Add 2-3 second delays between requests
+      - Use standard browser user agent
+      - Limit to reasonable number of pages`
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Browser vs Web Search
+
+When to use Browser vs Web Search extension:
+
+<CardGroup cols={2}>
+  <Card title="Use Browser When" icon="browser">
+    - Need to interact with page elements
+    - Extracting structured data from specific sites
+    - Filling forms or logging in
+    - Taking screenshots
+    - Testing web applications
+    - Navigating multi-step workflows
+  </Card>
+
+  <Card title="Use Web Search When" icon="magnifying-glass">
+    - Finding information across the web
+    - Need current events or recent data
+    - Quick fact-checking
+    - Discovering relevant URLs
+    - Broad research topics
+    - Multiple source aggregation
+  </Card>
+</CardGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Sandbox" icon="box" href="/primitives/environment/sandbox">
+    Isolated environment hosting the browser
+  </Card>
+
+  <Card title="Computer" icon="desktop" href="/primitives/environment/computer">
+    Install browser automation tools
+  </Card>
+
+  <Card title="File System" icon="folder" href="/primitives/environment/file-system">
+    Save scraped data and screenshots
+  </Card>
+
+  <Card title="Web Search" icon="magnifying-glass" href="/primitives/extensions/web-search">
+    Search web for information
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="Tools Reference" icon="hammer" href="/build/tools">
+    Browser tools documentation
+  </Card>
+
+
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Complete API documentation
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Browser capabilities are available automatically when you describe web-based tasks. Agents handle browser management, navigation, and data extraction for you.
+</Tip>

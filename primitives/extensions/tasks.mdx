@@ -1,0 +1,1187 @@
+---
+title: "Tasks"
+description: "Create, manage, and track discrete units of work for agents"
+icon: "list-check"
+---
+
+> Tasks enable agents to break down complex objectives into manageable units of work, track progress, and coordinate execution across multiple steps and agents.
+
+## Overview
+
+The Tasks primitive provides a structured way to define, assign, execute, and monitor discrete units of work. Unlike workflows which define processes, tasks represent individual actionable items that can be tracked, prioritized, and completed independently or as part of larger objectives.
+
+Tasks are essential for:
+
+- **Work Breakdown**: Decompose complex goals into manageable chunks
+- **Progress Tracking**: Monitor completion status and progress
+- **Prioritization**: Organize work by importance and urgency
+- **Delegation**: Assign tasks to specific agents or humans
+- **Dependencies**: Define task relationships and execution order
+- **Accountability**: Track who did what and when
+
+<CardGroup cols={2}>
+  <Card title="Task Creation" icon="plus">
+    Agents can create tasks autonomously or from user requests
+  </Card>
+
+  <Card title="Status Tracking" icon="chart-line">
+    Track task lifecycle from creation to completion
+  </Card>
+
+  <Card title="Dependencies" icon="sitemap">
+    Define task relationships and execution order
+  </Card>
+
+  <Card title="Collaboration" icon="users">
+    Assign tasks to agents or human team members
+  </Card>
+</CardGroup>
+
+## How Tasks Work
+
+When you enable tasks for an agent:
+
+1. **Creation**: Tasks are created with description, priority, and metadata
+2. **Assignment**: Tasks assigned to agents or humans with appropriate context
+3. **Execution**: Assigned party works on and completes task
+4. **Tracking**: Status updates tracked throughout lifecycle
+5. **Completion**: Task marked complete with results and artifacts
+6. **Review**: Optional review and approval processes
+
+<Note>
+**Persistent State**: Tasks persist across sessions and can be resumed at any time, making them ideal for long-running work.
+</Note>
+
+## Task States
+
+### Lifecycle States
+
+```typescript
+{
+  status: "pending" | "in_progress" | "blocked" | "completed" | "cancelled"
+}
+```
+
+- **pending**: Task created but not started
+- **in_progress**: Actively being worked on
+- **blocked**: Waiting for dependency or external input
+- **completed**: Successfully finished
+- **cancelled**: Abandoned or no longer needed
+
+### Priority Levels
+
+```typescript
+{
+  priority: "critical" | "high" | "medium" | "low"
+}
+```
+
+## Code Examples
+
+### Basic Task Creation
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Agent creates tasks autonomously
+const result = await agentbase.runAgent({
+  message: "Plan the launch of our new product next month",
+  capabilities: {
+    tasks: {
+      enabled: true
+    }
+  },
+  system: `Break down the product launch into specific tasks.
+
+  For each task:
+  - Clear, actionable description
+  - Appropriate priority
+  - Estimated duration
+  - Required resources
+  - Dependencies on other tasks`
+});
+
+// Agent creates structured task list
+console.log('Tasks created:', result.tasks);
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Agent creates tasks autonomously
+result = agentbase.run_agent(
+    message="Plan the launch of our new product next month",
+    capabilities={
+        "tasks": {
+            "enabled": True
+        }
+    },
+    system="""Break down the product launch into specific tasks.
+
+    For each task:
+    - Clear, actionable description
+    - Appropriate priority
+    - Estimated duration
+    - Required resources
+    - Dependencies on other tasks"""
+)
+
+print(f"Tasks created: {result.tasks}")
+```
+
+</CodeGroup>
+
+### Create Task Manually
+
+<CodeGroup>
+
+```typescript TypeScript
+// Explicitly create a task
+const task = await agentbase.createTask({
+  title: "Review Q4 financial reports",
+  description: "Analyze Q4 financials and prepare summary for board meeting",
+  priority: "high",
+  assignee: "finance_agent",
+  dueDate: "2024-02-15",
+  tags: ["finance", "quarterly-review"],
+  metadata: {
+    department: "finance",
+    estimatedHours: 4
+  }
+});
+
+console.log('Task created:', task.id);
+```
+
+```python Python
+# Explicitly create a task
+task = agentbase.create_task(
+    title="Review Q4 financial reports",
+    description="Analyze Q4 financials and prepare summary for board meeting",
+    priority="high",
+    assignee="finance_agent",
+    due_date="2024-02-15",
+    tags=["finance", "quarterly-review"],
+    metadata={
+        "department": "finance",
+        "estimated_hours": 4
+    }
+)
+
+print(f"Task created: {task.id}")
+```
+
+</CodeGroup>
+
+### Task with Dependencies
+
+<CodeGroup>
+
+```typescript TypeScript
+// Create tasks with dependencies
+const task1 = await agentbase.createTask({
+  title: "Design database schema",
+  priority: "high"
+});
+
+const task2 = await agentbase.createTask({
+  title: "Implement API endpoints",
+  priority: "high",
+  dependencies: [task1.id], // Depends on task1
+  blockedUntil: task1.id
+});
+
+const task3 = await agentbase.createTask({
+  title: "Write API documentation",
+  priority: "medium",
+  dependencies: [task2.id] // Depends on task2
+});
+
+// Tasks execute in order: task1 → task2 → task3
+```
+
+```python Python
+# Create tasks with dependencies
+task1 = agentbase.create_task(
+    title="Design database schema",
+    priority="high"
+)
+
+task2 = agentbase.create_task(
+    title="Implement API endpoints",
+    priority="high",
+    dependencies=[task1.id],  # Depends on task1
+    blocked_until=task1.id
+)
+
+task3 = agentbase.create_task(
+    title="Write API documentation",
+    priority="medium",
+    dependencies=[task2.id]  # Depends on task2
+)
+
+# Tasks execute in order: task1 → task2 → task3
+```
+
+</CodeGroup>
+
+### Assign Task to Agent
+
+<CodeGroup>
+
+```typescript TypeScript
+// Assign task and let agent complete it
+const result = await agentbase.runAgent({
+  message: "Complete task: Write blog post about new features",
+  taskId: task.id,
+  capabilities: {
+    tasks: {
+      enabled: true,
+      autoUpdate: true // Automatically update task status
+    }
+  }
+});
+
+// Agent works on task and updates status
+console.log('Task status:', result.task.status);
+console.log('Task result:', result.task.result);
+```
+
+```python Python
+# Assign task and let agent complete it
+result = agentbase.run_agent(
+    message="Complete task: Write blog post about new features",
+    task_id=task.id,
+    capabilities={
+        "tasks": {
+            "enabled": True,
+            "auto_update": True  # Automatically update task status
+        }
+    }
+)
+
+print(f"Task status: {result.task.status}")
+print(f"Task result: {result.task.result}")
+```
+
+</CodeGroup>
+
+### Query Tasks
+
+<CodeGroup>
+
+```typescript TypeScript
+// Get all pending tasks
+const pendingTasks = await agentbase.getTasks({
+  status: "pending",
+  priority: ["high", "critical"],
+  sortBy: "priority",
+  limit: 20
+});
+
+// Get tasks by tag
+const financeTasks = await agentbase.getTasks({
+  tags: ["finance"],
+  status: ["pending", "in_progress"]
+});
+
+// Get overdue tasks
+const overdueTasks = await agentbase.getTasks({
+  overdue: true,
+  assignee: "current_user"
+});
+
+console.log('Pending tasks:', pendingTasks);
+```
+
+```python Python
+# Get all pending tasks
+pending_tasks = agentbase.get_tasks(
+    status="pending",
+    priority=["high", "critical"],
+    sort_by="priority",
+    limit=20
+)
+
+# Get tasks by tag
+finance_tasks = agentbase.get_tasks(
+    tags=["finance"],
+    status=["pending", "in_progress"]
+)
+
+# Get overdue tasks
+overdue_tasks = agentbase.get_tasks(
+    overdue=True,
+    assignee="current_user"
+)
+
+print(f"Pending tasks: {pending_tasks}")
+```
+
+</CodeGroup>
+
+### Update Task Status
+
+<CodeGroup>
+
+```typescript TypeScript
+// Update task progress
+await agentbase.updateTask(taskId, {
+  status: "in_progress",
+  progress: 0.5, // 50% complete
+  notes: "Completed research phase, starting implementation"
+});
+
+// Mark task complete
+await agentbase.updateTask(taskId, {
+  status: "completed",
+  progress: 1.0,
+  result: {
+    output: "Blog post draft",
+    artifacts: ["blog-post.md"],
+    metrics: {
+      wordCount: 1500,
+      timeSpent: "3 hours"
+    }
+  }
+});
+```
+
+```python Python
+# Update task progress
+agentbase.update_task(task_id, {
+    "status": "in_progress",
+    "progress": 0.5,  # 50% complete
+    "notes": "Completed research phase, starting implementation"
+})
+
+# Mark task complete
+agentbase.update_task(task_id, {
+    "status": "completed",
+    "progress": 1.0,
+    "result": {
+        "output": "Blog post draft",
+        "artifacts": ["blog-post.md"],
+        "metrics": {
+            "word_count": 1500,
+            "time_spent": "3 hours"
+        }
+    }
+})
+```
+
+</CodeGroup>
+
+### Recurring Tasks
+
+<CodeGroup>
+
+```typescript TypeScript
+// Create recurring task
+const recurringTask = await agentbase.createTask({
+  title: "Generate weekly analytics report",
+  description: "Compile and send weekly performance metrics",
+  priority: "medium",
+  recurring: {
+    enabled: true,
+    schedule: "0 9 * * 1", // Every Monday at 9 AM
+    timezone: "America/New_York"
+  },
+  assignee: "analytics_agent"
+});
+
+// Agent automatically creates new instance each week
+```
+
+```python Python
+# Create recurring task
+recurring_task = agentbase.create_task(
+    title="Generate weekly analytics report",
+    description="Compile and send weekly performance metrics",
+    priority="medium",
+    recurring={
+        "enabled": True,
+        "schedule": "0 9 * * 1",  # Every Monday at 9 AM
+        "timezone": "America/New_York"
+    },
+    assignee="analytics_agent"
+)
+
+# Agent automatically creates new instance each week
+```
+
+</CodeGroup>
+
+### Task Templates
+
+<CodeGroup>
+
+```typescript TypeScript
+// Create task template
+const template = await agentbase.createTaskTemplate({
+  name: "onboard_new_customer",
+  title: "Onboard new customer: {{customerName}}",
+  tasks: [
+    {
+      title: "Send welcome email",
+      priority: "high",
+      assignee: "email_agent"
+    },
+    {
+      title: "Create account in CRM",
+      priority: "high",
+      assignee: "crm_agent",
+      dependencies: [0] // Depends on welcome email
+    },
+    {
+      title: "Schedule kickoff call",
+      priority: "medium",
+      assignee: "scheduling_agent",
+      dependencies: [1]
+    }
+  ]
+});
+
+// Use template to create tasks
+const tasks = await agentbase.createTasksFromTemplate("onboard_new_customer", {
+  customerName: "Acme Corp",
+  customerEmail: "contact@acme.com"
+});
+```
+
+```python Python
+# Create task template
+template = agentbase.create_task_template(
+    name="onboard_new_customer",
+    title="Onboard new customer: {{customerName}}",
+    tasks=[
+        {
+            "title": "Send welcome email",
+            "priority": "high",
+            "assignee": "email_agent"
+        },
+        {
+            "title": "Create account in CRM",
+            "priority": "high",
+            "assignee": "crm_agent",
+            "dependencies": [0]  # Depends on welcome email
+        },
+        {
+            "title": "Schedule kickoff call",
+            "priority": "medium",
+            "assignee": "scheduling_agent",
+            "dependencies": [1]
+        }
+    ]
+)
+
+# Use template to create tasks
+tasks = agentbase.create_tasks_from_template("onboard_new_customer", {
+    "customerName": "Acme Corp",
+    "customerEmail": "contact@acme.com"
+})
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Project Management
+
+Break down projects into trackable tasks:
+
+```typescript
+const projectAgent = await agentbase.runAgent({
+  message: "Plan the development of our mobile app",
+  capabilities: {
+    tasks: {
+      enabled: true
+    }
+  },
+  system: `Create a comprehensive task breakdown for mobile app development.
+
+  Include tasks for:
+  - Requirements gathering
+  - Design (UI/UX)
+  - Frontend development
+  - Backend API development
+  - Testing (unit, integration, E2E)
+  - Deployment
+  - Documentation
+
+  For each task:
+  - Assign to appropriate team/agent
+  - Set realistic estimates
+  - Define dependencies
+  - Specify acceptance criteria`
+});
+
+// Agent creates structured project plan with tasks
+```
+
+### 2. Content Creation Pipeline
+
+Manage content creation workflow:
+
+```typescript
+const contentTasks = await agentbase.runAgent({
+  message: "Create tasks for this month's blog content",
+  capabilities: {
+    tasks: {
+      enabled: true
+    }
+  },
+  system: `Create tasks for 4 blog posts this month.
+
+  For each post:
+  1. Research topic (priority: high)
+  2. Draft content (depends on research)
+  3. Create graphics (depends on draft)
+  4. SEO optimization (depends on draft)
+  5. Editorial review (depends on all above)
+  6. Publish (depends on review approval)
+
+  Stagger due dates throughout the month.`
+});
+```
+
+### 3. Customer Onboarding
+
+Automate onboarding task creation:
+
+```typescript
+const onboardingAgent = await agentbase.runAgent({
+  message: "Create onboarding tasks for new customer: Acme Corp",
+  context: {
+    customer: {
+      name: "Acme Corp",
+      plan: "enterprise",
+      employees: 500
+    }
+  },
+  capabilities: {
+    tasks: {
+      enabled: true
+    }
+  },
+  system: `Create onboarding task list:
+
+  Day 1:
+  - Send welcome email
+  - Create accounts
+  - Send access credentials
+
+  Week 1:
+  - Schedule kickoff call
+  - Complete setup call
+  - Share documentation
+
+  Week 2:
+  - Check-in call
+  - Address questions
+  - Gather feedback
+
+  Assign tasks to appropriate team members.`
+});
+```
+
+### 4. Incident Response
+
+Create incident resolution tasks:
+
+```typescript
+const incidentAgent = await agentbase.runAgent({
+  message: "Critical: Production database is down",
+  capabilities: {
+    tasks: {
+      enabled: true
+    }
+  },
+  system: `Create incident response tasks:
+
+  Immediate (Priority: Critical):
+  - Alert on-call engineer
+  - Create status page update
+  - Start incident war room
+
+  Investigation (Priority: High):
+  - Check database logs
+  - Review recent deployments
+  - Analyze error patterns
+
+  Resolution (Priority: High):
+  - Identify root cause
+  - Implement fix
+  - Verify service restored
+
+  Follow-up (Priority: Medium):
+  - Write post-mortem
+  - Document lessons learned
+  - Create prevention tasks
+
+  Track all tasks in incident ticket.`
+});
+```
+
+### 5. Daily Standup Automation
+
+Generate daily task summaries:
+
+```typescript
+const standupAgent = await agentbase.runAgent({
+  message: "Generate my standup update",
+  capabilities: {
+    tasks: {
+      enabled: true
+    }
+  },
+  system: `Create standup update based on my tasks:
+
+  Yesterday:
+  - List completed tasks
+  - Note any blockers
+
+  Today:
+  - List in-progress tasks
+  - Highlight priorities
+
+  Blockers:
+  - List any blocked tasks
+  - Identify what's needed to unblock
+
+  Format as concise standup message.`
+});
+```
+
+### 6. Sales Pipeline Tasks
+
+Track sales activities:
+
+```typescript
+const salesAgent = await agentbase.runAgent({
+  message: "Create follow-up tasks for new lead: Jane Smith",
+  context: {
+    lead: {
+      name: "Jane Smith",
+      company: "Tech Startup Inc",
+      interest: "Enterprise plan"
+    }
+  },
+  capabilities: {
+    tasks: {
+      enabled: true
+    }
+  },
+  system: `Create sales follow-up tasks:
+
+  Day 1:
+  - Send personalized intro email
+  - Connect on LinkedIn
+
+  Day 3:
+  - Follow-up call
+  - Send product demo video
+
+  Day 7:
+  - Schedule live demo
+  - Send pricing information
+
+  Day 14:
+  - Check-in email
+  - Share case studies
+
+  Set reminders and track completion.`
+});
+```
+
+## Best Practices
+
+### Task Design
+
+<AccordionGroup>
+  <Accordion title="Keep Tasks Atomic">
+    ```typescript
+    // Good: Specific, single-purpose tasks
+    await agentbase.createTask({
+      title: "Write introduction section",
+      description: "Draft the introduction for the blog post (200-300 words)"
+    });
+
+    await agentbase.createTask({
+      title: "Create featured image",
+      description: "Design featured image for blog post (1200x630px)"
+    });
+
+    // Avoid: Overly broad tasks
+    await agentbase.createTask({
+      title: "Complete blog post",
+      description: "Do everything for the blog post"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Use Clear Descriptions">
+    ```typescript
+    // Good: Clear, actionable description
+    {
+      title: "Review pull request #1234",
+      description: `Review PR #1234:
+      - Check code quality and style
+      - Verify tests pass
+      - Ensure documentation updated
+      - Approve or request changes`
+    }
+
+    // Avoid: Vague description
+    {
+      title: "Check PR",
+      description: "Look at the code"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Set Realistic Due Dates">
+    ```typescript
+    // Include estimated duration
+    {
+      title: "Implement user authentication",
+      dueDate: "2024-02-15",
+      estimatedHours: 8,
+      metadata: {
+        complexity: "high",
+        dependencies: ["database-setup", "api-framework"]
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Use Tags for Organization">
+    ```typescript
+    // Organize tasks with tags
+    {
+      title: "Fix login bug",
+      tags: ["bug", "auth", "high-priority", "frontend"],
+      priority: "high"
+    }
+
+    // Query by tags later
+    const authTasks = await agentbase.getTasks({
+      tags: ["auth"]
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Task Management
+
+<Tip>
+**Review Tasks Regularly**: Set up periodic reviews of task lists to update priorities and remove obsolete tasks.
+</Tip>
+
+<AccordionGroup>
+  <Accordion title="Prioritize Effectively">
+    ```typescript
+    system: `Prioritize tasks using:
+
+    Critical: System down, security breach, data loss
+    High: Blocking other work, customer-facing issues
+    Medium: Important but not urgent
+    Low: Nice to have, future improvements
+
+    Consider:
+    - Business impact
+    - Dependencies
+    - Deadlines
+    - Resource availability`
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Blocked Tasks">
+    ```typescript
+    // Mark task as blocked
+    await agentbase.updateTask(taskId, {
+      status: "blocked",
+      blockReason: "Waiting for design approval",
+      blockedBy: designTaskId,
+      blockedUntil: "2024-02-10"
+    });
+
+    // Automatically unblock when dependency completes
+    ```
+  </Accordion>
+
+  <Accordion title="Track Time and Progress">
+    ```typescript
+    // Update progress regularly
+    await agentbase.updateTask(taskId, {
+      progress: 0.75,
+      timeSpent: 6, // hours
+      notes: "API implementation complete, working on tests"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Archive Completed Tasks">
+    ```typescript
+    // Periodically archive old completed tasks
+    async function archiveOldTasks() {
+      const oldTasks = await agentbase.getTasks({
+        status: "completed",
+        completedBefore: "2024-01-01" // Older than 30 days
+      });
+
+      for (const task of oldTasks) {
+        await agentbase.archiveTask(task.id);
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Collaboration
+
+<AccordionGroup>
+  <Accordion title="Assign Tasks Appropriately">
+    ```typescript
+    // Assign based on expertise
+    const task = await agentbase.createTask({
+      title: "Optimize database queries",
+      assignee: "database_specialist_agent",
+      ccUsers: ["team_lead", "backend_team"]
+    });
+
+    // Or let agent decide
+    message: "Assign this task to the best team member",
+    system: "Consider workload, expertise, and availability"
+    ```
+  </Accordion>
+
+  <Accordion title="Add Context and Resources">
+    ```typescript
+    {
+      title: "Fix checkout page error",
+      description: "...",
+      resources: [
+        { type: "error_log", url: "..." },
+        { type: "screenshot", url: "..." },
+        { type: "documentation", url: "..." }
+      ],
+      context: {
+        errorMessage: "Payment gateway timeout",
+        affectedUsers: 127,
+        firstOccurred: "2024-01-15T10:30:00Z"
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Enable Comments and Updates">
+    ```typescript
+    // Add comments to tasks
+    await agentbase.addTaskComment(taskId, {
+      author: "agent_123",
+      text: "Completed initial investigation. Root cause identified.",
+      timestamp: new Date().toISOString()
+    });
+
+    // Subscribe to task updates
+    await agentbase.subscribeToTask(taskId, {
+      userId: currentUser.id,
+      notifications: ["status_change", "comments", "completion"]
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Primitives
+
+### With Workflow
+
+Combine tasks with workflows:
+
+```typescript
+const workflow = {
+  name: "feature_development",
+  steps: [
+    {
+      id: "create_tasks",
+      type: "agent_task",
+      config: {
+        message: "Break down feature into development tasks",
+        capabilities: { tasks: { enabled: true } }
+      }
+    },
+    {
+      id: "assign_tasks",
+      type: "agent_task",
+      config: {
+        message: "Assign tasks to team members"
+      }
+    },
+    {
+      id: "monitor_progress",
+      type: "agent_task",
+      config: {
+        message: "Monitor task completion",
+        schedule: "0 9 * * *" // Check daily
+      }
+    }
+  ]
+};
+```
+
+Learn more: [Workflow Primitive](/primitives/extensions/workflow)
+
+### With Memory
+
+Remember task preferences:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Create tasks for the new project",
+  memory: {
+    namespace: `user_${userId}`,
+    enabled: true
+  },
+  capabilities: {
+    tasks: { enabled: true }
+  }
+});
+
+// Agent remembers user's preferred task structure
+```
+
+Learn more: [Memory Primitive](/primitives/extensions/memory)
+
+### With Scheduling
+
+Schedule task creation:
+
+```typescript
+// Auto-create tasks on schedule
+await agentbase.scheduleAgent({
+  schedule: "0 9 * * 1", // Every Monday
+  message: "Create tasks for this week's sprint",
+  capabilities: {
+    tasks: { enabled: true }
+  }
+});
+```
+
+Learn more: [Scheduling Primitive](/primitives/extensions/scheduling)
+
+## Performance Considerations
+
+### Task Volume
+
+- **Scalability**: System handles thousands of active tasks
+- **Query Performance**: Index tasks by status, priority, assignee
+- **Archival**: Archive completed tasks to maintain performance
+
+```typescript
+// Efficient task querying
+const tasks = await agentbase.getTasks({
+  status: ["pending", "in_progress"],
+  assignee: currentAgent,
+  limit: 50, // Paginate results
+  offset: 0
+});
+```
+
+### Real-time Updates
+
+- **Webhooks**: Receive real-time task updates
+- **Polling**: Query for task changes periodically
+- **WebSocket**: Subscribe to live task updates
+
+```typescript
+// Subscribe to task updates
+const subscription = await agentbase.subscribeToTasks({
+  filters: {
+    assignee: "current_agent"
+  },
+  onUpdate: (task) => {
+    console.log('Task updated:', task);
+  }
+});
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Tasks Not Being Created">
+    **Problem**: Agent doesn't create tasks as expected
+
+    **Solutions**:
+    - Verify tasks capability is enabled
+    - Check system prompt includes task creation instructions
+    - Ensure agent has permissions to create tasks
+    - Review agent response for task creation attempts
+
+    ```typescript
+    // Debug task creation
+    const result = await agentbase.runAgent({
+      message: "Create tasks for project",
+      capabilities: {
+        tasks: {
+          enabled: true,
+          debug: true
+        }
+      }
+    });
+
+    console.log('Task creation attempts:', result.debug.taskAttempts);
+    ```
+  </Accordion>
+
+  <Accordion title="Dependency Deadlock">
+    **Problem**: Circular dependencies preventing task completion
+
+    **Solutions**:
+    - Review task dependency graph
+    - Identify circular references
+    - Break circular dependencies
+    - Update task dependencies
+
+    ```typescript
+    // Check for circular dependencies
+    const graph = await agentbase.getTaskDependencyGraph(projectId);
+    const cycles = detectCycles(graph);
+
+    if (cycles.length > 0) {
+      console.log('Circular dependencies found:', cycles);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Task Overload">
+    **Problem**: Too many tasks overwhelming assignees
+
+    **Solutions**:
+    - Balance task distribution
+    - Adjust priorities
+    - Delegate or reassign tasks
+    - Extend deadlines
+
+    ```typescript
+    // Rebalance tasks
+    const overloaded = await agentbase.getTaskStats({
+      groupBy: "assignee"
+    });
+
+    for (const agent of overloaded) {
+      if (agent.taskCount > threshold) {
+        // Reassign low-priority tasks
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Patterns
+
+### Task Automation
+
+Auto-complete simple tasks:
+
+```typescript
+capabilities: {
+  tasks: {
+    enabled: true,
+    autoComplete: {
+      enabled: true,
+      conditions: [
+        { tag: "automated", confidence: 0.9 }
+      ]
+    }
+  }
+}
+```
+
+### Task Templates with Variations
+
+Create flexible templates:
+
+```typescript
+const template = await agentbase.createTaskTemplate({
+  name: "bug_fix",
+  variations: {
+    severity: {
+      critical: {
+        priority: "critical",
+        dueInHours: 2
+      },
+      high: {
+        priority: "high",
+        dueInHours: 24
+      },
+      medium: {
+        priority: "medium",
+        dueInDays: 7
+      }
+    }
+  }
+});
+```
+
+### Smart Task Routing
+
+Route tasks based on content:
+
+```typescript
+system: `Analyze new tasks and assign to:
+- Backend team: API, database, server tasks
+- Frontend team: UI, UX, client tasks
+- DevOps team: Infrastructure, deployment tasks
+- QA team: Testing, bug verification tasks
+
+Consider current workload and expertise.`
+```
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Workflow" icon="diagram-project" href="/primitives/extensions/workflow">
+    Orchestrate multi-step processes with tasks
+  </Card>
+
+  <Card title="Scheduling" icon="calendar" href="/primitives/extensions/scheduling">
+    Schedule recurring task creation
+  </Card>
+
+  <Card title="Memory" icon="brain" href="/primitives/extensions/memory">
+    Remember task patterns and preferences
+  </Card>
+
+  <Card title="Multi-Agent" icon="users" href="/primitives/essentials/multi-agents">
+    Distribute tasks across specialized agents
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code">
+    Complete tasks API documentation
+  </Card>
+
+  <Card title="Task Templates" icon="template">
+    Pre-built task templates library
+  </Card>
+
+  <Card title="Best Practices" icon="star">
+    Task management strategies
+  </Card>
+</CardGroup>
+
+<Tip>
+**Pro Tip**: Use task templates for recurring work patterns. This ensures consistency and saves time on task creation.
+</Tip>

@@ -1,0 +1,1135 @@
+---
+title: "Skills"
+description: "Teach agents new capabilities and domain-specific knowledge"
+icon: "graduation-cap"
+---
+
+> Skills enable agents to learn and master new capabilities, from specialized domain knowledge to complex procedural tasks, making them more capable and autonomous over time.
+
+## Overview
+
+The Skills primitive allows you to teach agents new capabilities that they can apply across different contexts. Unlike tools which are function calls, skills represent learned behaviors, procedures, and domain knowledge that agents internalize and adapt to various situations.
+
+Skills are essential for:
+
+- **Specialization**: Train agents in specific domains or disciplines
+- **Procedure Learning**: Teach multi-step processes and best practices
+- **Knowledge Transfer**: Share expertise across agent instances
+- **Capability Extension**: Add new abilities without code changes
+- **Continuous Improvement**: Agents learn from experience and feedback
+- **Consistency**: Ensure standard approaches across tasks
+
+<CardGroup cols={2}>
+  <Card title="Domain Expertise" icon="book-open">
+    Teach specialized knowledge in law, medicine, finance, etc.
+  </Card>
+
+  <Card title="Procedural Skills" icon="list-ol">
+    Train agents on standard operating procedures
+  </Card>
+
+  <Card title="Adaptive Learning" icon="brain-circuit">
+    Skills improve based on usage and feedback
+  </Card>
+
+  <Card title="Skill Sharing" icon="share-nodes">
+    Transfer learned skills between agents
+  </Card>
+</CardGroup>
+
+## How Skills Work
+
+When you teach an agent a skill:
+
+1. **Definition**: Skill defined with description, examples, and context
+2. **Training**: Agent learns skill through examples and practice
+3. **Application**: Agent applies skill when relevant to tasks
+4. **Feedback**: Performance feedback refines skill execution
+5. **Improvement**: Skill proficiency increases with usage
+6. **Transfer**: Successful skills can be shared with other agents
+
+<Note>
+**Skill Persistence**: Skills are saved and persist across agent sessions, building a knowledge base over time.
+</Note>
+
+## Skill Types
+
+### Domain Knowledge Skills
+
+```typescript
+{
+  type: "domain_knowledge",
+  domain: "legal" | "medical" | "financial" | "technical",
+  expertise: "contract_review" | "diagnosis" | "risk_assessment"
+}
+```
+
+### Procedural Skills
+
+```typescript
+{
+  type: "procedural",
+  procedure: "code_review" | "data_analysis" | "customer_support",
+  steps: [...],
+  bestPractices: [...]
+}
+```
+
+### Communication Skills
+
+```typescript
+{
+  type: "communication",
+  style: "formal" | "casual" | "technical",
+  audience: "executives" | "developers" | "customers"
+}
+```
+
+### Analytical Skills
+
+```typescript
+{
+  type: "analytical",
+  method: "root_cause_analysis" | "data_interpretation" | "trend_forecasting"
+}
+```
+
+## Code Examples
+
+### Define a Skill
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Define a new skill
+const skill = await agentbase.createSkill({
+  name: "code_review",
+  description: "Perform thorough code reviews following best practices",
+  type: "procedural",
+  domain: "software_engineering",
+  instructions: `When reviewing code:
+
+  1. Check code quality and readability
+  2. Verify tests are present and comprehensive
+  3. Look for security vulnerabilities
+  4. Ensure documentation is updated
+  5. Check for performance issues
+  6. Verify error handling
+  7. Suggest improvements
+
+  Be constructive and specific in feedback.`,
+  examples: [
+    {
+      input: "Review this pull request",
+      output: "Detailed code review with specific suggestions",
+      context: "Pull request with authentication changes"
+    }
+  ],
+  bestPractices: [
+    "Focus on high-impact issues first",
+    "Provide specific examples for improvements",
+    "Acknowledge good code practices",
+    "Explain reasoning behind suggestions"
+  ]
+});
+
+console.log('Skill created:', skill.id);
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Define a new skill
+skill = agentbase.create_skill(
+    name="code_review",
+    description="Perform thorough code reviews following best practices",
+    type="procedural",
+    domain="software_engineering",
+    instructions="""When reviewing code:
+
+    1. Check code quality and readability
+    2. Verify tests are present and comprehensive
+    3. Look for security vulnerabilities
+    4. Ensure documentation is updated
+    5. Check for performance issues
+    6. Verify error handling
+    7. Suggest improvements
+
+    Be constructive and specific in feedback.""",
+    examples=[
+        {
+            "input": "Review this pull request",
+            "output": "Detailed code review with specific suggestions",
+            "context": "Pull request with authentication changes"
+        }
+    ],
+    best_practices=[
+        "Focus on high-impact issues first",
+        "Provide specific examples for improvements",
+        "Acknowledge good code practices",
+        "Explain reasoning behind suggestions"
+    ]
+)
+
+print(f"Skill created: {skill.id}")
+```
+
+</CodeGroup>
+
+### Use a Skill
+
+<CodeGroup>
+
+```typescript TypeScript
+// Agent applies learned skill
+const result = await agentbase.runAgent({
+  message: "Review this pull request code",
+  context: {
+    pullRequest: prData,
+    code: codeChanges
+  },
+  skills: ["code_review"], // Apply code review skill
+  system: "Use your code review skill to provide comprehensive feedback"
+});
+
+console.log('Code review:', result.review);
+```
+
+```python Python
+# Agent applies learned skill
+result = agentbase.run_agent(
+    message="Review this pull request code",
+    context={
+        "pull_request": pr_data,
+        "code": code_changes
+    },
+    skills=["code_review"],  # Apply code review skill
+    system="Use your code review skill to provide comprehensive feedback"
+)
+
+print(f"Code review: {result.review}")
+```
+
+</CodeGroup>
+
+### Teach Skill Through Examples
+
+<CodeGroup>
+
+```typescript TypeScript
+// Teach skill through demonstration
+await agentbase.teachSkill({
+  skillId: "customer_support",
+  examples: [
+    {
+      situation: "Customer reports login issue",
+      response: `Thank you for contacting us. I'll help you resolve this.
+
+      Let me verify a few things:
+      1. Are you using the correct email address?
+      2. Have you tried resetting your password?
+      3. Which browser are you using?
+
+      Based on your answers, I'll guide you through the solution.`,
+      feedback: "positive",
+      notes: "Empathetic, systematic approach"
+    },
+    {
+      situation: "Customer angry about service outage",
+      response: `I sincerely apologize for the inconvenience. I understand this is frustrating.
+
+      Here's what happened: [brief explanation]
+      Here's what we're doing: [resolution steps]
+      Here's how we'll prevent it: [prevention measures]
+
+      How can I make this right for you?`,
+      feedback: "positive",
+      notes: "Acknowledges emotions, takes responsibility, offers solution"
+    }
+  ]
+});
+```
+
+```python Python
+# Teach skill through demonstration
+agentbase.teach_skill(
+    skill_id="customer_support",
+    examples=[
+        {
+            "situation": "Customer reports login issue",
+            "response": """Thank you for contacting us. I'll help you resolve this.
+
+            Let me verify a few things:
+            1. Are you using the correct email address?
+            2. Have you tried resetting your password?
+            3. Which browser are you using?
+
+            Based on your answers, I'll guide you through the solution.""",
+            "feedback": "positive",
+            "notes": "Empathetic, systematic approach"
+        }
+    ]
+)
+```
+
+</CodeGroup>
+
+### Multiple Skills
+
+<CodeGroup>
+
+```typescript TypeScript
+// Agent with multiple specialized skills
+const result = await agentbase.runAgent({
+  message: "Help me with this technical blog post",
+  skills: [
+    "technical_writing",
+    "seo_optimization",
+    "content_editing"
+  ],
+  system: `Apply your skills:
+  - Technical writing: Make complex topics accessible
+  - SEO optimization: Improve search visibility
+  - Content editing: Ensure clarity and flow`
+});
+
+// Agent combines multiple skills effectively
+```
+
+```python Python
+# Agent with multiple specialized skills
+result = agentbase.run_agent(
+    message="Help me with this technical blog post",
+    skills=[
+        "technical_writing",
+        "seo_optimization",
+        "content_editing"
+    ],
+    system="""Apply your skills:
+    - Technical writing: Make complex topics accessible
+    - SEO optimization: Improve search visibility
+    - Content editing: Ensure clarity and flow"""
+)
+```
+
+</CodeGroup>
+
+### Skill Proficiency Levels
+
+<CodeGroup>
+
+```typescript TypeScript
+// Check skill proficiency
+const proficiency = await agentbase.getSkillProficiency({
+  agentId: "agent_123",
+  skillId: "data_analysis"
+});
+
+console.log('Proficiency level:', proficiency.level); // beginner, intermediate, advanced, expert
+console.log('Success rate:', proficiency.successRate);
+console.log('Usage count:', proficiency.usageCount);
+
+// Assign skill with target proficiency
+await agentbase.assignSkill({
+  agentId: "agent_123",
+  skillId: "data_analysis",
+  targetProficiency: "advanced",
+  trainingMode: true // Enable learning mode
+});
+```
+
+```python Python
+# Check skill proficiency
+proficiency = agentbase.get_skill_proficiency(
+    agent_id="agent_123",
+    skill_id="data_analysis"
+)
+
+print(f"Proficiency level: {proficiency.level}")  # beginner, intermediate, advanced, expert
+print(f"Success rate: {proficiency.success_rate}")
+print(f"Usage count: {proficiency.usage_count}")
+
+# Assign skill with target proficiency
+agentbase.assign_skill(
+    agent_id="agent_123",
+    skill_id="data_analysis",
+    target_proficiency="advanced",
+    training_mode=True  # Enable learning mode
+)
+```
+
+</CodeGroup>
+
+### Skill Feedback Loop
+
+<CodeGroup>
+
+```typescript TypeScript
+// Provide feedback to improve skill
+await agentbase.provideSkillFeedback({
+  agentId: "agent_123",
+  skillId: "code_review",
+  executionId: "exec_456",
+  rating: 4, // 1-5 scale
+  feedback: {
+    strengths: [
+      "Identified security vulnerability",
+      "Provided clear improvement suggestions"
+    ],
+    improvements: [
+      "Could have suggested specific code examples",
+      "Missed performance optimization opportunity"
+    ]
+  }
+});
+
+// Skill improves based on feedback
+```
+
+```python Python
+# Provide feedback to improve skill
+agentbase.provide_skill_feedback(
+    agent_id="agent_123",
+    skill_id="code_review",
+    execution_id="exec_456",
+    rating=4,  # 1-5 scale
+    feedback={
+        "strengths": [
+            "Identified security vulnerability",
+            "Provided clear improvement suggestions"
+        ],
+        "improvements": [
+            "Could have suggested specific code examples",
+            "Missed performance optimization opportunity"
+        ]
+    }
+)
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Technical Support Agent
+
+Train agent in troubleshooting procedures:
+
+```typescript
+const supportSkill = await agentbase.createSkill({
+  name: "technical_troubleshooting",
+  description: "Systematically diagnose and resolve technical issues",
+  type: "procedural",
+  instructions: `Troubleshooting methodology:
+
+  1. Gather information
+     - What exactly happened?
+     - When did it start?
+     - What changed recently?
+     - Error messages or codes?
+
+  2. Reproduce the issue
+     - Can you show me the steps?
+     - Does it happen consistently?
+
+  3. Isolate the cause
+     - Test in different environments
+     - Check logs and diagnostics
+     - Eliminate variables
+
+  4. Propose solution
+     - Explain what caused it
+     - Provide fix with steps
+     - Verify solution works
+
+  5. Document and prevent
+     - Record solution
+     - Suggest preventive measures`,
+  domain: "technical_support"
+});
+
+// Agent applies systematic troubleshooting
+```
+
+### 2. Legal Document Review
+
+Teach legal analysis skills:
+
+```typescript
+const legalSkill = await agentbase.createSkill({
+  name: "contract_review",
+  description: "Review legal contracts for risks and compliance",
+  type: "domain_knowledge",
+  domain: "legal",
+  instructions: `Contract review checklist:
+
+  1. Parties and Definitions
+     - Clearly identified parties
+     - Defined terms are consistent
+
+  2. Obligations
+     - Clear deliverables
+     - Realistic timelines
+     - Defined responsibilities
+
+  3. Payment Terms
+     - Clear pricing structure
+     - Payment schedule defined
+     - Late payment penalties
+
+  4. Liability and Indemnification
+     - Liability caps
+     - Insurance requirements
+     - Indemnification scope
+
+  5. Termination
+     - Termination conditions
+     - Notice requirements
+     - Post-termination obligations
+
+  6. Compliance
+     - Regulatory compliance
+     - Industry standards
+     - Data protection (GDPR, etc.)
+
+  Flag high-risk clauses and suggest revisions.`,
+  requiredCertifications: ["legal_domain_training"]
+});
+```
+
+### 3. Data Analysis
+
+Train analytical reasoning:
+
+```typescript
+const analyticsSkill = await agentbase.createSkill({
+  name: "data_analysis",
+  description: "Analyze data to extract insights and recommendations",
+  type: "analytical",
+  instructions: `Data analysis approach:
+
+  1. Understand the Question
+     - What decision needs to be made?
+     - What metrics matter?
+
+  2. Examine the Data
+     - Data quality and completeness
+     - Identify patterns and outliers
+     - Check for biases
+
+  3. Perform Analysis
+     - Descriptive statistics
+     - Trend analysis
+     - Correlation and causation
+     - Segment analysis
+
+  4. Visualize Findings
+     - Choose appropriate charts
+     - Highlight key insights
+     - Make data accessible
+
+  5. Provide Recommendations
+     - Data-driven insights
+     - Actionable next steps
+     - Quantify impact
+     - Note limitations and caveats
+
+  Always explain your reasoning and show your work.`
+});
+```
+
+### 4. Content Creation
+
+Teach writing and editing skills:
+
+```typescript
+const writingSkill = await agentbase.createSkill({
+  name: "content_creation",
+  description: "Create engaging, well-structured content",
+  type: "procedural",
+  domain: "content_marketing",
+  instructions: `Content creation process:
+
+  1. Research
+     - Understand target audience
+     - Research topic thoroughly
+     - Identify unique angle
+
+  2. Structure
+     - Compelling headline
+     - Clear introduction (hook)
+     - Logical flow of ideas
+     - Strong conclusion (CTA)
+
+  3. Writing
+     - Clear, concise language
+     - Active voice
+     - Vary sentence structure
+     - Use examples and stories
+
+  4. Optimization
+     - SEO keywords naturally integrated
+     - Scannable formatting
+     - Internal/external links
+     - Meta description
+
+  5. Editing
+     - Grammar and spelling
+     - Clarity and flow
+     - Remove redundancy
+     - Fact-check
+
+  Adapt tone to audience and platform.`
+});
+```
+
+### 5. Sales Qualification
+
+Train lead qualification methodology:
+
+```typescript
+const salesSkill = await agentbase.createSkill({
+  name: "lead_qualification",
+  description: "Qualify leads using BANT methodology",
+  type: "procedural",
+  domain: "sales",
+  instructions: `BANT Qualification Framework:
+
+  1. Budget
+     - Does prospect have budget allocated?
+     - What's the budget range?
+     - When is budget available?
+
+  2. Authority
+     - Who makes the decision?
+     - What's the approval process?
+     - Who are the stakeholders?
+
+  3. Need
+     - What problem are they solving?
+     - What's the impact of not solving it?
+     - Current solution inadequacies?
+
+  4. Timeline
+     - When do they need to decide?
+     - What's driving urgency?
+     - Any blockers to moving forward?
+
+  Scoring:
+  - 4/4 BANT criteria: High quality lead
+  - 3/4: Medium quality, nurture
+  - 2/4 or less: Low priority
+
+  Document findings and next steps.`
+});
+```
+
+### 6. Security Auditing
+
+Teach security assessment procedures:
+
+```typescript
+const securitySkill = await agentbase.createSkill({
+  name: "security_audit",
+  description: "Perform security audits and identify vulnerabilities",
+  type: "procedural",
+  domain: "cybersecurity",
+  instructions: `Security audit checklist:
+
+  1. Authentication & Authorization
+     - Strong password policies
+     - MFA implementation
+     - Session management
+     - Access control (RBAC)
+
+  2. Data Protection
+     - Encryption at rest and in transit
+     - PII handling
+     - Data retention policies
+     - Backup procedures
+
+  3. Infrastructure Security
+     - Network segmentation
+     - Firewall rules
+     - Patch management
+     - Server hardening
+
+  4. Application Security
+     - Input validation
+     - SQL injection prevention
+     - XSS protection
+     - CSRF tokens
+     - Dependency vulnerabilities
+
+  5. Compliance
+     - SOC 2 requirements
+     - GDPR compliance
+     - Industry standards
+     - Audit logging
+
+  Categorize findings: Critical, High, Medium, Low
+  Provide remediation steps for each issue.`
+});
+```
+
+## Best Practices
+
+### Skill Definition
+
+<AccordionGroup>
+  <Accordion title="Be Specific and Detailed">
+    ```typescript
+    // Good: Detailed skill with clear instructions
+    {
+      name: "api_design",
+      instructions: `REST API design principles:
+
+      1. Use nouns for resources (/users, not /getUsers)
+      2. HTTP methods for actions (GET, POST, PUT, DELETE)
+      3. Consistent naming conventions
+      4. Proper status codes (200, 201, 400, 404, 500)
+      5. Versioning in URL (/v1/users)
+      6. Pagination for lists
+      7. Clear error messages
+      8. Rate limiting headers
+
+      Follow JSON:API specification when possible.`
+    }
+
+    // Avoid: Vague skill definition
+    {
+      name: "api_design",
+      instructions: "Design good APIs"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Include Examples">
+    ```typescript
+    // Provide good and bad examples
+    {
+      name: "email_communication",
+      examples: [
+        {
+          scenario: "Responding to customer complaint",
+          good: "I apologize for the inconvenience. Let me resolve this for you...",
+          bad: "That's not our fault. You should have...",
+          reasoning: "Good response shows empathy and takes ownership"
+        }
+      ]
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Define Success Criteria">
+    ```typescript
+    {
+      name: "bug_triage",
+      successCriteria: {
+        mustHave: [
+          "Severity assigned (P0-P4)",
+          "Clear reproduction steps",
+          "Affected components identified",
+          "Owner assigned"
+        ],
+        shouldHave: [
+          "Related tickets linked",
+          "Estimated fix time",
+          "Workaround documented"
+        ]
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Skill Training
+
+<Tip>
+**Start Simple**: Begin with basic proficiency and add complexity as agent masters fundamentals.
+</Tip>
+
+<AccordionGroup>
+  <Accordion title="Progressive Complexity">
+    ```typescript
+    // Start with basic level
+    await agentbase.teachSkill({
+      skillId: "data_analysis",
+      level: "beginner",
+      topics: ["descriptive_statistics", "basic_visualization"]
+    });
+
+    // Progress to intermediate
+    await agentbase.teachSkill({
+      skillId: "data_analysis",
+      level: "intermediate",
+      topics: ["correlation_analysis", "trend_forecasting"]
+    });
+
+    // Advance to expert
+    await agentbase.teachSkill({
+      skillId: "data_analysis",
+      level: "advanced",
+      topics: ["predictive_modeling", "causal_inference"]
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Learn from Feedback">
+    ```typescript
+    // Enable continuous learning
+    {
+      skillId: "customer_support",
+      learningMode: {
+        enabled: true,
+        feedbackWeight: 0.7, // How much to weight user feedback
+        selfCorrection: true, // Learn from mistakes
+        adaptToContext: true // Adapt based on situation
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Practice Scenarios">
+    ```typescript
+    // Create practice scenarios
+    await agentbase.createSkillPractice({
+      skillId: "negotiation",
+      scenarios: [
+        {
+          situation: "Vendor asking for 20% price increase",
+          context: "Current contract expires in 30 days",
+          goal: "Minimize increase or find alternative value"
+        },
+        {
+          situation: "Customer requesting refund after policy deadline",
+          context: "Customer has been with company for 5 years",
+          goal: "Maintain relationship while following policy"
+        }
+      ]
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Skill Management
+
+<AccordionGroup>
+  <Accordion title="Version Skills">
+    ```typescript
+    // Version skill definitions
+    {
+      skillId: "code_review",
+      version: "2.1.0",
+      changelog: [
+        "Added security vulnerability checks",
+        "Improved performance analysis",
+        "Updated to latest best practices"
+      ],
+      deprecates: "2.0.0"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Organize Skill Library">
+    ```typescript
+    // Categorize and tag skills
+    {
+      skillId: "contract_review",
+      category: "legal",
+      tags: ["contracts", "risk-assessment", "compliance"],
+      relatedSkills: ["negotiation", "legal_writing"],
+      prerequisites: ["legal_terminology"]
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Monitor Skill Usage">
+    ```typescript
+    // Track skill effectiveness
+    const metrics = await agentbase.getSkillMetrics({
+      skillId: "data_analysis",
+      timeRange: "30d"
+    });
+
+    console.log('Usage count:', metrics.usageCount);
+    console.log('Success rate:', metrics.successRate);
+    console.log('Avg rating:', metrics.averageRating);
+    console.log('Improvement trend:', metrics.improvementTrend);
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Primitives
+
+### With Memory
+
+Remember skill application contexts:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Help with customer support",
+  skills: ["customer_support"],
+  memory: {
+    namespace: `agent_skills`,
+    enabled: true
+  }
+});
+
+// Agent remembers successful approaches for different situations
+```
+
+Learn more: [Memory Primitive](/primitives/extensions/memory)
+
+### With Multi-Agent
+
+Distribute specialized skills:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Review this business proposal",
+  agents: [
+    {
+      name: "Legal Specialist",
+      skills: ["contract_review", "legal_compliance"]
+    },
+    {
+      name: "Financial Analyst",
+      skills: ["financial_analysis", "risk_assessment"]
+    },
+    {
+      name: "Technical Reviewer",
+      skills: ["technical_feasibility", "system_design"]
+    }
+  ]
+});
+
+// Each agent applies their specialized skills
+```
+
+Learn more: [Multi-Agent Primitive](/primitives/essentials/multi-agents)
+
+### With Tasks
+
+Apply skills to task execution:
+
+```typescript
+await agentbase.createTask({
+  title: "Perform security audit",
+  assignee: "security_agent",
+  requiredSkills: ["security_audit", "penetration_testing"],
+  skillProficiency: "advanced"
+});
+
+// Only agents with required skills can execute task
+```
+
+Learn more: [Tasks Primitive](/primitives/extensions/tasks)
+
+## Performance Considerations
+
+### Skill Loading
+
+- **On-Demand**: Skills loaded only when needed
+- **Caching**: Frequently used skills cached in memory
+- **Lazy Loading**: Complex skills loaded progressively
+
+### Skill Complexity
+
+- **Simple Skills**: < 100ms overhead
+- **Complex Skills**: < 500ms overhead
+- **Optimization**: Pre-compile common skill patterns
+
+### Scaling
+
+```typescript
+// Optimize skill performance
+{
+  skillId: "data_analysis",
+  optimization: {
+    cacheExamples: true,
+    preloadContext: true,
+    parallelProcessing: true
+  }
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Skill Not Applied Correctly">
+    **Problem**: Agent doesn't use skill as expected
+
+    **Solutions**:
+    - Verify skill is explicitly enabled for agent
+    - Check skill proficiency level is sufficient
+    - Review skill instructions for clarity
+    - Provide more examples for edge cases
+    - Check if conflicting skills are active
+
+    ```typescript
+    // Debug skill application
+    const debug = await agentbase.runAgent({
+      message: "Test task",
+      skills: ["target_skill"],
+      debug: {
+        skillApplication: true
+      }
+    });
+
+    console.log('Skills considered:', debug.skillsConsidered);
+    console.log('Skill selected:', debug.skillSelected);
+    console.log('Application reasoning:', debug.reasoning);
+    ```
+  </Accordion>
+
+  <Accordion title="Low Skill Proficiency">
+    **Problem**: Skill performance is inconsistent
+
+    **Solutions**:
+    - Provide more training examples
+    - Enable feedback-based learning
+    - Simplify skill instructions
+    - Break complex skill into sub-skills
+    - Increase practice iterations
+
+    ```typescript
+    // Boost skill proficiency
+    await agentbase.trainSkill({
+      skillId: "negotiation",
+      intensiveTraining: true,
+      practiceRounds: 50,
+      feedbackLoop: true
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Skill Conflicts">
+    **Problem**: Multiple skills interfere with each other
+
+    **Solutions**:
+    - Define skill priority order
+    - Create skill compatibility rules
+    - Use skill contexts to isolate application
+    - Combine related skills into single comprehensive skill
+
+    ```typescript
+    // Manage skill priorities
+    {
+      agentId: "agent_123",
+      skillPriorities: [
+        { skillId: "security_first", priority: 1 },
+        { skillId: "performance_optimization", priority: 2 },
+        { skillId: "code_elegance", priority: 3 }
+      ]
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Patterns
+
+### Skill Composition
+
+Combine multiple skills:
+
+```typescript
+const compositeSkill = await agentbase.createSkill({
+  name: "full_stack_development",
+  type: "composite",
+  subSkills: [
+    "frontend_development",
+    "backend_development",
+    "database_design",
+    "devops",
+    "testing"
+  ],
+  integration: "Coordinate all aspects of application development"
+});
+```
+
+### Context-Aware Skills
+
+Adapt skill to context:
+
+```typescript
+{
+  skillId: "communication",
+  contextRules: [
+    {
+      context: { audience: "executives" },
+      adjustments: { style: "formal", detail: "high-level" }
+    },
+    {
+      context: { audience: "developers" },
+      adjustments: { style: "technical", detail: "implementation-focused" }
+    }
+  ]
+}
+```
+
+### Skill Inheritance
+
+Create skill hierarchies:
+
+```typescript
+// Base skill
+const baseSkill = await agentbase.createSkill({
+  name: "programming_fundamentals",
+  instructions: "Core programming concepts..."
+});
+
+// Specialized skill inherits from base
+const specializeda = await agentbase.createSkill({
+  name: "python_programming",
+  inheritsFrom: "programming_fundamentals",
+  additionalInstructions: "Python-specific patterns and idioms..."
+});
+```
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Custom Tools" icon="toolbox" href="/primitives/essentials/custom-tools">
+    Combine skills with tools for powerful capabilities
+  </Card>
+
+  <Card title="Memory" icon="brain" href="/primitives/extensions/memory">
+    Remember successful skill applications
+  </Card>
+
+  <Card title="Multi-Agent" icon="users" href="/primitives/essentials/multi-agents">
+    Distribute specialized skills across agents
+  </Card>
+
+  <Card title="Self-Evolving" icon="seedling" href="/primitives/essentials/self-evolving">
+    Agents improve skills automatically
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code">
+    Complete skills API documentation
+  </Card>
+
+  <Card title="Skill Library" icon="books">
+    Pre-built skill library
+  </Card>
+
+  <Card title="Training Guide" icon="chalkboard-user">
+    Best practices for training agents
+  </Card>
+</CardGroup>
+
+<Tip>
+**Pro Tip**: Start with pre-built skills from the library and customize them for your specific needs. This accelerates agent capability development significantly.
+</Tip>

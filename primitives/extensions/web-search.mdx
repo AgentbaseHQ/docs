@@ -1,0 +1,925 @@
+---
+title: "Web Search"
+description: "Enable agents to search the web and access real-time information from the internet"
+icon: "globe"
+---
+
+> Web Search empowers agents to find current information on the internet, access news, research topics, and retrieve up-to-date data beyond their training cutoff.
+
+## Overview
+
+The Web Search primitive gives agents the ability to search the internet in real-time, enabling them to access current information, news, facts, and data that may not be in their training data or your internal knowledge bases. This bridges the gap between static knowledge and dynamic, ever-changing web content.
+
+Web Search is essential for:
+
+- **Current Events**: Access latest news and developments
+- **Real-Time Data**: Get current prices, weather, sports scores, etc.
+- **Research**: Find information on any topic from the web
+- **Fact-Checking**: Verify information against multiple sources
+- **Market Intelligence**: Research competitors, trends, and market data
+- **Comprehensive Answers**: Combine internal knowledge with web content
+
+<CardGroup cols={2}>
+  <Card title="Real-Time Access" icon="clock">
+    Search current web content, not limited to training data cutoff
+  </Card>
+
+  <Card title="Multiple Sources" icon="list">
+    Aggregate information from multiple search results automatically
+  </Card>
+
+  <Card title="Safe Search" icon="shield-check">
+    Built-in content filtering and safe search capabilities
+  </Card>
+
+  <Card title="Source Citations" icon="link">
+    Automatically cite web sources with URLs
+  </Card>
+</CardGroup>
+
+## How Web Search Works
+
+When web search is enabled:
+
+1. **Query Generation**: Agent formulates search query based on user question
+2. **Search Execution**: Query is sent to search engine
+3. **Result Retrieval**: Top search results are retrieved
+4. **Content Extraction**: Relevant content is extracted from result pages
+5. **Synthesis**: Agent synthesizes information from multiple sources
+6. **Citation**: Sources are cited with URLs in the response
+
+<Note>
+**Privacy**: Web searches are performed on behalf of your agent. Search queries and results are processed in accordance with your privacy settings.
+</Note>
+
+## Code Examples
+
+### Basic Web Search
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Enable web search
+const result = await agentbase.runAgent({
+  message: "What are the latest developments in quantum computing?",
+  webSearch: {
+    enabled: true
+  }
+});
+
+console.log('Answer:', result.message);
+console.log('Sources:', result.sources);
+// Sources include URLs from web search
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Enable web search
+result = agentbase.run_agent(
+    message="What are the latest developments in quantum computing?",
+    web_search={
+        "enabled": True
+    }
+)
+
+print(f"Answer: {result.message}")
+print(f"Sources: {result.sources}")
+# Sources include URLs from web search
+```
+
+</CodeGroup>
+
+### Web Search with Filters
+
+<CodeGroup>
+
+```typescript TypeScript
+// Filter search results
+const result = await agentbase.runAgent({
+  message: "Latest AI research papers",
+  webSearch: {
+    enabled: true,
+    filters: {
+      timeRange: "past_week", // Only recent results
+      safeSearch: "strict",
+      region: "us",
+      language: "en"
+    }
+  }
+});
+```
+
+```python Python
+# Filter search results
+result = agentbase.run_agent(
+    message="Latest AI research papers",
+    web_search={
+        "enabled": True,
+        "filters": {
+            "time_range": "past_week", # Only recent results
+            "safe_search": "strict",
+            "region": "us",
+            "language": "en"
+        }
+    }
+)
+```
+
+</CodeGroup>
+
+### Domain-Specific Search
+
+<CodeGroup>
+
+```typescript TypeScript
+// Search specific domains
+const result = await agentbase.runAgent({
+  message: "Python async/await best practices",
+  webSearch: {
+    enabled: true,
+    domains: [
+      "stackoverflow.com",
+      "docs.python.org",
+      "realpython.com"
+    ]
+  }
+});
+
+// Only searches specified domains
+```
+
+```python Python
+# Search specific domains
+result = agentbase.run_agent(
+    message="Python async/await best practices",
+    web_search={
+        "enabled": True,
+        "domains": [
+            "stackoverflow.com",
+            "docs.python.org",
+            "realpython.com"
+        ]
+    }
+)
+
+# Only searches specified domains
+```
+
+</CodeGroup>
+
+### Combining Web Search with RAG
+
+<CodeGroup>
+
+```typescript TypeScript
+// Use both internal docs and web search
+const result = await agentbase.runAgent({
+  message: "How does our product compare to the latest market alternatives?",
+  datastores: [
+    {
+      id: productDocs,
+      name: "Product Documentation"
+    }
+  ],
+  webSearch: {
+    enabled: true,
+    filters: {
+      timeRange: "past_month"
+    }
+  },
+  system: `You are a product analyst.
+
+  Combine:
+  - Internal product documentation (via RAG)
+  - Latest market information (via web search)
+
+  Provide comprehensive competitive analysis.`
+});
+
+// Agent uses both internal knowledge and web research
+```
+
+```python Python
+# Use both internal docs and web search
+result = agentbase.run_agent(
+    message="How does our product compare to the latest market alternatives?",
+    datastores=[
+        {
+            "id": product_docs,
+            "name": "Product Documentation"
+        }
+    ],
+    web_search={
+        "enabled": True,
+        "filters": {
+            "time_range": "past_month"
+        }
+    },
+    system="""You are a product analyst.
+
+    Combine:
+    - Internal product documentation (via RAG)
+    - Latest market information (via web search)
+
+    Provide comprehensive competitive analysis."""
+)
+
+# Agent uses both internal knowledge and web research
+```
+
+</CodeGroup>
+
+### Controlling Number of Search Results
+
+<CodeGroup>
+
+```typescript TypeScript
+// Customize search depth
+const result = await agentbase.runAgent({
+  message: "Comprehensive review of electric vehicles in 2024",
+  webSearch: {
+    enabled: true,
+    maxResults: 10, // Fetch top 10 results
+    depth: "comprehensive" // deep, standard, or quick
+  }
+});
+
+// Agent synthesizes information from multiple sources
+```
+
+```python Python
+# Customize search depth
+result = agentbase.run_agent(
+    message="Comprehensive review of electric vehicles in 2024",
+    web_search={
+        "enabled": True,
+        "max_results": 10, # Fetch top 10 results
+        "depth": "comprehensive" # deep, standard, or quick
+    }
+)
+
+# Agent synthesizes information from multiple sources
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. News and Current Events
+
+Stay informed on latest developments:
+
+```typescript
+const newsAgent = await agentbase.runAgent({
+  message: "Summarize today's major tech news",
+  webSearch: {
+    enabled: true,
+    filters: {
+      timeRange: "past_day",
+      domains: [
+        "techcrunch.com",
+        "theverge.com",
+        "arstechnica.com",
+        "wired.com"
+      ]
+    }
+  },
+  system: `You are a tech news analyst.
+
+  Provide:
+  - Summary of major stories
+  - Key takeaways
+  - Links to full articles
+  - Categorize by topic (AI, hardware, software, business)`
+});
+```
+
+### 2. Market Research
+
+Research competitors and market trends:
+
+```typescript
+const marketResearch = await agentbase.runAgent({
+  message: "What are the top CRM platforms for small businesses in 2024?",
+  webSearch: {
+    enabled: true,
+    filters: {
+      timeRange: "past_3_months"
+    }
+  },
+  system: `You are a market research analyst.
+
+  Research and provide:
+  - Top platforms and their features
+  - Pricing comparison
+  - User reviews and ratings
+  - Market share insights
+  - Cite sources for all data`
+});
+```
+
+### 3. Real-Time Data Lookup
+
+Access current information:
+
+```typescript
+const realTimeAgent = await agentbase.runAgent({
+  message: "What's the current weather in Tokyo and the USD to JPY exchange rate?",
+  webSearch: {
+    enabled: true,
+    depth: "quick" // Fast lookup
+  },
+  system: `Provide current, accurate information.
+  Always cite the source and timestamp.`
+});
+```
+
+### 4. Academic Research
+
+Find scholarly articles and papers:
+
+```typescript
+const academicAgent = await agentbase.runAgent({
+  message: "Recent peer-reviewed research on CRISPR gene editing applications",
+  webSearch: {
+    enabled: true,
+    domains: [
+      "scholar.google.com",
+      "pubmed.ncbi.nlm.nih.gov",
+      "arxiv.org"
+    ],
+    filters: {
+      timeRange: "past_year"
+    }
+  },
+  system: `You are an academic research assistant.
+
+  Find and summarize:
+  - Peer-reviewed publications
+  - Key findings and methodologies
+  - Citations in proper format
+  - Links to full papers`
+});
+```
+
+### 5. Product Recommendations
+
+Research and recommend products:
+
+```typescript
+const shoppingAgent = await agentbase.runAgent({
+  message: "Best noise-canceling headphones under $300 for travel",
+  webSearch: {
+    enabled: true,
+    filters: {
+      timeRange: "past_6_months" // Recent reviews
+    }
+  },
+  system: `You are a product research assistant.
+
+  Research and provide:
+  - Top recommended products
+  - Pros and cons of each
+  - Price comparison
+  - User ratings and reviews
+  - Where to buy
+  - Cite review sources`
+});
+```
+
+### 6. Technical Troubleshooting
+
+Find solutions to technical problems:
+
+```typescript
+const troubleshootAgent = await agentbase.runAgent({
+  message: "How to fix CORS errors in Next.js API routes",
+  webSearch: {
+    enabled: true,
+    domains: [
+      "stackoverflow.com",
+      "github.com",
+      "nextjs.org"
+    ]
+  },
+  system: `You are a technical support assistant.
+
+  Find and provide:
+  - Clear explanation of the issue
+  - Step-by-step solutions
+  - Code examples
+  - Common pitfalls
+  - Links to documentation and discussions`
+});
+```
+
+### 7. Travel Planning
+
+Research destinations and travel information:
+
+```typescript
+const travelAgent = await agentbase.runAgent({
+  message: "Plan a 5-day trip to Barcelona - best attractions, hotels, and restaurants",
+  webSearch: {
+    enabled: true,
+    filters: {
+      timeRange: "past_year", // Current travel info
+      language: "en"
+    }
+  },
+  system: `You are a travel planning assistant.
+
+  Research and create itinerary with:
+  - Top attractions and activities
+  - Hotel recommendations by area
+  - Restaurant suggestions
+  - Transportation tips
+  - Estimated costs
+  - Cite travel guides and review sites`
+});
+```
+
+## Best Practices
+
+### Query Formulation
+
+<Tip>
+**Let Agent Formulate Queries**: The agent will automatically formulate effective search queries. Your prompt should focus on what information you need, not how to search for it.
+</Tip>
+
+<AccordionGroup>
+  <Accordion title="Good Search Prompts">
+    ```typescript
+    // Good: Clear information need
+    "What are the latest features in Python 3.12?"
+    "Compare pricing of top 5 project management tools"
+    "Recent developments in renewable energy technology"
+
+    // Avoid: Trying to write search queries
+    "Search for 'Python 3.12 new features'"
+    "Google 'project management tools pricing'"
+    ```
+  </Accordion>
+
+  <Accordion title="Specify Time Sensitivity">
+    ```typescript
+    // Good: Specify recency when needed
+    {
+      message: "Latest iPhone release details",
+      webSearch: {
+        enabled: true,
+        filters: {
+          timeRange: "past_week" // Recent info
+        }
+      }
+    }
+
+    // For evergreen topics, recency less important
+    {
+      message: "How does photosynthesis work?",
+      webSearch: {
+        enabled: true
+        // No time filter needed
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Use Domain Filtering Wisely">
+    ```typescript
+    // Good: Filter for authoritative sources
+    {
+      message: "Latest CDC guidelines on vaccinations",
+      webSearch: {
+        enabled: true,
+        domains: ["cdc.gov", "who.int", "nih.gov"]
+      }
+    }
+
+    // Good: Exclude unreliable sources
+    {
+      webSearch: {
+        enabled: true,
+        excludeDomains: [
+          "example-spam-site.com",
+          "unreliable-source.net"
+        ]
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Source Verification
+
+<Warning>
+**Verify Critical Information**: Web search returns information from the internet, which may not always be accurate. Always verify critical information from authoritative sources.
+</Warning>
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "What are the tax implications of cryptocurrency trading?",
+  webSearch: {
+    enabled: true,
+    domains: [
+      "irs.gov", // Official sources
+      "tax.gov"
+    ]
+  },
+  system: `You are a tax information assistant.
+
+  Important:
+  - Only cite official government sources for tax information
+  - Clearly state this is not professional tax advice
+  - Recommend consulting a tax professional
+  - Indicate if information may be outdated`,
+  rules: [
+    "Only use official government sources for tax information",
+    "Clearly state this is general information, not professional advice",
+    "Recommend consulting a tax professional for specific situations"
+  ]
+});
+```
+
+### Performance Optimization
+
+```typescript
+// Efficient: Appropriate depth for task
+const quickFact = await agentbase.runAgent({
+  message: "What's the population of Tokyo?",
+  webSearch: {
+    enabled: true,
+    depth: "quick", // Fast lookup
+    maxResults: 3
+  }
+});
+
+// Comprehensive: When depth needed
+const deepResearch = await agentbase.runAgent({
+  message: "Comprehensive analysis of remote work trends post-pandemic",
+  webSearch: {
+    enabled: true,
+    depth: "comprehensive", // Thorough research
+    maxResults: 15
+  }
+});
+```
+
+### Safe Search
+
+```typescript
+// Always use safe search for user-facing applications
+const result = await agentbase.runAgent({
+  message: userQuery,
+  webSearch: {
+    enabled: true,
+    filters: {
+      safeSearch: "strict" // Filter inappropriate content
+    }
+  }
+});
+```
+
+## Integration with Other Primitives
+
+### With RAG
+
+Combine internal knowledge with web research:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "How does our product stack up against recent competitor releases?",
+  datastores: [{ id: productDocs }], // Internal docs
+  webSearch: { enabled: true }, // Web research
+  system: `Compare our product features (from internal docs)
+  with competitor information (from web search).
+
+  Provide:
+  - Feature comparison table
+  - Competitive advantages
+  - Areas for improvement`
+});
+```
+
+Learn more: [RAG Primitive](/primitives/extensions/rag)
+
+### With Memory
+
+Remember research topics and preferences:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Find more articles on topics we discussed before",
+  memory: {
+    namespace: `user_${userId}`,
+    enabled: true
+  },
+  webSearch: {
+    enabled: true
+  }
+});
+
+// Agent recalls previous research topics from memory
+// and searches for related content
+```
+
+Learn more: [Memory Primitive](/primitives/extensions/memory)
+
+### With Workflows
+
+Include web research in automated workflows:
+
+```typescript
+const workflow = {
+  name: "weekly_market_report",
+  steps: [
+    {
+      id: "search_news",
+      type: "agent_task",
+      config: {
+        message: "Find top industry news from this week",
+        webSearch: { enabled: true }
+      }
+    },
+    {
+      id: "analyze_trends",
+      type: "agent_task",
+      config: {
+        message: "Analyze trends from the news",
+        webSearch: { enabled: true }
+      }
+    },
+    {
+      id: "create_report",
+      type: "agent_task",
+      config: {
+        message: "Create weekly report with findings"
+      }
+    }
+  ]
+};
+
+await agentbase.executeWorkflow({ workflow });
+```
+
+Learn more: [Workflow Primitive](/primitives/extensions/workflow)
+
+## Performance Considerations
+
+### Search Latency
+
+- **Quick search**: ~1-2 seconds
+- **Standard search**: ~2-4 seconds
+- **Comprehensive search**: ~4-8 seconds
+
+Factors:
+- Number of results requested
+- Search depth
+- Content extraction complexity
+
+### Cost Optimization
+
+<Tip>
+**Cache Common Queries**: For frequently asked questions, consider caching results instead of repeated web searches.
+</Tip>
+
+```typescript
+// Implement caching for common queries
+const cache = new Map();
+
+async function searchWithCache(query: string) {
+  const cacheKey = query.toLowerCase();
+
+  // Check cache
+  if (cache.has(cacheKey)) {
+    const cached = cache.get(cacheKey);
+    if (Date.now() - cached.timestamp < 3600000) { // 1 hour
+      return cached.result;
+    }
+  }
+
+  // Perform search
+  const result = await agentbase.runAgent({
+    message: query,
+    webSearch: { enabled: true }
+  });
+
+  // Cache result
+  cache.set(cacheKey, {
+    result,
+    timestamp: Date.now()
+  });
+
+  return result;
+}
+```
+
+### Rate Limiting
+
+```typescript
+// Implement rate limiting for web searches
+import { RateLimiter } from 'rate-limiter-flexible';
+
+const limiter = new RateLimiter({
+  points: 100, // Number of searches
+  duration: 3600 // Per hour
+});
+
+async function rateLimitedSearch(query: string) {
+  try {
+    await limiter.consume(userId, 1);
+
+    return await agentbase.runAgent({
+      message: query,
+      webSearch: { enabled: true }
+    });
+  } catch (error) {
+    throw new Error('Rate limit exceeded. Please try again later.');
+  }
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="No Results Found">
+    **Problem**: Web search returns no results
+
+    **Solutions**:
+    - Broaden search query
+    - Remove strict domain filters
+    - Adjust time range filter
+    - Check if query is too specific
+    - Verify search is enabled
+
+    ```typescript
+    // Broaden search
+    webSearch: {
+      enabled: true,
+      filters: {
+        timeRange: "any", // Remove time restriction
+        // Remove domain filters
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Irrelevant Results">
+    **Problem**: Search returns off-topic results
+
+    **Solutions**:
+    - Make query more specific
+    - Use domain filtering
+    - Adjust prompt to be clearer
+    - Use negative keywords
+
+    ```typescript
+    {
+      message: "JavaScript frameworks (not Java)",
+      webSearch: {
+        enabled: true,
+        excludeTerms: ["Java"] // Exclude Java results
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Outdated Information">
+    **Problem**: Results are old or outdated
+
+    **Solutions**:
+    - Add time range filter
+    - Specify need for recent information in prompt
+    - Check source dates in citations
+
+    ```typescript
+    webSearch: {
+      enabled: true,
+      filters: {
+        timeRange: "past_month" // Recent results only
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Slow Search Performance">
+    **Problem**: Searches taking too long
+
+    **Solutions**:
+    - Reduce maxResults
+    - Use "quick" depth
+    - Limit domains to search
+    - Simplify query
+
+    ```typescript
+    webSearch: {
+      enabled: true,
+      depth: "quick",
+      maxResults: 3,
+      domains: ["wikipedia.org"] // Single reliable source
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Features
+
+### Multi-Query Search
+
+Search for multiple related topics:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Research both electric vehicle market trends AND battery technology advances",
+  webSearch: {
+    enabled: true,
+    multiQuery: true // Performs separate searches and synthesizes
+  },
+  system: `Research both topics thoroughly and show how they relate.`
+});
+```
+
+### Source Diversity
+
+Ensure diverse perspectives:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "What are different perspectives on remote work?",
+  webSearch: {
+    enabled: true,
+    diverseSources: true, // Get results from variety of sources
+    maxResults: 10
+  }
+});
+```
+
+### Fact Verification
+
+Cross-reference information:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Is it true that coffee is good for your health?",
+  webSearch: {
+    enabled: true,
+    verifyFacts: true, // Check multiple sources
+    domains: [
+      "nih.gov",
+      "mayoclinic.org",
+      "health.harvard.edu"
+    ]
+  },
+  system: `Verify this claim against multiple authoritative sources.
+  Indicate if sources disagree.`
+});
+```
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="RAG" icon="book-open" href="/primitives/extensions/rag">
+    Search internal documents and knowledge bases
+  </Card>
+
+  <Card title="Crawl & Scrape" icon="spider-web" href="/primitives/extensions/crawl-scrape">
+    Extract content from specific websites
+  </Card>
+
+  <Card title="Memory" icon="brain" href="/primitives/extensions/memory">
+    Remember previous research and topics
+  </Card>
+
+  <Card title="Workflows" icon="diagram-project" href="/primitives/extensions/workflow">
+    Automate research workflows
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code">
+    Complete web search API docs
+  </Card>
+
+  <Card title="Search Best Practices" icon="book">
+    Optimize search effectiveness
+  </Card>
+
+  <Card title="Examples" icon="lightbulb">
+    Web search examples
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Web search provides access to current information but requires verification. Always cite sources and encourage users to verify critical information from authoritative sources.
+</Tip>

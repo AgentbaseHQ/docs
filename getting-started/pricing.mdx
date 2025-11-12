@@ -1,0 +1,99 @@
+---
+title: "Pricing"
+description: "Simple, fixed cost-per-step pricing for agent execution"
+icon: "dollar-sign"
+---
+
+**Unified pricing**, you only pay for per agent step, resources like computers, datastore, etc are free.
+
+> Pay per action, not per token. Simple pricing that scales with value delivered.
+
+## Fixed Cost-per-Step Pricing
+
+_Currency: USD ($)_
+
+| Mode  | Cost per Step | Best For                               | Major Models                 |
+| :---- | :------------ | :------------------------------------- | :--------------------------- |
+| Flash | $0.0075       | Simple tasks, quick responses          | GPT-5-mini, Claude-4.5-Haiku |
+| Base  | $0.025        | Most tasks, balanced performance       | Agentbase Base Model         |
+| Max   | $0.05         | Most complex tasks, advanced reasoning | GPT-5, Claude-4.5-Sonnet     |
+
+<CardGroup cols={3}>
+  <Card title="Flash Mode" color="#f59e0b">
+    <ul className="list-disc list-inside mt-4 text-sm">
+      <li>
+        <Icon icon="globe" /> Simple workflow
+      </li>
+      <li>
+        <Icon icon="file-code" /> Data scraping
+      </li>
+      <li>
+        <Icon icon="database" /> Data extraction
+      </li>
+      <li>
+        <Icon icon="search" /> Basic research
+      </li>
+    </ul>
+  </Card>
+  <Card title="Base Mode" color="#10b981">
+    <ul className="list-disc list-inside mt-4 text-sm">
+      <li>
+        <Icon icon="gear" /> Web automation
+      </li>
+      <li>
+        <Icon icon="code" /> Code development
+      </li>
+      <li>
+        <Icon icon="pencil" /> Writing reports
+      </li>
+      <li>
+        <Icon icon="book" /> Advanced research
+      </li>
+    </ul>
+  </Card>
+  <Card title="Max Mode" color="#8b5cf6">
+    <ul className="list-disc list-inside mt-4 text-sm">
+      <li>
+        <Icon icon="gear" /> Complex workflow
+      </li>
+      <li>
+        <Icon icon="folder" /> Building software
+      </li>
+      <li>
+        <Icon icon="file-text" /> Document analysis
+      </li>
+      <li>
+        <Icon icon="binoculars" /> Deep research
+      </li>
+    </ul>
+  </Card>
+</CardGroup>
+
+Agentbase offers three distinct agent modes that optimize performance and cost through intelligent model selection. Rather than using a single model, each mode employs a **mixture of models** including custom models specifically designed to reduce agent execution steps and overall costs.
+
+## Example cost calculation
+
+For example, using the Base mode for a 10 step task:
+
+- 10 steps \* 0.025 = $0.25
+- Computer / Browser / Datastore usage: $0.00
+- Total cost: $0.25
+
+<Tip>
+  **Beta Phase**: During our beta phase, all other resources like computers,
+  datastore, etc are free. You only pay for agent steps.
+</Tip>
+
+## Subscription Plans
+
+For different usage scenarios, we offer flexible options:
+
+- **Pay-as-you-go**: Perfect for getting started and small projects
+- **Enterprise**: Custom pricing with volume discounts and priority support. Email us at team@agentbase.sh
+
+Heavy usage users can add top-up credits for seamless scaling without service interruption.
+
+<Note>
+  Sign up with your work email to get **free credits automatically** and explore
+  subscription options in your dashboard.
+</Note>

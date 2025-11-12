@@ -1,0 +1,60 @@
+---
+title: "Get Messages"
+api: "POST https://api.agentbase.sh/get-messages"
+authMethod: "bearer"
+description: "Retrieve the messages from the current agent session."
+---
+
+### Query Parameters
+
+<ParamField query="session" type="string" required>
+  The session ID to retrieve messages from. This identifies the specific agent
+  session.
+</ParamField>
+
+### Response
+
+Returns the entire message history for the specified agent session as an array of message objects.
+
+```json
+[
+  {
+    "type": "user_message",
+    "content": "Can you launch a computer instance?"
+  },
+  {
+    "type": "agent_thinking",
+    "content": "The user is asking me to launch a computer instance. I can see that I have a \"computer\" function available that creates a new computer instance for the current user session."
+  },
+  {
+    "type": "agent_response",
+    "content": "I'll launch a computer instance for you right away."
+  },
+  {
+    "type": "agent_tool_use",
+    "content": "{\"tool\":\"computer\",\"input\":\"\"}"
+  },
+  {
+    "type": "agent_response",
+    "content": "Great! I've successfully launched a computer instance for you."
+  }
+]
+```
+
+### Message Types
+
+<ResponseField name="user_message" type="object">
+  Messages sent by the user to the agent
+</ResponseField>
+
+<ResponseField name="agent_thinking" type="object">
+  Internal agent reasoning and thought processes
+</ResponseField>
+
+<ResponseField name="agent_response" type="object">
+  Agent responses visible to the user
+</ResponseField>
+
+<ResponseField name="agent_tool_use" type="object">
+  Records of tools used by the agent, including input parameters
+</ResponseField>

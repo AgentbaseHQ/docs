@@ -43,17 +43,6 @@ curl -X POST "https://api.agentbase.sh" \
 
 ## Agent Modes
 
-### Flash Mode (Simple Tasks)
-```bash
-curl -X POST "https://api.agentbase.sh" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{
-    "message": "Plan a marketing strategy",
-    "mode": "flash"
-  }'
-```
-
 ### Base Mode (Balanced Performance)
 ```bash
 curl -X POST "https://api.agentbase.sh" \
@@ -62,6 +51,17 @@ curl -X POST "https://api.agentbase.sh" \
   -d '{
     "message": "Generate code examples",
     "mode": "base"
+  }'
+```
+
+### Flash Mode (See Agent Thinking)
+```bash
+curl -X POST "https://api.agentbase.sh" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "message": "Plan a marketing strategy",
+    "mode": "flash"
   }'
 ```
 

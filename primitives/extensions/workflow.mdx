@@ -1,0 +1,1670 @@
+---
+title: "Workflow"
+description: "Orchestrate multi-step processes and automate complex business workflows"
+icon: "diagram-project"
+---
+
+> Workflows enable agents to execute complex, multi-step processes with conditional logic, loops, error handling, and human-in-the-loop approval points.
+
+## Overview
+
+The Workflow primitive transforms agents into powerful automation engines capable of orchestrating sophisticated business processes. Instead of handling single requests, workflow-enabled agents can execute multi-step procedures, coordinate between different systems, handle branching logic, and maintain process state across extended operations.
+
+Workflows are essential for:
+
+- **Process Automation**: Automate repetitive multi-step business processes
+- **Complex Operations**: Coordinate tasks requiring multiple systems and approvals
+- **Reliability**: Built-in error handling, retries, and rollback capabilities
+- **Visibility**: Track execution progress and audit process completion
+- **Human Oversight**: Integrate approval gates and decision points
+- **State Management**: Maintain process state across hours or days
+
+<CardGroup cols={2}>
+  <Card title="Visual Definition" icon="sitemap">
+    Define workflows as structured graphs with nodes, edges, and conditions
+  </Card>
+
+  <Card title="State Persistence" icon="database">
+    Workflow state persists automatically, surviving restarts and failures
+  </Card>
+
+  <Card title="Error Handling" icon="shield-check">
+    Built-in retry logic, error recovery, and rollback mechanisms
+  </Card>
+
+  <Card title="Human-in-Loop" icon="user-check">
+    Integrate approval gates and manual decision points seamlessly
+  </Card>
+</CardGroup>
+
+## How Workflows Work
+
+When you execute a workflow:
+
+1. **Definition**: Define workflow steps, transitions, and conditions
+2. **Initialization**: Workflow engine creates execution context and state
+3. **Execution**: Agent executes steps sequentially or in parallel
+4. **State Tracking**: Current step, variables, and progress are persisted
+5. **Branching**: Conditional logic determines next steps based on results
+6. **Completion**: Workflow completes with final output or error state
+
+<Note>
+**Durability**: Workflows are durable by default. They can survive system restarts and continue from the last completed step.
+</Note>
+
+## Workflow Components
+
+### Steps
+
+Individual units of work within a workflow:
+
+```typescript
+{
+  id: "fetch_customer",
+  type: "agent_task",
+  description: "Retrieve customer information",
+  config: {
+    message: "Get customer details for ID: {{customerId}}",
+    mcpServers: [{ serverName: "crm" }]
+  }
+}
+```
+
+### Transitions
+
+Define flow between steps:
+
+```typescript
+{
+  from: "fetch_customer",
+  to: "check_balance",
+  condition: "{{customer.status}} === 'active'"
+}
+```
+
+### Decision Points
+
+Branch based on conditions:
+
+```typescript
+{
+  id: "check_amount",
+  type: "decision",
+  conditions: [
+    {
+      when: "{{amount}} > 10000",
+      goto: "require_approval"
+    },
+    {
+      when: "{{amount}} <= 10000",
+      goto: "process_payment"
+    }
+  ]
+}
+```
+
+## Code Examples
+
+### Basic Workflow
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Define a simple workflow
+const workflow = {
+  name: "customer_onboarding",
+  steps: [
+    {
+      id: "create_account",
+      type: "agent_task",
+      config: {
+        message: "Create customer account with email: {{email}}"
+      }
+    },
+    {
+      id: "send_welcome_email",
+      type: "agent_task",
+      config: {
+        message: "Send welcome email to {{email}}"
+      }
+    },
+    {
+      id: "setup_billing",
+      type: "agent_task",
+      config: {
+        message: "Setup billing for customer {{customerId}}"
+      }
+    }
+  ],
+  transitions: [
+    { from: "create_account", to: "send_welcome_email" },
+    { from: "send_welcome_email", to: "setup_billing" }
+  ]
+};
+
+// Execute workflow
+const result = await agentbase.executeWorkflow({
+  workflow,
+  input: {
+    email: "user@example.com"
+  }
+});
+
+console.log('Workflow completed:', result.status);
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Define a simple workflow
+workflow = {
+    "name": "customer_onboarding",
+    "steps": [
+        {
+            "id": "create_account",
+            "type": "agent_task",
+            "config": {
+                "message": "Create customer account with email: {{email}}"
+            }
+        },
+        {
+            "id": "send_welcome_email",
+            "type": "agent_task",
+            "config": {
+                "message": "Send welcome email to {{email}}"
+            }
+        },
+        {
+            "id": "setup_billing",
+            "type": "agent_task",
+            "config": {
+                "message": "Setup billing for customer {{customerId}}"
+            }
+        }
+    ],
+    "transitions": [
+        {"from": "create_account", "to": "send_welcome_email"},
+        {"from": "send_welcome_email", "to": "setup_billing"}
+    ]
+}
+
+# Execute workflow
+result = agentbase.execute_workflow(
+    workflow=workflow,
+    input={
+        "email": "user@example.com"
+    }
+)
+
+print(f"Workflow completed: {result.status}")
+```
+
+</CodeGroup>
+
+### Conditional Workflow
+
+<CodeGroup>
+
+```typescript TypeScript
+// Workflow with conditional branching
+const approvalWorkflow = {
+  name: "expense_approval",
+  steps: [
+    {
+      id: "validate_expense",
+      type: "agent_task",
+      config: {
+        message: "Validate expense report for amount: {{amount}}"
+      }
+    },
+    {
+      id: "check_amount",
+      type: "decision",
+      conditions: [
+        {
+          when: "{{amount}} > 1000",
+          goto: "manager_approval"
+        },
+        {
+          when: "{{amount}} <= 1000",
+          goto: "auto_approve"
+        }
+      ]
+    },
+    {
+      id: "manager_approval",
+      type: "human_approval",
+      config: {
+        approvers: ["manager@company.com"],
+        message: "Please approve expense of ${{amount}}"
+      }
+    },
+    {
+      id: "auto_approve",
+      type: "agent_task",
+      config: {
+        message: "Automatically approve expense of ${{amount}}"
+      }
+    },
+    {
+      id: "process_payment",
+      type: "agent_task",
+      config: {
+        message: "Process payment of ${{amount}} to {{employee}}"
+      }
+    }
+  ],
+  transitions: [
+    { from: "validate_expense", to: "check_amount" },
+    { from: "manager_approval", to: "process_payment" },
+    { from: "auto_approve", to: "process_payment" }
+  ]
+};
+
+const result = await agentbase.executeWorkflow({
+  workflow: approvalWorkflow,
+  input: {
+    amount: 1500,
+    employee: "john@company.com"
+  }
+});
+```
+
+```python Python
+# Workflow with conditional branching
+approval_workflow = {
+    "name": "expense_approval",
+    "steps": [
+        {
+            "id": "validate_expense",
+            "type": "agent_task",
+            "config": {
+                "message": "Validate expense report for amount: {{amount}}"
+            }
+        },
+        {
+            "id": "check_amount",
+            "type": "decision",
+            "conditions": [
+                {
+                    "when": "{{amount}} > 1000",
+                    "goto": "manager_approval"
+                },
+                {
+                    "when": "{{amount}} <= 1000",
+                    "goto": "auto_approve"
+                }
+            ]
+        },
+        {
+            "id": "manager_approval",
+            "type": "human_approval",
+            "config": {
+                "approvers": ["manager@company.com"],
+                "message": "Please approve expense of ${{amount}}"
+            }
+        },
+        {
+            "id": "auto_approve",
+            "type": "agent_task",
+            "config": {
+                "message": "Automatically approve expense of ${{amount}}"
+            }
+        },
+        {
+            "id": "process_payment",
+            "type": "agent_task",
+            "config": {
+                "message": "Process payment of ${{amount}} to {{employee}}"
+            }
+        }
+    ],
+    "transitions": [
+        {"from": "validate_expense", "to": "check_amount"},
+        {"from": "manager_approval", "to": "process_payment"},
+        {"from": "auto_approve", "to": "process_payment"}
+    ]
+}
+
+result = agentbase.execute_workflow(
+    workflow=approval_workflow,
+    input={
+        "amount": 1500,
+        "employee": "john@company.com"
+    }
+)
+```
+
+</CodeGroup>
+
+### Parallel Execution
+
+<CodeGroup>
+
+```typescript TypeScript
+// Execute steps in parallel for efficiency
+const parallelWorkflow = {
+  name: "data_enrichment",
+  steps: [
+    {
+      id: "fetch_customer",
+      type: "agent_task",
+      config: {
+        message: "Get customer data for {{customerId}}"
+      }
+    },
+    {
+      id: "parallel_enrichment",
+      type: "parallel",
+      branches: [
+        {
+          id: "get_credit_score",
+          type: "agent_task",
+          config: {
+            message: "Fetch credit score for {{customerId}}"
+          }
+        },
+        {
+          id: "get_purchase_history",
+          type: "agent_task",
+          config: {
+            message: "Fetch purchase history for {{customerId}}"
+          }
+        },
+        {
+          id: "get_social_profile",
+          type: "agent_task",
+          config: {
+            message: "Fetch social media profile for {{customerId}}"
+          }
+        }
+      ]
+    },
+    {
+      id: "generate_report",
+      type: "agent_task",
+      config: {
+        message: "Generate customer insight report"
+      }
+    }
+  ],
+  transitions: [
+    { from: "fetch_customer", to: "parallel_enrichment" },
+    { from: "parallel_enrichment", to: "generate_report" }
+  ]
+};
+
+const result = await agentbase.executeWorkflow({
+  workflow: parallelWorkflow,
+  input: {
+    customerId: "cust_123"
+  }
+});
+```
+
+```python Python
+# Execute steps in parallel for efficiency
+parallel_workflow = {
+    "name": "data_enrichment",
+    "steps": [
+        {
+            "id": "fetch_customer",
+            "type": "agent_task",
+            "config": {
+                "message": "Get customer data for {{customerId}}"
+            }
+        },
+        {
+            "id": "parallel_enrichment",
+            "type": "parallel",
+            "branches": [
+                {
+                    "id": "get_credit_score",
+                    "type": "agent_task",
+                    "config": {
+                        "message": "Fetch credit score for {{customerId}}"
+                    }
+                },
+                {
+                    "id": "get_purchase_history",
+                    "type": "agent_task",
+                    "config": {
+                        "message": "Fetch purchase history for {{customerId}}"
+                    }
+                },
+                {
+                    "id": "get_social_profile",
+                    "type": "agent_task",
+                    "config": {
+                        "message": "Fetch social media profile for {{customerId}}"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "generate_report",
+            "type": "agent_task",
+            "config": {
+                "message": "Generate customer insight report"
+            }
+        }
+    ],
+    "transitions": [
+        {"from": "fetch_customer", "to": "parallel_enrichment"},
+        {"from": "parallel_enrichment", "to": "generate_report"}
+    ]
+}
+
+result = agentbase.execute_workflow(
+    workflow=parallel_workflow,
+    input={
+        "customerId": "cust_123"
+    }
+)
+```
+
+</CodeGroup>
+
+### Error Handling and Retry
+
+<CodeGroup>
+
+```typescript TypeScript
+// Workflow with error handling
+const resilientWorkflow = {
+  name: "api_integration",
+  steps: [
+    {
+      id: "call_external_api",
+      type: "agent_task",
+      config: {
+        message: "Call external API endpoint",
+        retry: {
+          maxAttempts: 3,
+          backoff: "exponential",
+          initialDelay: 1000
+        }
+      },
+      onError: "log_failure"
+    },
+    {
+      id: "process_response",
+      type: "agent_task",
+      config: {
+        message: "Process API response"
+      }
+    },
+    {
+      id: "log_failure",
+      type: "agent_task",
+      config: {
+        message: "Log API failure and send alert"
+      }
+    }
+  ],
+  transitions: [
+    { from: "call_external_api", to: "process_response" }
+  ]
+};
+
+const result = await agentbase.executeWorkflow({
+  workflow: resilientWorkflow,
+  input: {
+    endpoint: "https://api.example.com/data"
+  }
+});
+```
+
+```python Python
+# Workflow with error handling
+resilient_workflow = {
+    "name": "api_integration",
+    "steps": [
+        {
+            "id": "call_external_api",
+            "type": "agent_task",
+            "config": {
+                "message": "Call external API endpoint",
+                "retry": {
+                    "maxAttempts": 3,
+                    "backoff": "exponential",
+                    "initialDelay": 1000
+                }
+            },
+            "onError": "log_failure"
+        },
+        {
+            "id": "process_response",
+            "type": "agent_task",
+            "config": {
+                "message": "Process API response"
+            }
+        },
+        {
+            "id": "log_failure",
+            "type": "agent_task",
+            "config": {
+                "message": "Log API failure and send alert"
+            }
+        }
+    ],
+    "transitions": [
+        {"from": "call_external_api", "to": "process_response"}
+    ]
+}
+
+result = agentbase.execute_workflow(
+    workflow=resilient_workflow,
+    input={
+        "endpoint": "https://api.example.com/data"
+    }
+)
+```
+
+</CodeGroup>
+
+### Monitoring Workflow Progress
+
+<CodeGroup>
+
+```typescript TypeScript
+// Start workflow execution
+const execution = await agentbase.executeWorkflow({
+  workflow: myWorkflow,
+  input: { customerId: "123" }
+});
+
+// Check workflow status
+const status = await agentbase.getWorkflowStatus({
+  executionId: execution.id
+});
+
+console.log('Current step:', status.currentStep);
+console.log('Progress:', status.completedSteps, '/', status.totalSteps);
+console.log('Status:', status.status); // running, completed, failed, waiting
+
+// Get detailed execution history
+const history = await agentbase.getWorkflowHistory({
+  executionId: execution.id
+});
+
+history.steps.forEach(step => {
+  console.log(`${step.id}: ${step.status} (${step.duration}ms)`);
+});
+```
+
+```python Python
+# Start workflow execution
+execution = agentbase.execute_workflow(
+    workflow=my_workflow,
+    input={"customerId": "123"}
+)
+
+# Check workflow status
+status = agentbase.get_workflow_status(
+    execution_id=execution.id
+)
+
+print(f"Current step: {status.current_step}")
+print(f"Progress: {status.completed_steps}/{status.total_steps}")
+print(f"Status: {status.status}") # running, completed, failed, waiting
+
+# Get detailed execution history
+history = agentbase.get_workflow_history(
+    execution_id=execution.id
+)
+
+for step in history.steps:
+    print(f"{step.id}: {step.status} ({step.duration}ms)")
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Customer Onboarding
+
+Automate multi-step onboarding process:
+
+```typescript
+const onboardingWorkflow = {
+  name: "customer_onboarding",
+  steps: [
+    {
+      id: "verify_email",
+      type: "agent_task",
+      config: {
+        message: "Send verification email to {{email}} and wait for confirmation"
+      }
+    },
+    {
+      id: "create_account",
+      type: "agent_task",
+      config: {
+        message: "Create account in CRM for {{email}}"
+      }
+    },
+    {
+      id: "setup_profile",
+      type: "agent_task",
+      config: {
+        message: "Create user profile with preferences"
+      }
+    },
+    {
+      id: "assign_rep",
+      type: "agent_task",
+      config: {
+        message: "Assign account representative based on region {{region}}"
+      }
+    },
+    {
+      id: "send_welcome_kit",
+      type: "agent_task",
+      config: {
+        message: "Send welcome kit and schedule kickoff call"
+      }
+    },
+    {
+      id: "notify_team",
+      type: "agent_task",
+      config: {
+        message: "Notify sales team of new customer onboarded"
+      }
+    }
+  ]
+};
+
+// Execute for new customer
+await agentbase.executeWorkflow({
+  workflow: onboardingWorkflow,
+  input: {
+    email: "newcustomer@example.com",
+    region: "west"
+  }
+});
+```
+
+### 2. Order Fulfillment
+
+Orchestrate e-commerce order processing:
+
+```typescript
+const orderWorkflow = {
+  name: "order_fulfillment",
+  steps: [
+    {
+      id: "validate_order",
+      type: "agent_task",
+      config: {
+        message: "Validate order {{orderId}} for completeness and accuracy"
+      }
+    },
+    {
+      id: "check_inventory",
+      type: "agent_task",
+      config: {
+        message: "Check inventory for all items in order"
+      }
+    },
+    {
+      id: "inventory_decision",
+      type: "decision",
+      conditions: [
+        {
+          when: "{{inventory.available}} === false",
+          goto: "backorder_notification"
+        },
+        {
+          when: "{{inventory.available}} === true",
+          goto: "process_payment"
+        }
+      ]
+    },
+    {
+      id: "process_payment",
+      type: "agent_task",
+      config: {
+        message: "Process payment for order {{orderId}}"
+      }
+    },
+    {
+      id: "create_shipment",
+      type: "agent_task",
+      config: {
+        message: "Create shipment and generate shipping label"
+      }
+    },
+    {
+      id: "notify_warehouse",
+      type: "agent_task",
+      config: {
+        message: "Notify warehouse to pick and pack order"
+      }
+    },
+    {
+      id: "send_tracking",
+      type: "agent_task",
+      config: {
+        message: "Send tracking information to customer"
+      }
+    },
+    {
+      id: "backorder_notification",
+      type: "agent_task",
+      config: {
+        message: "Notify customer of backorder and estimated ship date"
+      }
+    }
+  ]
+};
+```
+
+### 3. Content Publishing Pipeline
+
+Automate content creation and publishing:
+
+```typescript
+const contentWorkflow = {
+  name: "content_publishing",
+  steps: [
+    {
+      id: "draft_content",
+      type: "agent_task",
+      config: {
+        message: "Create blog post draft on topic: {{topic}}"
+      }
+    },
+    {
+      id: "editorial_review",
+      type: "human_approval",
+      config: {
+        approvers: ["editor@company.com"],
+        message: "Review and approve content draft",
+        timeout: 86400000 // 24 hours
+      }
+    },
+    {
+      id: "generate_images",
+      type: "agent_task",
+      config: {
+        message: "Generate featured image and social media graphics"
+      }
+    },
+    {
+      id: "seo_optimization",
+      type: "agent_task",
+      config: {
+        message: "Optimize content for SEO including meta tags and keywords"
+      }
+    },
+    {
+      id: "publish_blog",
+      type: "agent_task",
+      config: {
+        message: "Publish post to company blog"
+      }
+    },
+    {
+      id: "social_media_posts",
+      type: "parallel",
+      branches: [
+        {
+          id: "post_twitter",
+          type: "agent_task",
+          config: { message: "Create and schedule Twitter post" }
+        },
+        {
+          id: "post_linkedin",
+          type: "agent_task",
+          config: { message: "Create and schedule LinkedIn post" }
+        },
+        {
+          id: "post_facebook",
+          type: "agent_task",
+          config: { message: "Create and schedule Facebook post" }
+        }
+      ]
+    },
+    {
+      id: "notify_team",
+      type: "agent_task",
+      config: {
+        message: "Notify marketing team that content is published"
+      }
+    }
+  ]
+};
+```
+
+### 4. Incident Response
+
+Automate IT incident management:
+
+```typescript
+const incidentWorkflow = {
+  name: "incident_response",
+  steps: [
+    {
+      id: "detect_incident",
+      type: "agent_task",
+      config: {
+        message: "Analyze alert and classify incident severity"
+      }
+    },
+    {
+      id: "severity_check",
+      type: "decision",
+      conditions: [
+        {
+          when: "{{severity}} === 'critical'",
+          goto: "page_oncall"
+        },
+        {
+          when: "{{severity}} === 'high'",
+          goto: "create_ticket"
+        },
+        {
+          when: "{{severity}} === 'low'",
+          goto: "auto_remediate"
+        }
+      ]
+    },
+    {
+      id: "page_oncall",
+      type: "agent_task",
+      config: {
+        message: "Page on-call engineer and create war room"
+      }
+    },
+    {
+      id: "create_ticket",
+      type: "agent_task",
+      config: {
+        message: "Create incident ticket and assign to team"
+      }
+    },
+    {
+      id: "auto_remediate",
+      type: "agent_task",
+      config: {
+        message: "Attempt automatic remediation steps"
+      }
+    },
+    {
+      id: "gather_diagnostics",
+      type: "agent_task",
+      config: {
+        message: "Collect logs, metrics, and diagnostic information"
+      }
+    },
+    {
+      id: "notify_stakeholders",
+      type: "agent_task",
+      config: {
+        message: "Send status updates to stakeholders"
+      }
+    },
+    {
+      id: "post_incident_report",
+      type: "agent_task",
+      config: {
+        message: "Generate post-incident report and action items"
+      }
+    }
+  ]
+};
+```
+
+### 5. Data Pipeline
+
+ETL workflow for data processing:
+
+```typescript
+const etlWorkflow = {
+  name: "daily_data_pipeline",
+  steps: [
+    {
+      id: "extract_data",
+      type: "parallel",
+      branches: [
+        {
+          id: "extract_salesforce",
+          type: "agent_task",
+          config: { message: "Extract data from Salesforce" }
+        },
+        {
+          id: "extract_database",
+          type: "agent_task",
+          config: { message: "Extract data from production database" }
+        },
+        {
+          id: "extract_api",
+          type: "agent_task",
+          config: { message: "Extract data from external APIs" }
+        }
+      ]
+    },
+    {
+      id: "transform_data",
+      type: "agent_task",
+      config: {
+        message: "Clean, normalize, and transform extracted data"
+      }
+    },
+    {
+      id: "validate_quality",
+      type: "agent_task",
+      config: {
+        message: "Run data quality checks and validations"
+      }
+    },
+    {
+      id: "quality_decision",
+      type: "decision",
+      conditions: [
+        {
+          when: "{{quality.passed}} === false",
+          goto: "alert_data_team"
+        },
+        {
+          when: "{{quality.passed}} === true",
+          goto: "load_warehouse"
+        }
+      ]
+    },
+    {
+      id: "load_warehouse",
+      type: "agent_task",
+      config: {
+        message: "Load data into data warehouse"
+      }
+    },
+    {
+      id: "update_dashboards",
+      type: "agent_task",
+      config: {
+        message: "Refresh BI dashboards and reports"
+      }
+    },
+    {
+      id: "alert_data_team",
+      type: "agent_task",
+      config: {
+        message: "Alert data team of quality issues"
+      }
+    }
+  ]
+};
+
+// Schedule to run daily
+await agentbase.scheduleWorkflow({
+  workflow: etlWorkflow,
+  schedule: "0 2 * * *", // 2 AM daily
+  timezone: "America/New_York"
+});
+```
+
+### 6. Employee Offboarding
+
+Automate employee exit process:
+
+```typescript
+const offboardingWorkflow = {
+  name: "employee_offboarding",
+  steps: [
+    {
+      id: "hr_approval",
+      type: "human_approval",
+      config: {
+        approvers: ["hr@company.com"],
+        message: "Confirm offboarding for {{employeeName}}"
+      }
+    },
+    {
+      id: "revoke_access",
+      type: "parallel",
+      branches: [
+        {
+          id: "disable_email",
+          type: "agent_task",
+          config: { message: "Disable email account" }
+        },
+        {
+          id: "revoke_github",
+          type: "agent_task",
+          config: { message: "Remove from GitHub organization" }
+        },
+        {
+          id: "revoke_aws",
+          type: "agent_task",
+          config: { message: "Revoke AWS access" }
+        },
+        {
+          id: "disable_slack",
+          type: "agent_task",
+          config: { message: "Deactivate Slack account" }
+        }
+      ]
+    },
+    {
+      id: "collect_equipment",
+      type: "agent_task",
+      config: {
+        message: "Send equipment return instructions to {{employeeName}}"
+      }
+    },
+    {
+      id: "knowledge_transfer",
+      type: "agent_task",
+      config: {
+        message: "Document knowledge transfer and handoff tasks"
+      }
+    },
+    {
+      id: "exit_interview",
+      type: "agent_task",
+      config: {
+        message: "Schedule and conduct exit interview"
+      }
+    },
+    {
+      id: "notify_team",
+      type: "agent_task",
+      config: {
+        message: "Notify team of departure and transition plan"
+      }
+    },
+    {
+      id: "final_payroll",
+      type: "agent_task",
+      config: {
+        message: "Process final paycheck and benefits termination"
+      }
+    }
+  ]
+};
+```
+
+## Best Practices
+
+### Workflow Design
+
+<AccordionGroup>
+  <Accordion title="Keep Steps Atomic">
+    ```typescript
+    // Good: Single-purpose steps
+    {
+      id: "validate_email",
+      type: "agent_task",
+      config: { message: "Validate email format" }
+    },
+    {
+      id: "check_email_exists",
+      type: "agent_task",
+      config: { message: "Check if email already registered" }
+    }
+
+    // Avoid: Multiple responsibilities in one step
+    {
+      id: "handle_email",
+      type: "agent_task",
+      config: {
+        message: "Validate email, check if exists, and send confirmation"
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Use Descriptive Step IDs">
+    ```typescript
+    // Good: Clear, descriptive IDs
+    {
+      id: "send_welcome_email",
+      id: "verify_payment_method",
+      id: "create_customer_record"
+    }
+
+    // Avoid: Vague or numbered IDs
+    {
+      id: "step1",
+      id: "do_stuff",
+      id: "process"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Handle All Edge Cases">
+    ```typescript
+    // Include error paths and edge cases
+    {
+      id: "process_payment",
+      type: "agent_task",
+      config: {
+        message: "Process payment"
+      },
+      onError: "handle_payment_failure"
+    },
+    {
+      id: "handle_payment_failure",
+      type: "decision",
+      conditions: [
+        {
+          when: "{{error.type}} === 'insufficient_funds'",
+          goto: "notify_insufficient_funds"
+        },
+        {
+          when: "{{error.type}} === 'card_declined'",
+          goto: "request_alternate_payment"
+        },
+        {
+          when: "{{error.type}} === 'network_error'",
+          goto: "retry_payment"
+        }
+      ]
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Use Parallel Steps for Independence">
+    ```typescript
+    // Execute independent operations in parallel
+    {
+      id: "send_notifications",
+      type: "parallel",
+      branches: [
+        {
+          id: "send_email",
+          type: "agent_task",
+          config: { message: "Send email notification" }
+        },
+        {
+          id: "send_sms",
+          type: "agent_task",
+          config: { message: "Send SMS notification" }
+        },
+        {
+          id: "send_slack",
+          type: "agent_task",
+          config: { message: "Send Slack notification" }
+        }
+      ]
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Error Handling
+
+<Warning>
+**Always Handle Failures**: Every workflow should have error handling strategies for critical steps. Unhandled errors can leave workflows in inconsistent states.
+</Warning>
+
+```typescript
+// Comprehensive error handling
+const robustWorkflow = {
+  name: "critical_operation",
+  steps: [
+    {
+      id: "critical_step",
+      type: "agent_task",
+      config: {
+        message: "Perform critical operation",
+        retry: {
+          maxAttempts: 3,
+          backoff: "exponential",
+          initialDelay: 1000,
+          maxDelay: 10000
+        },
+        timeout: 30000 // 30 second timeout
+      },
+      onError: "handle_critical_failure",
+      onTimeout: "handle_timeout"
+    },
+    {
+      id: "handle_critical_failure",
+      type: "agent_task",
+      config: {
+        message: "Rollback changes and alert team"
+      }
+    },
+    {
+      id: "handle_timeout",
+      type: "agent_task",
+      config: {
+        message: "Log timeout and schedule retry"
+      }
+    }
+  ]
+};
+```
+
+### State Management
+
+<Tip>
+**Use Workflow Variables**: Store intermediate results in workflow variables for use in later steps.
+</Tip>
+
+```typescript
+// Access results from previous steps
+const workflow = {
+  name: "customer_lookup",
+  steps: [
+    {
+      id: "fetch_customer",
+      type: "agent_task",
+      config: {
+        message: "Get customer {{customerId}}"
+      },
+      output: "customer" // Store result in variable
+    },
+    {
+      id: "check_status",
+      type: "decision",
+      conditions: [
+        {
+          when: "{{customer.status}} === 'active'",
+          goto: "process_order"
+        },
+        {
+          when: "{{customer.status}} === 'inactive'",
+          goto: "reactivate_account"
+        }
+      ]
+    }
+  ]
+};
+```
+
+### Testing Workflows
+
+```typescript
+// Test workflows before production
+async function testWorkflow() {
+  const testInput = {
+    customerId: "test_customer_123",
+    amount: 100
+  };
+
+  try {
+    const result = await agentbase.executeWorkflow({
+      workflow: myWorkflow,
+      input: testInput,
+      dryRun: true // Test mode - doesn't execute side effects
+    });
+
+    console.log('Workflow validation:', result.validation);
+    console.log('Expected steps:', result.executionPlan);
+  } catch (error) {
+    console.error('Workflow validation failed:', error);
+  }
+}
+```
+
+## Integration with Other Primitives
+
+### With Custom Tools
+
+Use custom tools within workflow steps:
+
+```typescript
+const result = await agentbase.executeWorkflow({
+  workflow: orderWorkflow,
+  input: { orderId: "123" },
+  mcpServers: [
+    {
+      serverName: "payment-gateway",
+      serverUrl: "https://api.company.com/payments"
+    },
+    {
+      serverName: "inventory-system",
+      serverUrl: "https://api.company.com/inventory"
+    }
+  ]
+});
+
+// Workflow steps can use payment and inventory tools
+```
+
+Learn more: [Custom Tools Primitive](/primitives/essentials/custom-tools)
+
+### With Memory
+
+Maintain context across workflow executions:
+
+```typescript
+const result = await agentbase.executeWorkflow({
+  workflow: supportWorkflow,
+  input: { ticketId: "456" },
+  memory: {
+    namespace: `customer_${customerId}`,
+    enabled: true
+  }
+});
+
+// Workflow can recall customer history and preferences
+```
+
+Learn more: [Memory Primitive](/primitives/extensions/memory)
+
+### With Multi-Agent
+
+Delegate workflow steps to specialized agents:
+
+```typescript
+const workflow = {
+  steps: [
+    {
+      id: "legal_review",
+      type: "agent_task",
+      config: {
+        message: "Review contract for legal compliance",
+        agent: "legal_specialist"
+      }
+    },
+    {
+      id: "financial_review",
+      type: "agent_task",
+      config: {
+        message: "Review contract for financial terms",
+        agent: "financial_specialist"
+      }
+    }
+  ]
+};
+```
+
+Learn more: [Multi-Agent Primitive](/primitives/essentials/multi-agents)
+
+## Performance Considerations
+
+### Execution Time
+
+- **Sequential Steps**: Execute one after another, total time is sum of all steps
+- **Parallel Steps**: Execute simultaneously, total time is longest branch
+- **Optimization**: Use parallel execution for independent operations
+
+```typescript
+// Sequential: 3 + 2 + 4 = 9 seconds total
+const sequential = {
+  steps: [
+    { id: "step1", duration: 3000 },
+    { id: "step2", duration: 2000 },
+    { id: "step3", duration: 4000 }
+  ]
+};
+
+// Parallel: max(3, 2, 4) = 4 seconds total
+const parallel = {
+  steps: [
+    {
+      id: "parallel_steps",
+      type: "parallel",
+      branches: [
+        { id: "step1", duration: 3000 },
+        { id: "step2", duration: 2000 },
+        { id: "step3", duration: 4000 }
+      ]
+    }
+  ]
+};
+```
+
+### State Persistence
+
+- **Checkpoint Frequency**: State saved after each step completion
+- **Storage Cost**: Minimal - workflow state is compact JSON
+- **Recovery**: Resume from last completed step on failure
+
+### Timeout Management
+
+```typescript
+// Set appropriate timeouts for long-running steps
+{
+  id: "ml_training",
+  type: "agent_task",
+  config: {
+    message: "Train machine learning model",
+    timeout: 3600000 // 1 hour timeout for long operation
+  }
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Workflow Stuck in Running State">
+    **Problem**: Workflow shows as running but not progressing
+
+    **Solutions**:
+    - Check if waiting for human approval
+    - Verify timeout configurations aren't too long
+    - Check agent logs for errors
+    - Cancel and restart workflow if necessary
+
+    ```typescript
+    // Check workflow status
+    const status = await agentbase.getWorkflowStatus({
+      executionId: execution.id
+    });
+
+    console.log('Current step:', status.currentStep);
+    console.log('Waiting for:', status.waitingFor); // approval, timeout, etc.
+
+    // Cancel if stuck
+    if (status.status === 'stuck') {
+      await agentbase.cancelWorkflow({
+        executionId: execution.id
+      });
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Step Failures Not Handled">
+    **Problem**: Workflow fails without executing error handler
+
+    **Solutions**:
+    - Ensure onError step ID exists in workflow
+    - Check error handler step configuration
+    - Add retry logic before error handling
+    - Review error logs for root cause
+
+    ```typescript
+    // Proper error handling configuration
+    {
+      id: "critical_step",
+      type: "agent_task",
+      config: {
+        message: "Critical operation",
+        retry: {
+          maxAttempts: 3,
+          backoff: "exponential"
+        }
+      },
+      onError: "handle_error", // Make sure this step exists!
+      onTimeout: "handle_timeout"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Conditional Logic Not Working">
+    **Problem**: Decision steps not routing correctly
+
+    **Solutions**:
+    - Verify condition syntax is correct
+    - Check variable names match step outputs
+    - Add default fallback condition
+    - Log variable values for debugging
+
+    ```typescript
+    {
+      id: "decision_step",
+      type: "decision",
+      conditions: [
+        {
+          when: "{{amount}} > 1000",
+          goto: "high_value_path"
+        },
+        {
+          when: "{{amount}} <= 1000",
+          goto: "normal_path"
+        },
+        {
+          when: "true", // Fallback condition
+          goto: "default_path"
+        }
+      ]
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Parallel Steps Timing Out">
+    **Problem**: Parallel execution times out before all branches complete
+
+    **Solutions**:
+    - Increase timeout for parallel step
+    - Optimize slow branches
+    - Consider sequential execution for long-running tasks
+    - Add retry logic to individual branches
+
+    ```typescript
+    {
+      id: "parallel_operations",
+      type: "parallel",
+      config: {
+        timeout: 300000, // 5 minutes for all branches
+        waitForAll: true, // Wait for all to complete
+        failFast: false // Don't fail if one branch fails
+      },
+      branches: [
+        // Branches here
+      ]
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Patterns
+
+### Sub-Workflows
+
+Call workflows from within workflows:
+
+```typescript
+{
+  id: "process_each_item",
+  type: "loop",
+  items: "{{order.items}}",
+  workflow: itemProcessingWorkflow
+}
+```
+
+### Dynamic Workflow Generation
+
+Generate workflows programmatically:
+
+```typescript
+function generateApprovalWorkflow(approvalLevels: string[]) {
+  const steps = approvalLevels.map((level, index) => ({
+    id: `approval_${index}`,
+    type: "human_approval",
+    config: {
+      approvers: [level],
+      message: `Level ${index + 1} approval required`
+    }
+  }));
+
+  return {
+    name: "dynamic_approval",
+    steps
+  };
+}
+
+const workflow = generateApprovalWorkflow([
+  "manager@company.com",
+  "director@company.com",
+  "vp@company.com"
+]);
+```
+
+### Compensation Patterns
+
+Rollback on failure:
+
+```typescript
+const sagaWorkflow = {
+  steps: [
+    {
+      id: "reserve_inventory",
+      type: "agent_task",
+      config: { message: "Reserve inventory items" },
+      compensation: "release_inventory"
+    },
+    {
+      id: "charge_payment",
+      type: "agent_task",
+      config: { message: "Charge customer payment" },
+      compensation: "refund_payment",
+      onError: "run_compensations" // Trigger rollback
+    },
+    {
+      id: "release_inventory",
+      type: "agent_task",
+      config: { message: "Release inventory reservation" }
+    },
+    {
+      id: "refund_payment",
+      type: "agent_task",
+      config: { message: "Refund customer payment" }
+    }
+  ]
+};
+```
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Orchestration" icon="network-wired" href="/primitives/extensions/orchestration">
+    Coordinate multiple agents and workflows
+  </Card>
+
+  <Card title="Background" icon="clock" href="/primitives/essentials/background">
+    Run workflows asynchronously in background
+  </Card>
+
+  <Card title="Custom Tools" icon="toolbox" href="/primitives/essentials/custom-tools">
+    Use custom tools within workflow steps
+  </Card>
+
+  <Card title="Hooks" icon="webhook" href="/primitives/essentials/hooks">
+    Trigger workflows from external events
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code">
+    Complete workflow API documentation
+  </Card>
+
+  <Card title="Workflow Patterns" icon="book">
+    Common workflow design patterns
+  </Card>
+
+  <Card title="Examples" icon="lightbulb">
+    Real-world workflow examples
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Workflows are most effective for multi-step processes with clear stages and decision points. For simple sequential tasks, direct agent execution may be more appropriate.
+</Tip>

@@ -1,0 +1,851 @@
+---
+title: "Persistence"
+description: "Maintain state, context, and computational environments across agent sessions"
+icon: "database"
+---
+
+> Persistence ensures your agent workflows maintain continuity by preserving conversation history, computational state, and environmental configurations across requests and sessions.
+
+## Overview
+
+The Persistence primitive is a foundational capability that enables agents to maintain state across multiple interactions. Unlike stateless systems that forget everything between requests, Agentbase's persistence model allows agents to build on previous work, remember context, and preserve computational environments.
+
+Persistence operates at two distinct tiers:
+
+- **Chat & Message History**: Automatic, zero-cost persistence of all conversation messages
+- **Computational Environment**: On-demand persistence of files, packages, and system state
+
+<CardGroup cols={2}>
+  <Card title="Zero-Cost Chat History" icon="message">
+    All messages persist automatically with no storage fees or configuration required
+  </Card>
+
+  <Card title="Smart Environment Management" icon="server">
+    Computational resources auto-pause when idle and resume instantly when needed
+  </Card>
+
+  <Card title="Session-Based Architecture" icon="link">
+    Isolated persistence scopes per session for security and multi-tenancy
+  </Card>
+
+  <Card title="Long-Term Continuity" icon="clock">
+    Maintain workflows over hours, days, or weeks with automatic state preservation
+  </Card>
+</CardGroup>
+
+## How Persistence Works
+
+### Two-Tier Model
+
+Agentbase implements a sophisticated two-tier persistence model optimized for both cost and performance:
+
+**Tier 1: Message History** (Always Active)
+- Automatically persists all messages and responses
+- Zero storage cost
+- Instantly available for context
+- No configuration required
+- Unlimited retention
+
+**Tier 2: Computational Environment** (On-Demand)
+- Created when agents need code execution, file operations, or web browsing
+- Persists files, installed packages, and system state
+- Auto-pauses after 5 minutes of inactivity
+- Resumes in 1-2 seconds when accessed again
+- Full environment preservation across sessions
+
+<Note>
+**Cost Optimization**: Message history is completely free. Computational environments are only created when needed and automatically pause to minimize costs.
+</Note>
+
+### Session-Scoped Persistence
+
+Each session maintains its own isolated persistence scope:
+
+1. **Session Creation**: New session starts with empty state
+2. **State Accumulation**: Messages, files, and environment changes persist within session
+3. **Cross-Request Continuity**: State remains available across all requests in the session
+4. **Automatic Cleanup**: Sessions eventually expire after extended inactivity
+5. **Isolation**: Complete separation between different sessions
+
+## Code Examples
+
+### Basic Persistence Pattern
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Request 1: Agent creates files
+const step1 = await agentbase.runAgent({
+  message: "Create a file called data.json with sample user data"
+});
+
+const sessionId = step1.session;
+console.log('Session ID:', sessionId);
+
+// Request 2: Agent accesses previous work (same session)
+const step2 = await agentbase.runAgent({
+  message: "Read data.json and count the number of users",
+  session: sessionId  // Reuse session - files persist
+});
+
+// Files created in step1 are still available in step2
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Request 1: Agent creates files
+step1 = agentbase.run_agent(
+    message="Create a file called data.json with sample user data"
+)
+
+session_id = step1.session
+print(f"Session ID: {session_id}")
+
+# Request 2: Agent accesses previous work (same session)
+step2 = agentbase.run_agent(
+    message="Read data.json and count the number of users",
+    session=session_id  # Reuse session - files persist
+)
+
+# Files created in step1 are still available in step2
+```
+
+```bash cURL
+# Request 1: Create files
+curl -X POST https://api.agentbase.sh \
+  -H "Authorization: Bearer $AGENTBASE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Create a file called data.json with sample user data"
+  }'
+
+# Response includes session ID
+# { "session": "agent_session_abc123...", ... }
+
+# Request 2: Access previous work
+curl -X POST "https://api.agentbase.sh?session=agent_session_abc123" \
+  -H "Authorization: Bearer $AGENTBASE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Read data.json and count the number of users"
+  }'
+```
+
+</CodeGroup>
+
+### Long-Running Project Persistence
+
+<CodeGroup>
+
+```typescript TypeScript
+// Day 1: Initialize project
+const init = await agentbase.runAgent({
+  message: "Create a Python web scraper project with proper structure"
+});
+
+const projectSession = init.session;
+
+// Store session ID for later use
+await db.projects.create({
+  name: 'web-scraper',
+  sessionId: projectSession,
+  createdAt: new Date()
+});
+
+// Day 2: Continue development (hours or days later)
+const savedProject = await db.projects.findOne({ name: 'web-scraper' });
+
+const day2 = await agentbase.runAgent({
+  message: "Add error handling and retry logic to the scraper",
+  session: savedProject.sessionId
+});
+
+// Day 3: Test and refine
+const day3 = await agentbase.runAgent({
+  message: "Run the scraper and fix any errors",
+  session: savedProject.sessionId
+});
+
+// All previous work persists across days
+```
+
+```python Python
+# Day 1: Initialize project
+init = agentbase.run_agent(
+    message="Create a Python web scraper project with proper structure"
+)
+
+project_session = init.session
+
+# Store session ID for later use
+db.projects.create({
+    'name': 'web-scraper',
+    'session_id': project_session,
+    'created_at': datetime.now()
+})
+
+# Day 2: Continue development (hours or days later)
+saved_project = db.projects.find_one({'name': 'web-scraper'})
+
+day2 = agentbase.run_agent(
+    message="Add error handling and retry logic to the scraper",
+    session=saved_project.session_id
+)
+
+# Day 3: Test and refine
+day3 = agentbase.run_agent(
+    message="Run the scraper and fix any errors",
+    session=saved_project.session_id
+)
+
+# All previous work persists across days
+```
+
+</CodeGroup>
+
+### Multi-Step Workflow with Persistence
+
+<CodeGroup>
+
+```typescript TypeScript
+async function dataAnalysisWorkflow(dataUrl: string) {
+  // Step 1: Download data
+  const download = await agentbase.runAgent({
+    message: `Download dataset from ${dataUrl} and save as data.csv`
+  });
+
+  const session = download.session;
+
+  // Step 2: Clean data (uses downloaded file)
+  const clean = await agentbase.runAgent({
+    message: "Clean data.csv: remove duplicates, handle missing values",
+    session
+  });
+
+  // Step 3: Analyze (uses cleaned data)
+  const analyze = await agentbase.runAgent({
+    message: "Perform statistical analysis and create visualizations",
+    session
+  });
+
+  // Step 4: Generate report (uses all previous work)
+  const report = await agentbase.runAgent({
+    message: "Generate comprehensive analysis report with charts",
+    session
+  });
+
+  return {
+    sessionId: session,
+    report: report.message
+  };
+}
+
+// All intermediate files and results persist throughout workflow
+```
+
+```python Python
+async def data_analysis_workflow(data_url: str):
+    # Step 1: Download data
+    download = agentbase.run_agent(
+        message=f"Download dataset from {data_url} and save as data.csv"
+    )
+
+    session = download.session
+
+    # Step 2: Clean data (uses downloaded file)
+    clean = agentbase.run_agent(
+        message="Clean data.csv: remove duplicates, handle missing values",
+        session=session
+    )
+
+    # Step 3: Analyze (uses cleaned data)
+    analyze = agentbase.run_agent(
+        message="Perform statistical analysis and create visualizations",
+        session=session
+    )
+
+    # Step 4: Generate report (uses all previous work)
+    report = agentbase.run_agent(
+        message="Generate comprehensive analysis report with charts",
+        session=session
+    )
+
+    return {
+        'session_id': session,
+        'report': report.message
+    }
+
+# All intermediate files and results persist throughout workflow
+```
+
+</CodeGroup>
+
+## What Persists
+
+### Message History
+
+Everything in the conversation persists automatically:
+
+- **User Messages**: All requests sent to the agent
+- **Agent Responses**: Complete responses including reasoning
+- **Tool Calls**: Record of all tools used and their inputs
+- **Tool Results**: Outputs from tool executions
+- **Timestamps**: When each interaction occurred
+- **Metadata**: Session information, modes used, cost tracking
+
+### Computational Environment
+
+When a computational environment is created, these persist:
+
+- **Files**: All files created, modified, or downloaded
+- **Installed Packages**: npm, pip, apt packages remain installed
+- **Environment Variables**: Custom environment configurations
+- **Working Directory**: Current directory state and structure
+- **Process State**: Background processes and their status
+- **System Modifications**: Configuration changes and system state
+
+### What Doesn't Persist
+
+Some ephemeral state is intentionally not persisted:
+
+- **Memory State**: RAM contents are cleared on pause
+- **Network Connections**: Active connections are closed
+- **Temporary Files**: /tmp contents may be cleaned up
+- **Running Processes**: Processes terminate on pause (but can be restarted)
+
+<Warning>
+**Important**: While files and packages persist, active processes stop when the environment pauses. Design workflows to handle process restarts gracefully.
+</Warning>
+
+## Use Cases
+
+### 1. Iterative Development Projects
+
+Build software projects across multiple sessions:
+
+<AccordionGroup>
+  <Accordion title="Web Application Development">
+    ```typescript
+    // Session 1: Project setup
+    const setup = await agentbase.runAgent({
+      message: "Create a Next.js project with TypeScript and Tailwind"
+    });
+
+    const devSession = setup.session;
+
+    // Session 2: Add features
+    await agentbase.runAgent({
+      message: "Add authentication with NextAuth.js",
+      session: devSession
+    });
+
+    // Session 3: Database integration
+    await agentbase.runAgent({
+      message: "Set up Prisma with PostgreSQL",
+      session: devSession
+    });
+
+    // Session 4: Testing
+    await agentbase.runAgent({
+      message: "Add unit tests with Jest",
+      session: devSession
+    });
+
+    // All code, dependencies, and configurations persist
+    ```
+  </Accordion>
+
+  <Accordion title="Data Science Pipeline">
+    ```typescript
+    // Build complex data pipeline over multiple sessions
+    const pipeline = await agentbase.runAgent({
+      message: "Set up Python environment with pandas, numpy, scikit-learn"
+    });
+
+    const pipelineSession = pipeline.session;
+
+    // Add data processing steps
+    await agentbase.runAgent({
+      message: "Create data preprocessing module with validation",
+      session: pipelineSession
+    });
+
+    // Add ML model
+    await agentbase.runAgent({
+      message: "Implement random forest classifier with cross-validation",
+      session: pipelineSession
+    });
+
+    // All datasets, models, and code remain available
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 2. Customer Support Conversations
+
+Maintain context throughout support interactions:
+
+```typescript
+async function handleSupportTicket(customerId: string, initialMessage: string) {
+  // Create support session
+  const initial = await agentbase.runAgent({
+    message: `Customer ${customerId}: ${initialMessage}`,
+    system: "You are a customer support specialist.",
+    mcpServers: [{
+      serverName: 'customer-api',
+      serverUrl: 'https://api.company.com/mcp'
+    }]
+  });
+
+  const supportSession = initial.session;
+
+  // Store session with ticket
+  await db.tickets.create({
+    customerId,
+    sessionId: supportSession,
+    status: 'open',
+    createdAt: new Date()
+  });
+
+  return supportSession;
+}
+
+// Hours later, customer responds
+async function continueSupport(ticketId: string, message: string) {
+  const ticket = await db.tickets.findById(ticketId);
+
+  // Continue in same session - agent remembers everything
+  return await agentbase.runAgent({
+    message: `Customer: ${message}`,
+    session: ticket.sessionId
+  });
+}
+```
+
+### 3. Research and Analysis
+
+Accumulate research over extended periods:
+
+```typescript
+async function researchProject(topic: string) {
+  // Week 1: Initial research
+  const research = await agentbase.runAgent({
+    message: `Research ${topic} and create initial notes document`
+  });
+
+  const researchSession = research.session;
+
+  // Week 2: Deep dive into specific areas
+  await agentbase.runAgent({
+    message: "Expand section on recent developments with citations",
+    session: researchSession
+  });
+
+  // Week 3: Add case studies
+  await agentbase.runAgent({
+    message: "Find and document 5 real-world case studies",
+    session: researchSession
+  });
+
+  // Week 4: Compile final report
+  await agentbase.runAgent({
+    message: "Compile all research into comprehensive report",
+    session: researchSession
+  });
+
+  // All notes, sources, and documents accumulated over weeks
+}
+```
+
+### 4. Scheduled Jobs and Automation
+
+Maintain state across scheduled executions:
+
+```typescript
+// Daily report generation with historical context
+async function generateDailyReport() {
+  const reportConfig = await db.config.findOne({ name: 'daily-report' });
+
+  let sessionId = reportConfig?.sessionId;
+
+  if (!sessionId) {
+    // First run: initialize
+    const init = await agentbase.runAgent({
+      message: "Initialize daily reporting system, create templates"
+    });
+    sessionId = init.session;
+
+    await db.config.create({
+      name: 'daily-report',
+      sessionId
+    });
+  }
+
+  // Generate today's report with access to all previous reports
+  const report = await agentbase.runAgent({
+    message: "Generate today's report and compare to previous days",
+    session: sessionId
+  });
+
+  return report;
+}
+
+// Each day's report has context of all previous reports
+```
+
+## Best Practices
+
+### Session Management
+
+<AccordionGroup>
+  <Accordion title="Store Session IDs Securely">
+    ```typescript
+    // Good: Store in database with proper access control
+    interface WorkflowRecord {
+      id: string;
+      userId: string;
+      sessionId: string;
+      workflowType: string;
+      createdAt: Date;
+      lastAccess: Date;
+    }
+
+    async function createWorkflow(userId: string, type: string) {
+      const result = await agentbase.runAgent({
+        message: `Initialize ${type} workflow`
+      });
+
+      await db.workflows.create({
+        id: generateId(),
+        userId,
+        sessionId: result.session,
+        workflowType: type,
+        createdAt: new Date(),
+        lastAccess: new Date()
+      });
+    }
+
+    // Avoid: Storing in client-side storage without encryption
+    ```
+  </Accordion>
+
+  <Accordion title="Track Session Activity">
+    ```typescript
+    async function updateSessionActivity(sessionId: string) {
+      await db.workflows.updateOne(
+        { sessionId },
+        {
+          $set: { lastAccess: new Date() },
+          $inc: { requestCount: 1 }
+        }
+      );
+    }
+
+    // Monitor for stale sessions
+    async function cleanupStaleSessions() {
+      const threshold = new Date();
+      threshold.setDate(threshold.getDate() - 30);
+
+      const staleSessions = await db.workflows.find({
+        lastAccess: { $lt: threshold }
+      });
+
+      for (const session of staleSessions) {
+        await archiveAndDelete(session);
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Use Descriptive Session Metadata">
+    ```typescript
+    // Tag sessions with meaningful metadata
+    await db.sessions.create({
+      sessionId: result.session,
+      tags: ['data-analysis', 'customer-insights', 'q1-2025'],
+      description: 'Customer behavior analysis for Q1 2025',
+      owner: userId,
+      team: 'analytics'
+    });
+
+    // Easy retrieval and organization
+    const analyticsSessions = await db.sessions.find({
+      tags: { $in: ['data-analysis'] },
+      team: 'analytics'
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Performance Optimization
+
+<CardGroup cols={2}>
+  <Card title="Keep Active Sessions Warm" icon="fire">
+    Make requests within 5 minutes to avoid auto-pause overhead
+  </Card>
+
+  <Card title="Separate Independent Workflows" icon="split">
+    Use different sessions for unrelated work to keep context focused
+  </Card>
+
+  <Card title="Clean Up Large Files" icon="trash">
+    Remove unnecessary files to reduce storage and improve performance
+  </Card>
+
+  <Card title="Periodic Checkpoints" icon="bookmark">
+    Save important state externally for critical long-running workflows
+  </Card>
+</CardGroup>
+
+### Data Management
+
+```typescript
+// Periodically export important artifacts
+async function exportWorkflowArtifacts(sessionId: string) {
+  const export_request = await agentbase.runAgent({
+    message: "Create a zip file of all important project files",
+    session: sessionId
+  });
+
+  // Download and store externally
+  const artifacts = await downloadArtifacts(export_request);
+  await s3.upload(`backups/${sessionId}.zip`, artifacts);
+}
+
+// Clear temporary data to optimize performance
+async function cleanupSession(sessionId: string) {
+  await agentbase.runAgent({
+    message: "Delete all files in /tmp and clear build caches",
+    session: sessionId
+  });
+}
+```
+
+## Integration with Other Primitives
+
+### With Sessions
+
+Persistence is session-scoped - each session maintains its own state:
+
+```typescript
+// Session A: Isolated persistence
+const sessionA = await agentbase.runAgent({
+  message: "Create project A files"
+});
+
+// Session B: Separate isolated persistence
+const sessionB = await agentbase.runAgent({
+  message: "Create project B files"
+});
+
+// Each session has completely separate file systems and state
+```
+
+Learn more: [Sessions Primitive](/primitives/essentials/sessions)
+
+### With States
+
+States represent the current snapshot of persisted data:
+
+```typescript
+// State evolves as persistence accumulates
+const initial = await agentbase.runAgent({
+  message: "Create config.json"
+});
+// State: config.json exists
+
+const updated = await agentbase.runAgent({
+  message: "Add database settings to config.json",
+  session: initial.session
+});
+// State: config.json exists with database settings
+```
+
+Learn more: [States Primitive](/primitives/essentials/states)
+
+### With Versioning
+
+Combine persistence with versioning for rollback capabilities:
+
+```typescript
+// Create versioned checkpoints
+await agentbase.runAgent({
+  message: "Create git repository and commit current state as v1.0",
+  session: projectSession
+});
+
+// Later, rollback if needed
+await agentbase.runAgent({
+  message: "Revert to v1.0",
+  session: projectSession
+});
+```
+
+Learn more: [Versioning Primitive](/primitives/essentials/versioning)
+
+## Performance Considerations
+
+### Environment Startup Times
+
+- **New Environment**: 2-5 seconds to create from scratch
+- **Warm Environment**: Instant access if active (< 5 min since last request)
+- **Resume from Pause**: 1-2 seconds to wake up paused environment
+
+### Storage Impact
+
+Message history is free and unlimited. For computational environments:
+
+- **Small Projects** (< 100 MB): Negligible impact
+- **Medium Projects** (100 MB - 1 GB): Normal performance
+- **Large Projects** (> 1 GB): Consider periodic cleanup
+
+### Optimization Strategies
+
+```typescript
+// Keep sessions warm for interactive workflows
+setInterval(async () => {
+  await agentbase.runAgent({
+    message: "status",
+    session: activeSessionId
+  });
+}, 4 * 60 * 1000); // Every 4 minutes
+
+// Lazy load for batch workflows
+async function batchProcess(items: string[]) {
+  let sessionId: string | undefined;
+
+  for (const item of items) {
+    const result = await agentbase.runAgent({
+      message: `Process ${item}`,
+      session: sessionId
+    });
+
+    sessionId = result.session; // Reuse session for efficiency
+  }
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Files Not Persisting">
+    **Problem**: Files created in one request don't appear in the next
+
+    **Solutions**:
+    - Verify you're passing the same session ID
+    - Check that files are created in persistent directories (not /tmp)
+    - Ensure session hasn't expired
+
+    ```typescript
+    // Verify session continuity
+    const step1 = await agentbase.runAgent({
+      message: "Create file.txt"
+    });
+
+    console.log('Session:', step1.session);
+
+    const step2 = await agentbase.runAgent({
+      message: "Read file.txt",
+      session: step1.session  // Must match!
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Session Not Found Error">
+    **Problem**: Error when trying to use a session ID
+
+    **Solutions**:
+    - Session may have expired after extended inactivity
+    - Session ID may be incorrect or corrupted
+    - Start a new session and restore state if needed
+
+    ```typescript
+    try {
+      await agentbase.runAgent({
+        message: "Continue work",
+        session: maybeExpiredSession
+      });
+    } catch (error) {
+      if (error.code === 'SESSION_NOT_FOUND') {
+        // Start new session
+        const fresh = await agentbase.runAgent({
+          message: "Restore project from backup"
+        });
+
+        await updateStoredSession(fresh.session);
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Slow Environment Resume">
+    **Problem**: Noticeable delay when resuming paused environment
+
+    **Solutions**:
+    - This is expected behavior (1-2 second resume time)
+    - Keep environment warm with periodic requests if low latency is critical
+    - Consider if you really need environment persistence for simple tasks
+
+    ```typescript
+    // For latency-critical workflows, keep warm
+    const keepWarm = setInterval(async () => {
+      await agentbase.runAgent({
+        message: "ping",
+        session: criticalSession
+      });
+    }, 4 * 60 * 1000);
+
+    // Stop when done
+    clearInterval(keepWarm);
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Sessions" icon="link" href="/primitives/essentials/sessions">
+    Session containers that enable persistence
+  </Card>
+
+  <Card title="States" icon="cube" href="/primitives/essentials/states">
+    Current snapshot of persisted data
+  </Card>
+
+  <Card title="Versioning" icon="code-branch" href="/primitives/essentials/versioning">
+    Version control for persisted state
+  </Card>
+
+  <Card title="Background Tasks" icon="clock" href="/primitives/essentials/background">
+    Long-running tasks with persistence
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Session and persistence parameters
+  </Card>
+
+  <Card title="Agent Computer" icon="desktop" href="/build/agent-computer">
+    Environment capabilities and tools
+  </Card>
+
+  <Card title="Use Cases" icon="lightbulb" href="/build/use-cases">
+    Real-world persistence patterns
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Chat history persists automatically and free, while computational environments are created only when needed and persist for ongoing work. Always pass session IDs to maintain continuity.
+</Tip>

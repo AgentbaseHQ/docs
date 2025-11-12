@@ -1,0 +1,1229 @@
+---
+title: "Trigger"
+description: "Execute agents automatically based on events, conditions, and external signals"
+icon: "bolt"
+---
+
+> Triggers enable agents to respond automatically to events, changes, and conditions, creating reactive and autonomous agent behaviors without manual intervention.
+
+## Overview
+
+The Trigger primitive allows you to automate agent execution based on various signals - from webhook events to database changes to time-based schedules. Instead of manually invoking agents, triggers create event-driven architectures where agents respond intelligently to your environment.
+
+Triggers are essential for:
+
+- **Event-Driven Automation**: React to external events automatically
+- **Real-Time Processing**: Process events as they occur
+- **Condition-Based Execution**: Run agents when specific conditions are met
+- **Autonomous Operations**: Build self-managing systems
+- **Integration Workflows**: Connect disparate systems through agents
+- **Monitoring and Alerting**: Detect and respond to issues automatically
+
+<CardGroup cols={2}>
+  <Card title="Event Triggers" icon="calendar-check">
+    Respond to webhooks, API events, and system notifications
+  </Card>
+
+  <Card title="Schedule Triggers" icon="clock">
+    Execute agents on time-based schedules (cron, intervals)
+  </Card>
+
+  <Card title="Data Triggers" icon="database">
+    React to database changes and data updates
+  </Card>
+
+  <Card title="Condition Triggers" icon="filter">
+    Execute when specific conditions or thresholds are met
+  </Card>
+</CardGroup>
+
+## How Triggers Work
+
+When you set up a trigger:
+
+1. **Registration**: Trigger registered with event source or condition
+2. **Monitoring**: System continuously monitors for trigger conditions
+3. **Detection**: Trigger condition detected or event received
+4. **Activation**: Agent execution initiated automatically
+5. **Context Passing**: Event data passed to agent as context
+6. **Completion**: Agent processes event and performs actions
+
+<Note>
+**Reliable Execution**: Triggers use at-least-once delivery semantics with automatic retries for failed executions.
+</Note>
+
+## Trigger Types
+
+### Webhook Triggers
+
+```typescript
+{
+  type: "webhook",
+  events: ["payment.succeeded", "user.created"],
+  source: "stripe" | "github" | "custom"
+}
+```
+
+### Schedule Triggers
+
+```typescript
+{
+  type: "schedule",
+  schedule: "0 9 * * *", // Cron expression
+  timezone: "America/New_York"
+}
+```
+
+### Data Change Triggers
+
+```typescript
+{
+  type: "data_change",
+  source: "database",
+  table: "orders",
+  operations: ["insert", "update", "delete"]
+}
+```
+
+### Condition Triggers
+
+```typescript
+{
+  type: "condition",
+  condition: "temperature > 100",
+  checkInterval: "5m"
+}
+```
+
+## Code Examples
+
+### Webhook Trigger
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Create webhook trigger
+const trigger = await agentbase.createTrigger({
+  name: "stripe_payment_succeeded",
+  type: "webhook",
+  source: "stripe",
+  events: ["payment_intent.succeeded"],
+  agent: {
+    message: "Process successful payment",
+    system: `When payment succeeds:
+    - Update order status
+    - Send confirmation email
+    - Update analytics
+    - Notify fulfillment team`,
+    integrations: {
+      stripe: { enabled: true },
+      sendgrid: { enabled: true }
+    }
+  }
+});
+
+console.log('Webhook URL:', trigger.webhookUrl);
+// Configure this URL in Stripe dashboard
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Create webhook trigger
+trigger = agentbase.create_trigger(
+    name="stripe_payment_succeeded",
+    type="webhook",
+    source="stripe",
+    events=["payment_intent.succeeded"],
+    agent={
+        "message": "Process successful payment",
+        "system": """When payment succeeds:
+        - Update order status
+        - Send confirmation email
+        - Update analytics
+        - Notify fulfillment team""",
+        "integrations": {
+            "stripe": {"enabled": True},
+            "sendgrid": {"enabled": True}
+        }
+    }
+)
+
+print(f"Webhook URL: {trigger.webhook_url}")
+```
+
+</CodeGroup>
+
+### Schedule Trigger
+
+<CodeGroup>
+
+```typescript TypeScript
+// Daily scheduled report
+const dailyReport = await agentbase.createTrigger({
+  name: "daily_analytics_report",
+  type: "schedule",
+  schedule: "0 9 * * *", // Every day at 9 AM
+  timezone: "America/New_York",
+  agent: {
+    message: "Generate daily analytics report",
+    system: `Create report including:
+    - Yesterday's key metrics
+    - Week-over-week trends
+    - Notable anomalies
+    - Action items`,
+    dataConnectors: {
+      postgres: { enabled: true }
+    },
+    integrations: {
+      slack: { enabled: true }
+    }
+  }
+});
+
+console.log('Next run:', dailyReport.nextRun);
+```
+
+```python Python
+# Daily scheduled report
+daily_report = agentbase.create_trigger(
+    name="daily_analytics_report",
+    type="schedule",
+    schedule="0 9 * * *",  # Every day at 9 AM
+    timezone="America/New_York",
+    agent={
+        "message": "Generate daily analytics report",
+        "system": """Create report including:
+        - Yesterday's key metrics
+        - Week-over-week trends
+        - Notable anomalies
+        - Action items""",
+        "data_connectors": {
+            "postgres": {"enabled": True}
+        },
+        "integrations": {
+            "slack": {"enabled": True}
+        }
+    }
+)
+
+print(f"Next run: {daily_report.next_run}")
+```
+
+</CodeGroup>
+
+### Database Change Trigger
+
+<CodeGroup>
+
+```typescript TypeScript
+// React to database changes
+const dbTrigger = await agentbase.createTrigger({
+  name: "new_order_processor",
+  type: "data_change",
+  source: {
+    type: "postgres",
+    connectionString: process.env.DATABASE_URL,
+    table: "orders",
+    operations: ["insert"]
+  },
+  agent: {
+    message: "Process new order",
+    context: {
+      orderData: "{{event.new_row}}" // New order data
+    },
+    system: `For each new order:
+    - Validate order data
+    - Check inventory availability
+    - Calculate shipping cost
+    - Send confirmation email
+    - Create fulfillment task`
+  }
+});
+```
+
+```python Python
+# React to database changes
+db_trigger = agentbase.create_trigger(
+    name="new_order_processor",
+    type="data_change",
+    source={
+        "type": "postgres",
+        "connection_string": os.environ['DATABASE_URL'],
+        "table": "orders",
+        "operations": ["insert"]
+    },
+    agent={
+        "message": "Process new order",
+        "context": {
+            "order_data": "{{event.new_row}}"  # New order data
+        },
+        "system": """For each new order:
+        - Validate order data
+        - Check inventory availability
+        - Calculate shipping cost
+        - Send confirmation email
+        - Create fulfillment task"""
+    }
+)
+```
+
+</CodeGroup>
+
+### Condition Trigger
+
+<CodeGroup>
+
+```typescript TypeScript
+// Monitor metrics and alert
+const alertTrigger = await agentbase.createTrigger({
+  name: "high_error_rate_alert",
+  type: "condition",
+  condition: {
+    metric: "error_rate",
+    operator: "greater_than",
+    threshold: 0.05, // 5% error rate
+    window: "5m" // Over 5 minute window
+  },
+  checkInterval: "1m", // Check every minute
+  agent: {
+    message: "High error rate detected",
+    system: `Incident response:
+    - Gather error logs and metrics
+    - Identify affected services
+    - Page on-call engineer
+    - Create incident ticket
+    - Post to status page
+    - Start war room if critical`
+  }
+});
+```
+
+```python Python
+# Monitor metrics and alert
+alert_trigger = agentbase.create_trigger(
+    name="high_error_rate_alert",
+    type="condition",
+    condition={
+        "metric": "error_rate",
+        "operator": "greater_than",
+        "threshold": 0.05,  # 5% error rate
+        "window": "5m"  # Over 5 minute window
+    },
+    check_interval="1m",  # Check every minute
+    agent={
+        "message": "High error rate detected",
+        "system": """Incident response:
+        - Gather error logs and metrics
+        - Identify affected services
+        - Page on-call engineer
+        - Create incident ticket
+        - Post to status page
+        - Start war room if critical"""
+    }
+)
+```
+
+</CodeGroup>
+
+### File System Trigger
+
+<CodeGroup>
+
+```typescript TypeScript
+// Watch for new files
+const fileWatcher = await agentbase.createTrigger({
+  name: "process_uploaded_files",
+  type: "file_system",
+  source: {
+    path: "/uploads",
+    pattern: "*.csv",
+    events: ["created"]
+  },
+  agent: {
+    message: "Process new CSV file",
+    context: {
+      filePath: "{{event.file_path}}",
+      fileName: "{{event.file_name}}"
+    },
+    system: `Process CSV file:
+    - Validate file format
+    - Parse and validate data
+    - Import to database
+    - Generate import report
+    - Notify uploader of results`
+  }
+});
+```
+
+```python Python
+# Watch for new files
+file_watcher = agentbase.create_trigger(
+    name="process_uploaded_files",
+    type="file_system",
+    source={
+        "path": "/uploads",
+        "pattern": "*.csv",
+        "events": ["created"]
+    },
+    agent={
+        "message": "Process new CSV file",
+        "context": {
+            "file_path": "{{event.file_path}}",
+            "file_name": "{{event.file_name}}"
+        },
+        "system": """Process CSV file:
+        - Validate file format
+        - Parse and validate data
+        - Import to database
+        - Generate import report
+        - Notify uploader of results"""
+    }
+)
+```
+
+</CodeGroup>
+
+### Compound Triggers
+
+<CodeGroup>
+
+```typescript TypeScript
+// Multiple conditions must be met
+const compoundTrigger = await agentbase.createTrigger({
+  name: "high_value_customer_signup",
+  type: "compound",
+  conditions: [
+    {
+      type: "webhook",
+      source: "stripe",
+      event: "customer.created"
+    },
+    {
+      type: "condition",
+      check: "{{customer.plan}} === 'enterprise'"
+    },
+    {
+      type: "condition",
+      check: "{{customer.employees}} > 100"
+    }
+  ],
+  operator: "and", // All conditions must be true
+  agent: {
+    message: "High-value customer signed up",
+    system: `VIP onboarding:
+    - Assign dedicated account manager
+    - Schedule white-glove onboarding
+    - Send personalized welcome package
+    - Create custom implementation plan
+    - Notify executive team`
+  }
+});
+```
+
+```python Python
+# Multiple conditions must be met
+compound_trigger = agentbase.create_trigger(
+    name="high_value_customer_signup",
+    type="compound",
+    conditions=[
+        {
+            "type": "webhook",
+            "source": "stripe",
+            "event": "customer.created"
+        },
+        {
+            "type": "condition",
+            "check": "{{customer.plan}} === 'enterprise'"
+        },
+        {
+            "type": "condition",
+            "check": "{{customer.employees}} > 100"
+        }
+    ],
+    operator="and",  # All conditions must be true
+    agent={
+        "message": "High-value customer signed up",
+        "system": """VIP onboarding:
+        - Assign dedicated account manager
+        - Schedule white-glove onboarding
+        - Send personalized welcome package
+        - Create custom implementation plan
+        - Notify executive team"""
+    }
+)
+```
+
+</CodeGroup>
+
+### Trigger with Filters
+
+<CodeGroup>
+
+```typescript TypeScript
+// Filter events before triggering
+const filteredTrigger = await agentbase.createTrigger({
+  name: "priority_support_tickets",
+  type: "webhook",
+  source: "zendesk",
+  events: ["ticket.created"],
+  filters: [
+    {
+      field: "priority",
+      operator: "in",
+      values: ["high", "urgent"]
+    },
+    {
+      field: "customer.tier",
+      operator: "equals",
+      value: "enterprise"
+    }
+  ],
+  agent: {
+    message: "Handle priority support ticket",
+    system: `Priority ticket protocol:
+    - Auto-assign to senior support engineer
+    - Create Slack notification in #support-urgent
+    - Set 2-hour response SLA
+    - Escalate to manager if not assigned in 15 minutes`
+  }
+});
+```
+
+```python Python
+# Filter events before triggering
+filtered_trigger = agentbase.create_trigger(
+    name="priority_support_tickets",
+    type="webhook",
+    source="zendesk",
+    events=["ticket.created"],
+    filters=[
+        {
+            "field": "priority",
+            "operator": "in",
+            "values": ["high", "urgent"]
+        },
+        {
+            "field": "customer.tier",
+            "operator": "equals",
+            "value": "enterprise"
+        }
+    ],
+    agent={
+        "message": "Handle priority support ticket",
+        "system": """Priority ticket protocol:
+        - Auto-assign to senior support engineer
+        - Create Slack notification in #support-urgent
+        - Set 2-hour response SLA
+        - Escalate to manager if not assigned in 15 minutes"""
+    }
+)
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Payment Processing
+
+Automate payment handling:
+
+```typescript
+// Payment success trigger
+await agentbase.createTrigger({
+  name: "payment_succeeded",
+  type: "webhook",
+  source: "stripe",
+  events: ["payment_intent.succeeded"],
+  agent: {
+    message: "Process successful payment",
+    context: {
+      payment: "{{event.data.object}}"
+    },
+    integrations: {
+      stripe: { enabled: true },
+      quickbooks: { enabled: true },
+      sendgrid: { enabled: true }
+    },
+    system: `Payment success workflow:
+    1. Update order status to 'paid'
+    2. Create invoice in QuickBooks
+    3. Send payment receipt to customer
+    4. Trigger fulfillment process
+    5. Update customer lifetime value
+    6. Add to revenue reports`
+  }
+});
+
+// Payment failed trigger
+await agentbase.createTrigger({
+  name: "payment_failed",
+  type: "webhook",
+  source: "stripe",
+  events: ["payment_intent.payment_failed"],
+  agent: {
+    message: "Handle failed payment",
+    system: `Payment failure workflow:
+    1. Log failure reason
+    2. Send payment retry email to customer
+    3. Update order status to 'payment_failed'
+    4. Create follow-up task for sales team
+    5. If multiple failures, flag account for review`
+  }
+});
+```
+
+### 2. CI/CD Automation
+
+Trigger deployments and notifications:
+
+```typescript
+await agentbase.createTrigger({
+  name: "deploy_on_merge",
+  type: "webhook",
+  source: "github",
+  events: ["pull_request"],
+  filters: [
+    { field: "action", operator: "equals", value: "closed" },
+    { field: "merged", operator: "equals", value: true },
+    { field: "base.ref", operator: "equals", value: "main" }
+  ],
+  agent: {
+    message: "Deploy merged changes",
+    context: {
+      pr: "{{event.pull_request}}",
+      commits: "{{event.pull_request.commits}}"
+    },
+    integrations: {
+      github: { enabled: true },
+      slack: { enabled: true }
+    },
+    system: `Deployment workflow:
+    1. Run test suite
+    2. Build production artifacts
+    3. Deploy to staging
+    4. Run smoke tests
+    5. If tests pass, deploy to production
+    6. Notify team in Slack
+    7. Create deployment log entry`
+  }
+});
+```
+
+### 3. Customer Support Automation
+
+Auto-respond to support tickets:
+
+```typescript
+await agentbase.createTrigger({
+  name: "new_support_ticket",
+  type: "webhook",
+  source: "zendesk",
+  events: ["ticket.created"],
+  agent: {
+    message: "Handle new support ticket",
+    context: {
+      ticket: "{{event.ticket}}"
+    },
+    integrations: {
+      zendesk: { enabled: true },
+      salesforce: { enabled: true }
+    },
+    system: `Support ticket workflow:
+    1. Analyze ticket content and categorize
+    2. Check for similar resolved tickets
+    3. Look up customer in Salesforce
+    4. If common issue, provide auto-response with solution
+    5. If complex, assign to appropriate specialist
+    6. If VIP customer, escalate immediately
+    7. Set SLA based on priority and customer tier`
+  }
+});
+```
+
+### 4. Inventory Management
+
+Monitor and reorder inventory:
+
+```typescript
+await agentbase.createTrigger({
+  name: "low_inventory_alert",
+  type: "condition",
+  condition: {
+    source: "database",
+    query: "SELECT * FROM inventory WHERE quantity < reorder_point",
+    checkInterval: "1h"
+  },
+  agent: {
+    message: "Handle low inventory",
+    context: {
+      lowStockItems: "{{query_results}}"
+    },
+    integrations: {
+      inventory_system: { enabled: true },
+      supplier_api: { enabled: true }
+    },
+    system: `Inventory replenishment:
+    1. Calculate reorder quantity based on demand forecast
+    2. Check supplier availability and lead times
+    3. Create purchase orders
+    4. Send POs to suppliers
+    5. Update expected delivery dates
+    6. Notify warehouse team
+    7. If critical item, expedite shipping`
+  }
+});
+```
+
+### 5. Security Monitoring
+
+Detect and respond to security events:
+
+```typescript
+await agentbase.createTrigger({
+  name: "suspicious_login_activity",
+  type: "condition",
+  condition: {
+    metric: "failed_login_attempts",
+    operator: "greater_than",
+    threshold: 5,
+    window: "5m",
+    groupBy: "ip_address"
+  },
+  agent: {
+    message: "Potential security threat detected",
+    context: {
+      ipAddress: "{{event.ip_address}}",
+      attempts: "{{event.count}}"
+    },
+    integrations: {
+      auth_system: { enabled: true },
+      pagerduty: { enabled: true }
+    },
+    system: `Security response:
+    1. Block IP address temporarily
+    2. Review recent activity from this IP
+    3. Check if any accounts compromised
+    4. Send security alert to team
+    5. If accounts affected, force password reset
+    6. Log incident for review
+    7. Update firewall rules if needed`
+  }
+});
+```
+
+### 6. Content Publishing
+
+Automate content distribution:
+
+```typescript
+await agentbase.createTrigger({
+  name: "publish_blog_post",
+  type: "file_system",
+  source: {
+    path: "/content/blog/published",
+    pattern: "*.md",
+    events: ["created", "modified"]
+  },
+  agent: {
+    message: "Publish blog post",
+    context: {
+      content: "{{file_content}}",
+      fileName: "{{file_name}}"
+    },
+    integrations: {
+      wordpress: { enabled: true },
+      twitter: { enabled: true },
+      linkedin: { enabled: true },
+      mailchimp: { enabled: true }
+    },
+    system: `Content publishing workflow:
+    1. Parse markdown and extract metadata
+    2. Generate featured image if not provided
+    3. Publish to WordPress blog
+    4. Create social media posts
+    5. Schedule newsletter
+    6. Update content calendar
+    7. Notify content team`
+  }
+});
+```
+
+## Best Practices
+
+### Trigger Design
+
+<AccordionGroup>
+  <Accordion title="Use Specific Filters">
+    ```typescript
+    // Good: Specific filters reduce unnecessary executions
+    {
+      type: "webhook",
+      source: "github",
+      events: ["pull_request"],
+      filters: [
+        { field: "action", operator: "equals", value: "opened" },
+        { field: "draft", operator: "equals", value: false },
+        { field: "base.ref", operator: "equals", value: "main" }
+      ]
+    }
+
+    // Avoid: Too broad, triggers on every PR event
+    {
+      type: "webhook",
+      source: "github",
+      events: ["pull_request"]
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Handle Failures Gracefully">
+    ```typescript
+    {
+      name: "payment_processor",
+      type: "webhook",
+      retry: {
+        enabled: true,
+        maxAttempts: 3,
+        backoff: "exponential",
+        initialDelay: 1000
+      },
+      onFailure: {
+        action: "notify",
+        channels: ["email", "slack"],
+        escalateAfter: 3 // Escalate after all retries fail
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Set Appropriate Timeouts">
+    ```typescript
+    {
+      name: "long_running_task",
+      type: "schedule",
+      agent: {
+        message: "Process daily batch",
+        timeout: 3600000 // 1 hour timeout
+      },
+      executionTimeout: 3600000
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Use Idempotency Keys">
+    ```typescript
+    {
+      name: "order_processor",
+      type: "webhook",
+      idempotency: {
+        enabled: true,
+        keyField: "order_id", // Prevent duplicate processing
+        ttl: 86400 // 24 hours
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Security
+
+<Warning>
+**Validate Webhook Signatures**: Always verify webhook signatures to ensure requests are from trusted sources.
+</Warning>
+
+<AccordionGroup>
+  <Accordion title="Verify Webhook Signatures">
+    ```typescript
+    {
+      type: "webhook",
+      source: "stripe",
+      security: {
+        verifySignature: true,
+        secret: process.env.STRIPE_WEBHOOK_SECRET
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Limit Trigger Scope">
+    ```typescript
+    {
+      name: "data_sync",
+      type: "data_change",
+      permissions: {
+        tables: ["orders", "customers"], // Only these tables
+        operations: ["insert", "update"], // No deletes
+        conditions: "user_id = {{current_user_id}}" // Row-level security
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Monitor Trigger Activity">
+    ```typescript
+    // Set up monitoring
+    {
+      name: "critical_trigger",
+      monitoring: {
+        enabled: true,
+        alertOn: {
+          failureRate: 0.1, // Alert if 10% failures
+          latency: 5000, // Alert if latency > 5s
+          volume: { min: 10, max: 1000 } // Alert on unusual volume
+        }
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Performance
+
+<Tip>
+**Batch Processing**: For high-volume triggers, batch events together to reduce execution overhead.
+</Tip>
+
+<AccordionGroup>
+  <Accordion title="Batch Events">
+    ```typescript
+    {
+      type: "data_change",
+      source: { table: "events" },
+      batching: {
+        enabled: true,
+        maxSize: 100, // Process up to 100 events together
+        maxWait: 5000 // Or wait max 5 seconds
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Rate Limiting">
+    ```typescript
+    {
+      name: "api_webhook",
+      type: "webhook",
+      rateLimit: {
+        maxExecutionsPerMinute: 60,
+        queueExcess: true // Queue excess events
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Conditional Execution">
+    ```typescript
+    {
+      type: "schedule",
+      schedule: "* * * * *", // Every minute
+      agent: {
+        message: "Check for work",
+        preCheck: "SELECT COUNT(*) FROM pending_tasks",
+        skipIfEmpty: true // Skip if no work to do
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Primitives
+
+### With Workflow
+
+Trigger complex workflows:
+
+```typescript
+await agentbase.createTrigger({
+  name: "order_fulfillment",
+  type: "webhook",
+  source: "shopify",
+  events: ["orders/create"],
+  workflow: {
+    id: "order_fulfillment_workflow",
+    input: {
+      order: "{{event.order}}"
+    }
+  }
+});
+```
+
+Learn more: [Workflow Primitive](/primitives/extensions/workflow)
+
+### With Tasks
+
+Create tasks from triggers:
+
+```typescript
+await agentbase.createTrigger({
+  name: "bug_report",
+  type: "webhook",
+  source: "github",
+  events: ["issues"],
+  filters: [{ field: "labels", operator: "contains", value: "bug" }],
+  agent: {
+    message: "Create bug triage task",
+    capabilities: {
+      tasks: { enabled: true }
+    }
+  }
+});
+```
+
+Learn more: [Tasks Primitive](/primitives/extensions/tasks)
+
+### With Memory
+
+Remember trigger execution context:
+
+```typescript
+await agentbase.createTrigger({
+  name: "customer_interaction",
+  type: "webhook",
+  source: "intercom",
+  events: ["conversation.user.created"],
+  agent: {
+    message: "Handle customer message",
+    memory: {
+      namespace: "customer_{{event.user_id}}",
+      enabled: true
+    }
+  }
+});
+```
+
+Learn more: [Memory Primitive](/primitives/extensions/memory)
+
+## Performance Considerations
+
+### Trigger Latency
+
+- **Webhook Triggers**: < 100ms processing time
+- **Schedule Triggers**: Precision within 1 second
+- **Condition Triggers**: Depends on check interval
+- **Database Triggers**: Real-time (< 1s lag)
+
+### Scalability
+
+- **Concurrent Executions**: Thousands of triggers simultaneously
+- **Event Throughput**: Millions of events per day
+- **Queue Management**: Automatic queuing during high volume
+
+### Cost Optimization
+
+```typescript
+// Optimize costs
+{
+  name: "expensive_operation",
+  type: "schedule",
+  schedule: "0 2 * * *", // Run during off-peak hours
+  agent: {
+    message: "Process batch",
+    optimization: {
+      useSpotInstances: true,
+      batchSize: "adaptive"
+    }
+  }
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Trigger Not Firing">
+    **Problem**: Trigger configured but not executing
+
+    **Solutions**:
+    - Verify trigger is enabled
+    - Check filters aren't too restrictive
+    - Verify webhook URL is correctly configured
+    - Test condition logic manually
+    - Check webhook signature validation
+
+    ```typescript
+    // Debug trigger
+    const debug = await agentbase.testTrigger({
+      triggerId: "trigger_123",
+      sampleEvent: testEvent
+    });
+
+    console.log('Would trigger:', debug.wouldTrigger);
+    console.log('Filters passed:', debug.filtersMatched);
+    console.log('Reason:', debug.reason);
+    ```
+  </Accordion>
+
+  <Accordion title="Duplicate Executions">
+    **Problem**: Same event triggering multiple times
+
+    **Solutions**:
+    - Enable idempotency keys
+    - Check for webhook retries
+    - Verify event deduplication
+    - Review trigger conditions
+
+    ```typescript
+    // Enable idempotency
+    {
+      name: "order_processor",
+      idempotency: {
+        enabled: true,
+        keyField: "order_id",
+        ttl: 86400
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="High Latency">
+    **Problem**: Slow trigger execution
+
+    **Solutions**:
+    - Optimize agent execution time
+    - Use async processing for long tasks
+    - Reduce complexity of filters
+    - Consider batching events
+
+    ```typescript
+    // Use background processing
+    {
+      name: "slow_task",
+      type: "webhook",
+      agent: {
+        message: "Process event",
+        background: true // Run asynchronously
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Trigger Flooding">
+    **Problem**: Too many trigger executions
+
+    **Solutions**:
+    - Add rate limiting
+    - Implement more specific filters
+    - Use batching
+    - Add cooldown period
+
+    ```typescript
+    // Add rate limiting
+    {
+      name: "high_volume_trigger",
+      rateLimit: {
+        maxExecutionsPerMinute: 60,
+        cooldownPeriod: 1000 // 1s between executions
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Patterns
+
+### Trigger Chaining
+
+Chain multiple triggers:
+
+```typescript
+// First trigger creates data
+await agentbase.createTrigger({
+  name: "step1",
+  type: "webhook",
+  source: "api",
+  onSuccess: {
+    emitEvent: "step1_completed"
+  }
+});
+
+// Second trigger responds to first
+await agentbase.createTrigger({
+  name: "step2",
+  type: "event",
+  events: ["step1_completed"],
+  agent: {
+    message: "Continue workflow"
+  }
+});
+```
+
+### Smart Throttling
+
+Intelligent rate limiting:
+
+```typescript
+{
+  name: "adaptive_trigger",
+  type: "webhook",
+  throttling: {
+    mode: "adaptive",
+    baseRate: 100, // Events per minute
+    increaseOn: "low_latency",
+    decreaseOn: "high_error_rate"
+  }
+}
+```
+
+### Multi-Region Triggers
+
+Deploy triggers across regions:
+
+```typescript
+{
+  name: "global_webhook",
+  type: "webhook",
+  multiRegion: {
+    enabled: true,
+    regions: ["us-east-1", "eu-west-1", "ap-south-1"],
+    routing: "nearest" // Route to nearest region
+  }
+}
+```
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Scheduling" icon="calendar" href="/primitives/extensions/scheduling">
+    Advanced time-based trigger scheduling
+  </Card>
+
+  <Card title="Workflow" icon="diagram-project" href="/primitives/extensions/workflow">
+    Trigger complex multi-step workflows
+  </Card>
+
+  <Card title="Hooks" icon="webhook" href="/primitives/essentials/hooks">
+    Lifecycle hooks for agent execution
+  </Card>
+
+  <Card title="Background" icon="clock-rotate-left" href="/primitives/essentials/background">
+    Run triggered agents asynchronously
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code">
+    Complete triggers API documentation
+  </Card>
+
+  <Card title="Event Catalog" icon="book">
+    Available trigger events by source
+  </Card>
+
+  <Card title="Best Practices" icon="star">
+    Trigger design patterns and recipes
+  </Card>
+</CardGroup>
+
+<Tip>
+**Pro Tip**: Start with simple triggers and add complexity gradually. Test triggers with sample events before deploying to production to ensure they behave as expected.
+</Tip>

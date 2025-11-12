@@ -1,0 +1,1198 @@
+---
+title: "Sessions"
+description: "Persistent conversation containers that maintain context, state, and memory across requests"
+icon: "link"
+---
+
+> Sessions are the foundational container for agent conversations, providing persistent context, state management, and continuity across multiple requests.
+
+## Overview
+
+The Sessions primitive represents a persistent conversation thread between you and an agent. Each session is a unique, isolated container that maintains:
+
+- **Conversation History**: All messages and responses in chronological order
+- **Computational State**: Files, installed packages, and environment configuration
+- **Context Memory**: Agent's understanding of ongoing tasks and user preferences
+- **Tool State**: Results from previous tool executions and data gathered
+- **Session Identity**: Unique identifier for tracking and resuming conversations
+
+Sessions enable sophisticated multi-turn interactions where agents can remember context, build on previous work, and maintain continuity across hours, days, or even weeks.
+
+<CardGroup cols={2}>
+  <Card title="Automatic Creation" icon="sparkles">
+    Every agent request creates a new session or continues an existing one
+  </Card>
+
+  <Card title="Persistent by Default" icon="floppy-disk">
+    Message history and state persist automatically at no extra cost
+  </Card>
+
+  <Card title="Isolated Containers" icon="box">
+    Each session is completely isolated from others for security and privacy
+  </Card>
+
+  <Card title="Long-Lived" icon="clock">
+    Sessions can span multiple requests over extended time periods
+  </Card>
+</CardGroup>
+
+## How Sessions Work
+
+When you make an agent request:
+
+1. **No Session ID**: Agentbase creates a new session with fresh state
+2. **With Session ID**: Agentbase resumes the existing session with all previous context
+3. **Auto-Pause**: After 5 minutes of inactivity, the computational environment pauses
+4. **Auto-Resume**: Next request automatically resumes the paused environment
+5. **Expiration**: After extended inactivity, sessions eventually expire and clean up
+
+<Note>
+**Session Reuse**: Pass the same `session` parameter to maintain continuity. Each response includes the session ID for use in subsequent requests.
+</Note>
+
+## Code Examples
+
+### Creating a New Session
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Omit session parameter to create new session
+const result = await agentbase.runAgent({
+  message: "Hello, I'm starting a new project"
+});
+
+console.log('Session ID:', result.session);
+// Output: Session ID: agent_session_abc123xyz789...
+
+// Save this session ID for continuing the conversation
+const sessionId = result.session;
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Omit session parameter to create new session
+result = agentbase.run_agent(
+    message="Hello, I'm starting a new project"
+)
+
+print(f"Session ID: {result.session}")
+# Output: Session ID: agent_session_abc123xyz789...
+
+# Save this session ID for continuing the conversation
+session_id = result.session
+```
+
+```bash cURL
+# Create new session (no session query parameter)
+curl -X POST https://api.agentbase.sh \
+  -H "Authorization: Bearer $AGENTBASE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Hello, I am starting a new project"
+  }'
+
+# Response includes session ID in the response
+# Save the session ID for subsequent requests
+```
+
+</CodeGroup>
+
+### Continuing a Session
+
+<CodeGroup>
+
+```typescript TypeScript
+// Continue existing session
+const continuation = await agentbase.runAgent({
+  message: "Let's continue working on that project",
+  session: sessionId  // Reuse the session ID from above
+});
+
+// Agent has full context from previous conversation
+// All files, packages, and state are preserved
+```
+
+```python Python
+# Continue existing session
+continuation = agentbase.run_agent(
+    message="Let's continue working on that project",
+    session=session_id  # Reuse the session ID from above
+)
+
+# Agent has full context from previous conversation
+# All files, packages, and state are preserved
+```
+
+```bash cURL
+# Continue session via query parameter
+curl -X POST "https://api.agentbase.sh?session=agent_session_abc123xyz789" \
+  -H "Authorization: Bearer $AGENTBASE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Let'\''s continue working on that project"
+  }'
+```
+
+</CodeGroup>
+
+### Multi-Turn Conversation
+
+<CodeGroup>
+
+```typescript TypeScript
+// Turn 1: Start conversation
+const turn1 = await agentbase.runAgent({
+  message: "My name is Alice and I need help building a website"
+});
+
+const sessionId = turn1.session;
+
+// Turn 2: Agent remembers your name
+const turn2 = await agentbase.runAgent({
+  message: "What technologies should I use?",
+  session: sessionId
+});
+// Agent response will reference Alice and the website project
+
+// Turn 3: Continue with context
+const turn3 = await agentbase.runAgent({
+  message: "Can you create the project structure?",
+  session: sessionId
+});
+// Agent knows what project we're talking about
+
+// Turn 4: Build on previous work
+const turn4 = await agentbase.runAgent({
+  message: "Add a homepage and contact form",
+  session: sessionId
+});
+// Project structure from turn 3 still exists
+```
+
+```python Python
+# Turn 1: Start conversation
+turn1 = agentbase.run_agent(
+    message="My name is Alice and I need help building a website"
+)
+
+session_id = turn1.session
+
+# Turn 2: Agent remembers your name
+turn2 = agentbase.run_agent(
+    message="What technologies should I use?",
+    session=session_id
+)
+# Agent response will reference Alice and the website project
+
+# Turn 3: Continue with context
+turn3 = agentbase.run_agent(
+    message="Can you create the project structure?",
+    session=session_id
+)
+# Agent knows what project we're talking about
+
+# Turn 4: Build on previous work
+turn4 = agentbase.run_agent(
+    message="Add a homepage and contact form",
+    session=session_id
+)
+# Project structure from turn 3 still exists
+```
+
+</CodeGroup>
+
+### Session Management Pattern
+
+<CodeGroup>
+
+```typescript TypeScript
+interface WorkflowSession {
+  id: string;
+  userId: string;
+  type: string;
+  sessionId: string;
+  status: 'active' | 'paused' | 'completed';
+  createdAt: Date;
+  lastActivity: Date;
+}
+
+class SessionManager {
+  async createWorkflow(userId: string, type: string): Promise<string> {
+    // Start new agent session
+    const result = await agentbase.runAgent({
+      message: `Initialize ${type} workflow`,
+      system: `You are assisting with a ${type} workflow.`
+    });
+
+    // Store session in database
+    const workflow = await db.workflows.create({
+      id: generateId(),
+      userId,
+      type,
+      sessionId: result.session,
+      status: 'active',
+      createdAt: new Date(),
+      lastActivity: new Date()
+    });
+
+    return workflow.id;
+  }
+
+  async continueWorkflow(workflowId: string, message: string) {
+    // Retrieve session
+    const workflow = await db.workflows.findById(workflowId);
+
+    if (!workflow) {
+      throw new Error('Workflow not found');
+    }
+
+    // Continue agent session
+    const result = await agentbase.runAgent({
+      message,
+      session: workflow.sessionId
+    });
+
+    // Update last activity
+    await db.workflows.update(workflowId, {
+      lastActivity: new Date()
+    });
+
+    return result;
+  }
+
+  async getWorkflowHistory(workflowId: string) {
+    const workflow = await db.workflows.findById(workflowId);
+
+    // Get message history for session
+    const messages = await agentbase.getMessages(workflow.sessionId);
+
+    return messages;
+  }
+
+  async completeWorkflow(workflowId: string) {
+    await db.workflows.update(workflowId, {
+      status: 'completed',
+      completedAt: new Date()
+    });
+  }
+}
+```
+
+```python Python
+from datetime import datetime
+from typing import Literal
+
+class WorkflowSession:
+    def __init__(self, id: str, user_id: str, type: str,
+                 session_id: str, status: str,
+                 created_at: datetime, last_activity: datetime):
+        self.id = id
+        self.user_id = user_id
+        self.type = type
+        self.session_id = session_id
+        self.status = status
+        self.created_at = created_at
+        self.last_activity = last_activity
+
+class SessionManager:
+    async def create_workflow(self, user_id: str, workflow_type: str) -> str:
+        # Start new agent session
+        result = agentbase.run_agent(
+            message=f"Initialize {workflow_type} workflow",
+            system=f"You are assisting with a {workflow_type} workflow."
+        )
+
+        # Store session in database
+        workflow = await db.workflows.create({
+            'id': generate_id(),
+            'user_id': user_id,
+            'type': workflow_type,
+            'session_id': result.session,
+            'status': 'active',
+            'created_at': datetime.now(),
+            'last_activity': datetime.now()
+        })
+
+        return workflow.id
+
+    async def continue_workflow(self, workflow_id: str, message: str):
+        # Retrieve session
+        workflow = await db.workflows.find_by_id(workflow_id)
+
+        if not workflow:
+            raise ValueError('Workflow not found')
+
+        # Continue agent session
+        result = agentbase.run_agent(
+            message=message,
+            session=workflow.session_id
+        )
+
+        # Update last activity
+        await db.workflows.update(workflow_id, {
+            'last_activity': datetime.now()
+        })
+
+        return result
+
+    async def get_workflow_history(self, workflow_id: str):
+        workflow = await db.workflows.find_by_id(workflow_id)
+
+        # Get message history for session
+        messages = agentbase.get_messages(workflow.session_id)
+
+        return messages
+
+    async def complete_workflow(self, workflow_id: str):
+        await db.workflows.update(workflow_id, {
+            'status': 'completed',
+            'completed_at': datetime.now()
+        })
+```
+
+</CodeGroup>
+
+## Session Lifecycle
+
+### Creation
+
+New sessions are created automatically:
+
+```typescript
+// No session parameter = new session created
+const newSession = await agentbase.runAgent({
+  message: "Start fresh"
+});
+
+// Session characteristics:
+// - Unique session ID
+// - Empty message history
+// - Clean environment (no files, packages)
+// - Fresh computational state
+```
+
+### Active Phase
+
+Session is actively being used:
+
+```typescript
+// Active session characteristics:
+// - Computational environment running
+// - Instant response times
+// - All state immediately accessible
+const active = await agentbase.runAgent({
+  message: "Continue working",
+  session: activeSessionId
+});
+```
+
+### Pause Phase
+
+After 5 minutes of inactivity:
+
+```typescript
+// Session pauses automatically
+// - Computational environment suspended
+// - All state preserved (files, packages)
+// - Message history intact
+// - Next request will auto-resume (~1-2 seconds)
+
+// After 10 minutes of no activity...
+const resumed = await agentbase.runAgent({
+  message: "Resume work",
+  session: pausedSessionId
+});
+// Automatically resumes, all state intact
+```
+
+### Expiration
+
+After extended inactivity:
+
+```typescript
+// Eventually sessions expire
+// Attempting to use expired session:
+try {
+  const result = await agentbase.runAgent({
+    message: "Use old session",
+    session: expiredSessionId
+  });
+} catch (error) {
+  if (error.code === 'SESSION_NOT_FOUND') {
+    // Session no longer exists
+    // Start new session or restore from backup
+  }
+}
+```
+
+## Use Cases
+
+### 1. Interactive Development
+
+Multi-session development workflow:
+
+```typescript
+async function interactiveDevelopment() {
+  // Day 1: Start project
+  const day1 = await agentbase.runAgent({
+    message: "Create a React app with TypeScript"
+  });
+
+  const projectSession = day1.session;
+
+  // Day 1: Setup continues
+  await agentbase.runAgent({
+    message: "Add React Router and set up routing",
+    session: projectSession
+  });
+
+  // Store session ID overnight
+  await saveSessionToDatabase({
+    projectName: 'my-react-app',
+    sessionId: projectSession,
+    lastActivity: new Date()
+  });
+
+  // Day 2: Resume work
+  const savedSession = await loadSessionFromDatabase('my-react-app');
+
+  await agentbase.runAgent({
+    message: "Add authentication flow",
+    session: savedSession.sessionId
+  });
+
+  // All previous work still available
+}
+```
+
+### 2. Customer Support Conversations
+
+Maintain context throughout support interactions:
+
+```typescript
+async function customerSupport(customerId: string) {
+  // Customer initiates conversation
+  const initial = await agentbase.runAgent({
+    message: "Customer: I can't log into my account",
+    system: `You are a customer support agent for TechCorp.
+    Customer ID: ${customerId}`,
+    mcpServers: [{
+      serverName: 'customer-api',
+      serverUrl: 'https://api.company.com/mcp'
+    }]
+  });
+
+  const supportSession = initial.session;
+
+  // Store session for this customer interaction
+  await db.supportTickets.create({
+    customerId,
+    sessionId: supportSession,
+    status: 'open',
+    issue: 'login problem'
+  });
+
+  // 10 minutes later, customer responds
+  await agentbase.runAgent({
+    message: "Customer: I tried resetting my password but didn't get the email",
+    session: supportSession
+    // Agent remembers the original issue and all previous context
+  });
+
+  // 1 hour later, issue resolved
+  const resolution = await agentbase.runAgent({
+    message: "Customer: It's working now, thank you!",
+    session: supportSession
+  });
+
+  // Update ticket status
+  await db.supportTickets.update({
+    sessionId: supportSession,
+    status: 'resolved',
+    resolution: resolution.message
+  });
+}
+```
+
+### 3. Long-Running Research Projects
+
+Accumulate research over multiple sessions:
+
+```typescript
+async function researchProject(topic: string) {
+  // Week 1: Initial research
+  const week1 = await agentbase.runAgent({
+    message: `Research ${topic} and create a document with key findings`
+  });
+
+  const researchSession = week1.session;
+
+  // Week 2: Expand research
+  await agentbase.runAgent({
+    message: "Add recent developments and industry trends",
+    session: researchSession
+  });
+
+  // Week 3: Add case studies
+  await agentbase.runAgent({
+    message: "Find and document 5 real-world case studies",
+    session: researchSession
+  });
+
+  // Week 4: Finalize
+  const final = await agentbase.runAgent({
+    message: "Organize all research into a comprehensive report with executive summary",
+    session: researchSession
+  });
+
+  return final;
+}
+```
+
+### 4. Multi-User Collaboration
+
+Separate sessions per user:
+
+```typescript
+async function collaborativeProject(projectId: string, userId: string) {
+  // Each user gets their own session for the same project
+  const userSession = await getUserSession(projectId, userId);
+
+  if (!userSession) {
+    // Create new session for this user
+    const result = await agentbase.runAgent({
+      message: `Load project ${projectId} for user ${userId}`,
+      system: "You are assisting with a collaborative project."
+    });
+
+    await saveUserSession({
+      projectId,
+      userId,
+      sessionId: result.session,
+      role: 'contributor'
+    });
+
+    return result.session;
+  }
+
+  // User continues their work in their session
+  return userSession.sessionId;
+}
+
+// User A works in their session
+const userA = await collaborativeProject('proj_123', 'user_alice');
+await agentbase.runAgent({
+  message: "Work on feature A",
+  session: userA
+});
+
+// User B works in separate session
+const userB = await collaborativeProject('proj_123', 'user_bob');
+await agentbase.runAgent({
+  message: "Work on feature B",
+  session: userB
+});
+
+// Sessions are isolated but can be coordinated
+```
+
+### 5. Testing and Iteration
+
+Separate sessions for different test scenarios:
+
+```typescript
+async function testingWorkflow() {
+  // Create test scenarios in separate sessions
+  const scenarios = [
+    'test happy path with valid data',
+    'test error handling with invalid data',
+    'test edge cases with boundary values'
+  ];
+
+  const sessions = await Promise.all(
+    scenarios.map(async (scenario) => {
+      const result = await agentbase.runAgent({
+        message: `Set up test environment and ${scenario}`,
+        system: "You are a QA engineer running test scenarios."
+      });
+
+      return {
+        scenario,
+        sessionId: result.session,
+        result: result.message
+      };
+    })
+  );
+
+  // Each test runs in isolated session
+  // Continue specific tests as needed
+  await agentbase.runAgent({
+    message: "Run additional edge case tests",
+    session: sessions[2].sessionId  // Edge case session
+  });
+}
+```
+
+### 6. Scheduled Workflows
+
+Sessions for recurring tasks:
+
+```typescript
+async function scheduledReport(reportType: string) {
+  // Check if session exists for this report type
+  const existing = await db.scheduledReports.findByType(reportType);
+
+  let sessionId: string;
+
+  if (existing && existing.sessionId) {
+    // Reuse session for continuity
+    sessionId = existing.sessionId;
+  } else {
+    // Create new session
+    const init = await agentbase.runAgent({
+      message: `Initialize ${reportType} reporting workflow`,
+      system: `You maintain a recurring ${reportType} report.`
+    });
+
+    sessionId = init.session;
+
+    await db.scheduledReports.create({
+      reportType,
+      sessionId,
+      schedule: 'weekly'
+    });
+  }
+
+  // Generate this week's report
+  const report = await agentbase.runAgent({
+    message: "Generate report for this week and compare to previous weeks",
+    session: sessionId
+    // Historical context from previous reports available
+  });
+
+  return report;
+}
+```
+
+## Best Practices
+
+### Session Organization
+
+<AccordionGroup>
+  <Accordion title="One Session Per Workflow">
+    ```typescript
+    // Good: Dedicated session per workflow
+    const dataAnalysis = await agentbase.runAgent({
+      message: "Analyze customer data"
+    });
+
+    const contentGen = await agentbase.runAgent({
+      message: "Generate marketing content"
+    });
+
+    // Each workflow has clean, focused context
+
+    // Avoid: Mixing unrelated workflows
+    const mixed = await agentbase.runAgent({
+      message: "Analyze data"
+    });
+
+    await agentbase.runAgent({
+      message: "Now write marketing content",
+      session: mixed.session
+      // Confusing context with unrelated previous work
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Store Session Metadata">
+    ```typescript
+    interface SessionMetadata {
+      sessionId: string;
+      userId: string;
+      workflowType: string;
+      status: 'active' | 'paused' | 'completed';
+      createdAt: Date;
+      lastActivity: Date;
+      description: string;
+      tags: string[];
+    }
+
+    async function createTrackedSession(metadata: Omit<SessionMetadata, 'sessionId' | 'createdAt' | 'lastActivity'>) {
+      const result = await agentbase.runAgent({
+        message: `Start ${metadata.workflowType} workflow`
+      });
+
+      await db.sessions.create({
+        ...metadata,
+        sessionId: result.session,
+        createdAt: new Date(),
+        lastActivity: new Date()
+      });
+
+      return result.session;
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Clean Up Completed Sessions">
+    ```typescript
+    async function cleanupCompletedSessions() {
+      // Archive or delete completed workflows
+      const completedSessions = await db.sessions.find({
+        status: 'completed',
+        completedAt: { $lt: thirtyDaysAgo() }
+      });
+
+      for (const session of completedSessions) {
+        // Export important data
+        const history = await agentbase.getMessages(session.sessionId);
+
+        await archiveSession({
+          sessionId: session.sessionId,
+          history,
+          metadata: session
+        });
+
+        // Remove from active tracking
+        await db.sessions.delete(session.sessionId);
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Performance Optimization
+
+<CardGroup cols={2}>
+  <Card title="Reuse for Related Work" icon="recycle">
+    Keep sessions alive for related tasks to avoid cold start overhead
+  </Card>
+
+  <Card title="Separate Independent Tasks" icon="split">
+    Use different sessions for unrelated work to keep context clean
+  </Card>
+
+  <Card title="Monitor Session Age" icon="clock">
+    Track session creation time and plan for eventual expiration
+  </Card>
+
+  <Card title="Batch Operations" icon="layer-group">
+    Group related requests in same session to leverage warm state
+  </Card>
+</CardGroup>
+
+### Error Handling
+
+<AccordionGroup>
+  <Accordion title="Handle Session Expiration">
+    ```typescript
+    async function robustSessionRequest(
+      sessionId: string | undefined,
+      message: string,
+      fallbackStrategy: 'create' | 'restore'
+    ) {
+      try {
+        return await agentbase.runAgent({
+          message,
+          session: sessionId
+        });
+      } catch (error) {
+        if (error.code === 'SESSION_NOT_FOUND') {
+          if (fallbackStrategy === 'create') {
+            // Start fresh
+            return await agentbase.runAgent({ message });
+          } else {
+            // Restore from checkpoint
+            const checkpoint = await loadCheckpoint(sessionId);
+            const restored = await agentbase.runAgent({
+              message: `Restore session: ${checkpoint.description}`,
+              system: checkpoint.context
+            });
+
+            // Update session ID
+            await updateStoredSession(sessionId, restored.session);
+
+            return restored;
+          }
+        }
+        throw error;
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Validate Session State">
+    ```typescript
+    async function validateSession(sessionId: string): Promise<boolean> {
+      try {
+        // Test if session is still valid
+        await agentbase.runAgent({
+          message: "ping",
+          session: sessionId
+        });
+        return true;
+      } catch (error) {
+        if (error.code === 'SESSION_NOT_FOUND') {
+          return false;
+        }
+        throw error;
+      }
+    }
+
+    // Use in workflow
+    if (!(await validateSession(storedSessionId))) {
+      console.warn('Session expired, creating new one');
+      storedSessionId = await createNewSession();
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Security and Isolation
+
+<Warning>
+**Session Isolation**: Each session is completely isolated. Never share session IDs between different users or security contexts.
+</Warning>
+
+```typescript
+// Good: User-specific sessions
+async function getUserSession(userId: string, workflowId: string) {
+  const session = await db.sessions.findOne({
+    userId,
+    workflowId
+  });
+
+  if (!session) {
+    throw new Error('Session not found or unauthorized');
+  }
+
+  // Verify user owns this session
+  if (session.userId !== userId) {
+    throw new Error('Unauthorized access to session');
+  }
+
+  return session.sessionId;
+}
+
+// Avoid: Sharing sessions between users
+const sharedSession = 'agent_session_123';  // Don't do this!
+```
+
+## Integration with Other Primitives
+
+### With States
+
+Sessions contain states:
+
+```typescript
+// Session = container
+// State = contents (messages, files, environment)
+const session = await agentbase.runAgent({
+  message: "Create project files"
+});
+
+// State persists within session
+await agentbase.runAgent({
+  message: "Modify those files",
+  session: session.session
+});
+```
+
+Learn more: [States Primitive](/primitives/essentials/states)
+
+### With Prompts
+
+Different sessions can have different prompts:
+
+```typescript
+// Session 1: Data analyst
+const analyst = await agentbase.runAgent({
+  message: "Analyze this data",
+  system: "You are a data analyst"
+});
+
+// Session 2: Content writer (different session, different role)
+const writer = await agentbase.runAgent({
+  message: "Write a blog post",
+  system: "You are a content writer"
+});
+
+// Each session maintains its role throughout
+```
+
+Learn more: [Prompts Primitive](/primitives/essentials/prompts)
+
+### With Multi-Agent
+
+Sessions can involve multiple agents:
+
+```typescript
+// Main session coordinates multiple agents
+const support = await agentbase.runAgent({
+  message: "I need help",
+  system: "You are a routing agent",
+  agents: [
+    {
+      name: "Technical Support",
+      description: "Handles technical issues"
+    },
+    {
+      name: "Billing Support",
+      description: "Handles billing questions"
+    }
+  ]
+});
+
+// All agent transfers happen within the same session
+```
+
+Learn more: [Multi-Agent Primitive](/primitives/essentials/multi-agents)
+
+### With Custom Tools
+
+Tools are available throughout session:
+
+```typescript
+// Configure tools for entire session
+const session = await agentbase.runAgent({
+  message: "Access customer database",
+  mcpServers: [{
+    serverName: 'crm',
+    serverUrl: 'https://api.company.com/mcp'
+  }]
+});
+
+// Tools available in all subsequent requests
+await agentbase.runAgent({
+  message: "Fetch customer data",
+  session: session.session
+  // CRM tools still configured
+});
+```
+
+Learn more: [Custom Tools Primitive](/primitives/essentials/custom-tools)
+
+## Performance Considerations
+
+### Session Startup Time
+
+- **New Session (Cold Start)**: 2-5 seconds to create environment
+- **Existing Session (Warm)**: Instant, environment already loaded
+- **Resumed Session (After Pause)**: 1-2 seconds to resume
+
+```typescript
+// Optimize by reusing sessions
+const sessionId = initResult.session;
+
+// All subsequent requests are warm starts
+for (let i = 0; i < 10; i++) {
+  await agentbase.runAgent({
+    message: `Task ${i}`,
+    session: sessionId  // Fast: warm start
+  });
+}
+```
+
+### Memory and Context
+
+Very long sessions may accumulate large context:
+
+- **Short sessions** (&lt;10 messages): Optimal performance
+- **Medium sessions** (10-50 messages): Good performance
+- **Long sessions** (50+ messages): Consider periodic summarization
+
+```typescript
+// For very long sessions, periodically summarize
+if (messageCount > 50) {
+  const summary = await agentbase.runAgent({
+    message: "Summarize our conversation and key decisions so far",
+    session: longSession
+  });
+
+  // Store summary, potentially start new session with summary as context
+}
+```
+
+### Resource Usage
+
+Monitor session resource consumption:
+
+```typescript
+async function monitorSession(sessionId: string) {
+  // Check disk usage
+  const diskCheck = await agentbase.runAgent({
+    message: "Check disk usage with df -h",
+    session: sessionId
+  });
+
+  // Check active processes
+  const processCheck = await agentbase.runAgent({
+    message: "List running processes",
+    session: sessionId
+  });
+
+  // Log for monitoring
+  console.log({
+    sessionId,
+    disk: diskCheck.message,
+    processes: processCheck.message
+  });
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Session Not Found">
+    **Problem**: Error when trying to use session ID
+
+    **Solutions**:
+    - Verify session ID is correct
+    - Check if session has expired
+    - Implement fallback to create new session
+
+    ```typescript
+    try {
+      await agentbase.runAgent({
+        message: "Continue work",
+        session: maybeExpiredSession
+      });
+    } catch (error) {
+      if (error.code === 'SESSION_NOT_FOUND') {
+        // Session expired - start fresh or restore
+        const newSession = await agentbase.runAgent({
+          message: "Start fresh session"
+        });
+
+        // Update stored session ID
+        await updateSessionId(newSession.session);
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Lost Context Between Requests">
+    **Problem**: Agent doesn't remember previous messages
+
+    **Solution**: Ensure you're passing the session ID
+
+    ```typescript
+    // Wrong: Not passing session
+    const step1 = await agentbase.runAgent({
+      message: "My name is Alice"
+    });
+
+    const step2 = await agentbase.runAgent({
+      message: "What's my name?"
+      // Missing: session: step1.session
+    });
+    // Agent won't remember (different session)
+
+    // Correct: Pass session ID
+    const step2Fixed = await agentbase.runAgent({
+      message: "What's my name?",
+      session: step1.session  // ✓ Same session
+    });
+    // Agent remembers: "Your name is Alice"
+    ```
+  </Accordion>
+
+  <Accordion title="Slow Session Response">
+    **Problem**: Requests to existing session are slow
+
+    **Possible Causes**:
+    - Session was paused and is resuming
+    - Large message history
+    - Heavy computational state
+
+    **Solutions**:
+    - Keep sessions active with periodic requests
+    - Summarize long conversations
+    - Clean up large files
+
+    ```typescript
+    // Keep session warm
+    setInterval(async () => {
+      await agentbase.runAgent({
+        message: "status check",
+        session: activeSessionId
+      });
+    }, 4 * 60 * 1000);  // Every 4 minutes (before 5-minute pause)
+    ```
+  </Accordion>
+
+  <Accordion title="Mixed Context Issues">
+    **Problem**: Unrelated context interfering with current task
+
+    **Solution**: Use separate sessions for different workflows
+
+    ```typescript
+    // Good: Separate sessions for separate concerns
+    const projectA = await agentbase.runAgent({
+      message: "Work on project A"
+    });
+
+    const projectB = await agentbase.runAgent({
+      message: "Work on project B"
+      // Different session, clean context
+    });
+
+    // Continue each independently
+    await agentbase.runAgent({
+      message: "Continue project A",
+      session: projectA.session
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="States" icon="database" href="/primitives/essentials/states">
+    What persists within sessions
+  </Card>
+
+  <Card title="Sandbox" icon="box" href="/primitives/environment/sandbox">
+    Isolated environment for each session
+  </Card>
+
+  <Card title="Context Management" icon="brain" href="/primitives/essentials/context-management">
+    Managing conversation context effectively
+  </Card>
+
+  <Card title="Multi-Agent" icon="users" href="/primitives/essentials/multi-agents">
+    Multiple agents within one session
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Session parameters and options
+  </Card>
+
+  <Card title="Get Messages" icon="message" href="/api/get-messages">
+    Retrieve session message history
+  </Card>
+
+  <Card title="Persistence Guide" icon="database" href="/build/persistence">
+    How persistence works
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Sessions are the foundation of continuity in Agentbase. Save session IDs, reuse them for related work, and use separate sessions for independent workflows.
+</Tip>

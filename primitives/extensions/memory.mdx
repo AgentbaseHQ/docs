@@ -1,0 +1,1230 @@
+---
+title: "Memory"
+description: "Enable agents to remember context, conversations, and data across sessions"
+icon: "brain"
+---
+
+> Memory gives agents the ability to retain and recall information across sessions, enabling personalized interactions, context continuity, and intelligent decision-making based on historical data.
+
+## Overview
+
+The Memory primitive empowers agents with persistent storage and retrieval of information across multiple sessions and interactions. Unlike session-based state that exists only within a single conversation, memory provides long-term retention of facts, preferences, conversation history, and learned patterns.
+
+Memory is essential for:
+
+- **Personalization**: Remember user preferences, habits, and historical interactions
+- **Context Continuity**: Maintain conversation context across multiple sessions
+- **Knowledge Accumulation**: Build up domain knowledge over time
+- **Relationship Building**: Create more natural, personalized user experiences
+- **Efficient Workflows**: Avoid asking users to repeat information
+- **Pattern Recognition**: Learn from past interactions to improve future responses
+
+<CardGroup cols={2}>
+  <Card title="Automatic Storage" icon="floppy-disk">
+    Store important information automatically or explicitly during agent execution
+  </Card>
+
+  <Card title="Semantic Retrieval" icon="magnifying-glass">
+    Query memories using natural language with vector-based semantic search
+  </Card>
+
+  <Card title="Scoped Memory" icon="users">
+    Organize memories by user, session, or custom namespaces for multi-tenant applications
+  </Card>
+
+  <Card title="Temporal Awareness" icon="clock">
+    Memories include timestamps for time-based retrieval and context
+  </Card>
+</CardGroup>
+
+## How Memory Works
+
+When you enable memory for an agent:
+
+1. **Storage**: Agent stores important facts, preferences, and context during execution
+2. **Indexing**: Memories are indexed using vector embeddings for semantic search
+3. **Retrieval**: Agent automatically recalls relevant memories based on current context
+4. **Integration**: Retrieved memories are injected into agent context for informed responses
+5. **Updates**: Memories can be updated, deleted, or marked as outdated over time
+6. **Scoping**: Memories are isolated by namespace (user ID, workspace, etc.)
+
+<Note>
+**Privacy & Control**: Memories are scoped per user/namespace and can be deleted at any time. Agentbase provides full GDPR compliance for memory management.
+</Note>
+
+## Memory Types
+
+### User Memory
+
+Store user-specific preferences and information:
+
+```typescript
+// User preferences and facts
+{
+  type: "user",
+  namespace: "user_12345",
+  memories: [
+    "User prefers concise responses",
+    "User's timezone is PST",
+    "User works in healthcare industry",
+    "User last ordered Product X on 2024-01-15"
+  ]
+}
+```
+
+### Conversation Memory
+
+Maintain conversation context and history:
+
+```typescript
+// Conversation context
+{
+  type: "conversation",
+  namespace: "session_abc123",
+  memories: [
+    "User asked about pricing on 2024-01-10",
+    "User mentioned a bug in the mobile app",
+    "Promised to follow up by end of week"
+  ]
+}
+```
+
+### Knowledge Memory
+
+Store domain knowledge and learned information:
+
+```typescript
+// Domain knowledge
+{
+  type: "knowledge",
+  namespace: "company_docs",
+  memories: [
+    "Company uses AWS for infrastructure",
+    "Support hours are 9am-5pm EST",
+    "Refund policy is 30 days"
+  ]
+}
+```
+
+## Code Examples
+
+### Basic Memory Usage
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Enable memory for a user
+const result = await agentbase.runAgent({
+  message: "Remember that I prefer morning meetings and I'm allergic to shellfish",
+  memory: {
+    namespace: "user_12345",
+    enabled: true
+  }
+});
+
+// Agent automatically stores this information
+// Future conversations will recall these preferences
+```
+
+```python Python
+from agentbase import Agentbase
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Enable memory for a user
+result = agentbase.run_agent(
+    message="Remember that I prefer morning meetings and I'm allergic to shellfish",
+    memory={
+        "namespace": "user_12345",
+        "enabled": True
+    }
+)
+
+# Agent automatically stores this information
+# Future conversations will recall these preferences
+```
+
+```bash cURL
+curl -X POST https://api.agentbase.sh \
+  -H "Authorization: Bearer $AGENTBASE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Remember that I prefer morning meetings and I am allergic to shellfish",
+    "memory": {
+      "namespace": "user_12345",
+      "enabled": true
+    }
+  }'
+```
+
+</CodeGroup>
+
+### Retrieving Memories
+
+<CodeGroup>
+
+```typescript TypeScript
+// Agent automatically retrieves relevant memories
+const result = await agentbase.runAgent({
+  message: "Schedule a meeting with the team",
+  memory: {
+    namespace: "user_12345",
+    enabled: true
+  }
+});
+
+// Agent recalls "I prefer morning meetings" and suggests morning times
+```
+
+```python Python
+# Agent automatically retrieves relevant memories
+result = agentbase.run_agent(
+    message="Schedule a meeting with the team",
+    memory={
+        "namespace": "user_12345",
+        "enabled": True
+    }
+)
+
+# Agent recalls "I prefer morning meetings" and suggests morning times
+```
+
+</CodeGroup>
+
+### Explicit Memory Storage
+
+<CodeGroup>
+
+```typescript TypeScript
+// Store specific memories explicitly via API
+await agentbase.storeMemory({
+  namespace: "user_12345",
+  memories: [
+    {
+      content: "User's favorite color is blue",
+      metadata: {
+        category: "preferences",
+        confidence: 1.0
+      }
+    },
+    {
+      content: "User completed onboarding on 2024-01-15",
+      metadata: {
+        category: "milestones",
+        timestamp: "2024-01-15T10:00:00Z"
+      }
+    }
+  ]
+});
+```
+
+```python Python
+# Store specific memories explicitly via API
+agentbase.store_memory(
+    namespace="user_12345",
+    memories=[
+        {
+            "content": "User's favorite color is blue",
+            "metadata": {
+                "category": "preferences",
+                "confidence": 1.0
+            }
+        },
+        {
+            "content": "User completed onboarding on 2024-01-15",
+            "metadata": {
+                "category": "milestones",
+                "timestamp": "2024-01-15T10:00:00Z"
+            }
+        }
+    ]
+)
+```
+
+</CodeGroup>
+
+### Querying Memories
+
+<CodeGroup>
+
+```typescript TypeScript
+// Search memories semantically
+const memories = await agentbase.queryMemories({
+  namespace: "user_12345",
+  query: "What are the user's food preferences?",
+  limit: 5
+});
+
+console.log(memories);
+// [
+//   { content: "User is allergic to shellfish", relevance: 0.95 },
+//   { content: "User prefers vegetarian options", relevance: 0.87 }
+// ]
+```
+
+```python Python
+# Search memories semantically
+memories = agentbase.query_memories(
+    namespace="user_12345",
+    query="What are the user's food preferences?",
+    limit=5
+)
+
+print(memories)
+# [
+#   { "content": "User is allergic to shellfish", "relevance": 0.95 },
+#   { "content": "User prefers vegetarian options", "relevance": 0.87 }
+# ]
+```
+
+</CodeGroup>
+
+### Memory with Time Filters
+
+<CodeGroup>
+
+```typescript TypeScript
+// Retrieve recent memories only
+const recentMemories = await agentbase.queryMemories({
+  namespace: "user_12345",
+  query: "recent interactions",
+  timeFilter: {
+    after: "2024-01-01T00:00:00Z",
+    before: "2024-01-31T23:59:59Z"
+  },
+  limit: 10
+});
+
+// Get memories from specific time period
+```
+
+```python Python
+# Retrieve recent memories only
+recent_memories = agentbase.query_memories(
+    namespace="user_12345",
+    query="recent interactions",
+    time_filter={
+        "after": "2024-01-01T00:00:00Z",
+        "before": "2024-01-31T23:59:59Z"
+    },
+    limit=10
+)
+
+# Get memories from specific time period
+```
+
+</CodeGroup>
+
+### Deleting Memories
+
+<CodeGroup>
+
+```typescript TypeScript
+// Delete specific memories
+await agentbase.deleteMemories({
+  namespace: "user_12345",
+  memoryIds: ["mem_abc123", "mem_def456"]
+});
+
+// Delete all memories for a namespace
+await agentbase.deleteMemories({
+  namespace: "user_12345",
+  deleteAll: true
+});
+```
+
+```python Python
+# Delete specific memories
+agentbase.delete_memories(
+    namespace="user_12345",
+    memory_ids=["mem_abc123", "mem_def456"]
+)
+
+# Delete all memories for a namespace
+agentbase.delete_memories(
+    namespace="user_12345",
+    delete_all=True
+)
+```
+
+</CodeGroup>
+
+## Use Cases
+
+### 1. Personalized Customer Support
+
+Create support agents that remember customer history:
+
+<CodeGroup>
+
+```typescript TypeScript
+const support = await agentbase.runAgent({
+  message: "I'm having issues with my account",
+  memory: {
+    namespace: `customer_${customerId}`,
+    enabled: true
+  },
+  system: `You are a customer support agent.
+
+  Use memory to:
+  - Recall previous support tickets and resolutions
+  - Remember customer preferences and communication style
+  - Track ongoing issues and promises made
+  - Personalize responses based on customer history`
+});
+
+// Agent automatically recalls:
+// - "Customer prefers email over phone"
+// - "Had billing issue resolved on 2024-01-10"
+// - "Premium tier customer since 2023"
+```
+
+```python Python
+support = agentbase.run_agent(
+    message="I'm having issues with my account",
+    memory={
+        "namespace": f"customer_{customer_id}",
+        "enabled": True
+    },
+    system="""You are a customer support agent.
+
+    Use memory to:
+    - Recall previous support tickets and resolutions
+    - Remember customer preferences and communication style
+    - Track ongoing issues and promises made
+    - Personalize responses based on customer history"""
+)
+
+# Agent automatically recalls:
+# - "Customer prefers email over phone"
+# - "Had billing issue resolved on 2024-01-10"
+# - "Premium tier customer since 2023"
+```
+
+</CodeGroup>
+
+### 2. Executive Assistant
+
+Build assistants that remember user preferences and context:
+
+```typescript
+const assistant = await agentbase.runAgent({
+  message: "Schedule meetings for next week",
+  memory: {
+    namespace: `user_${userId}`,
+    enabled: true
+  },
+  system: `You are a personal executive assistant.
+
+  Remember and use:
+  - User's calendar preferences (morning meetings, lunch blocks)
+  - Recurring commitments and constraints
+  - Preferred meeting locations
+  - Communication preferences with different contacts
+  - Travel schedules and time zones`
+});
+
+// Agent recalls:
+// - "User blocks 12-1pm for lunch"
+// - "Prefers video calls for external meetings"
+// - "Traveling to NYC Jan 15-17"
+```
+
+### 3. Learning Companion
+
+Create educational agents that track progress:
+
+```typescript
+const tutor = await agentbase.runAgent({
+  message: "Let's continue our Python lesson",
+  memory: {
+    namespace: `student_${studentId}`,
+    enabled: true
+  },
+  system: `You are a programming tutor.
+
+  Track and recall:
+  - Topics already covered
+  - Student's strengths and weaknesses
+  - Questions asked and concepts mastered
+  - Preferred learning style
+  - Projects in progress`
+});
+
+// Agent recalls:
+// - "Completed variables and loops lessons"
+// - "Struggling with object-oriented concepts"
+// - "Prefers hands-on examples"
+// - "Working on calculator project"
+```
+
+### 4. Sales Assistant
+
+Remember prospect interactions and preferences:
+
+```typescript
+const sales = await agentbase.runAgent({
+  message: "Follow up with prospect about demo",
+  memory: {
+    namespace: `prospect_${prospectId}`,
+    enabled: true
+  },
+  system: `You are a sales development representative.
+
+  Remember:
+  - Previous conversations and pain points discussed
+  - Decision makers and stakeholders identified
+  - Budget and timeline information
+  - Competitor mentions
+  - Objections raised and addressed`
+});
+
+// Agent recalls:
+// - "Interested in enterprise plan"
+// - "Budget approved for Q2"
+// - "Currently using Competitor X"
+// - "CTO is key decision maker"
+```
+
+### 5. Health & Wellness Coach
+
+Track user goals and progress:
+
+```typescript
+const coach = await agentbase.runAgent({
+  message: "How did my workout go this week?",
+  memory: {
+    namespace: `user_${userId}`,
+    enabled: true
+  },
+  system: `You are a health and wellness coach.
+
+  Track:
+  - Fitness goals and milestones
+  - Workout history and progress
+  - Dietary preferences and restrictions
+  - Sleep patterns
+  - Energy levels and mood`
+});
+
+// Agent recalls:
+// - "Goal: Run 5K by March"
+// - "Completed 3 workouts this week"
+// - "Vegetarian diet"
+// - "Best workout time is morning"
+```
+
+### 6. Research Assistant
+
+Accumulate knowledge across research sessions:
+
+```typescript
+const researcher = await agentbase.runAgent({
+  message: "Continue research on renewable energy",
+  memory: {
+    namespace: `project_${projectId}`,
+    enabled: true
+  },
+  system: `You are a research assistant.
+
+  Remember:
+  - Research topics explored
+  - Key findings and sources
+  - Questions to investigate
+  - Hypotheses formed
+  - Papers read and summarized`
+});
+
+// Agent recalls:
+// - "Reviewed 12 papers on solar efficiency"
+// - "Key finding: efficiency increased 15% since 2020"
+// - "To investigate: cost trends in battery storage"
+```
+
+## Best Practices
+
+### Memory Scope Design
+
+<AccordionGroup>
+  <Accordion title="User-Level Namespaces">
+    ```typescript
+    // Good: Scope by user for personalization
+    memory: {
+      namespace: `user_${userId}`,
+      enabled: true
+    }
+
+    // Each user gets isolated memory
+    ```
+  </Accordion>
+
+  <Accordion title="Organization-Level Namespaces">
+    ```typescript
+    // For shared knowledge within organizations
+    memory: {
+      namespace: `org_${orgId}`,
+      enabled: true
+    }
+
+    // Team-wide knowledge accessible to all members
+    ```
+  </Accordion>
+
+  <Accordion title="Project-Level Namespaces">
+    ```typescript
+    // For project-specific context
+    memory: {
+      namespace: `project_${projectId}`,
+      enabled: true
+    }
+
+    // Isolate project-related information
+    ```
+  </Accordion>
+
+  <Accordion title="Hierarchical Namespaces">
+    ```typescript
+    // Combine scopes for granular control
+    memory: {
+      namespace: `org_${orgId}_user_${userId}`,
+      enabled: true
+    }
+
+    // User-specific memories within organization context
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Memory Storage Guidelines
+
+<Tip>
+**Be Specific**: Store concrete, actionable information rather than vague generalizations. "User prefers meetings at 10am" is more useful than "User likes mornings."
+</Tip>
+
+<AccordionGroup>
+  <Accordion title="Store Facts, Not Conversations">
+    ```typescript
+    // Good: Extract and store facts
+    await agentbase.storeMemory({
+      namespace: "user_123",
+      memories: [
+        { content: "User allergic to peanuts" },
+        { content: "User's birthday is March 15" },
+        { content: "User prefers dark mode in UI" }
+      ]
+    });
+
+    // Avoid: Storing full conversation text
+    await agentbase.storeMemory({
+      namespace: "user_123",
+      memories: [
+        { content: "User: I'm allergic to peanuts. Agent: I'll remember that." }
+      ]
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Add Metadata for Context">
+    ```typescript
+    // Include relevant metadata
+    await agentbase.storeMemory({
+      namespace: "user_123",
+      memories: [
+        {
+          content: "User completed Python course",
+          metadata: {
+            category: "education",
+            timestamp: "2024-01-15T10:00:00Z",
+            confidence: 1.0,
+            source: "course_platform"
+          }
+        }
+      ]
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Update Stale Information">
+    ```typescript
+    // Remove or update outdated memories
+
+    // First, query for existing memory
+    const oldMemories = await agentbase.queryMemories({
+      namespace: "user_123",
+      query: "user address"
+    });
+
+    // Delete old address
+    await agentbase.deleteMemories({
+      namespace: "user_123",
+      memoryIds: oldMemories.map(m => m.id)
+    });
+
+    // Store new address
+    await agentbase.storeMemory({
+      namespace: "user_123",
+      memories: [
+        {
+          content: "User's address is 123 New St, Boston, MA",
+          metadata: { updatedAt: new Date().toISOString() }
+        }
+      ]
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Privacy and Compliance
+
+<Warning>
+**PII Handling**: Be mindful of storing personally identifiable information (PII). Implement proper data retention policies and provide users with memory deletion capabilities.
+</Warning>
+
+```typescript
+// Implement user data deletion
+async function deleteUserData(userId: string) {
+  // Delete all user memories for GDPR compliance
+  await agentbase.deleteMemories({
+    namespace: `user_${userId}`,
+    deleteAll: true
+  });
+
+  console.log(`All data deleted for user ${userId}`);
+}
+
+// Provide users with memory viewing
+async function getUserMemories(userId: string) {
+  const memories = await agentbase.queryMemories({
+    namespace: `user_${userId}`,
+    query: "*",  // Get all memories
+    limit: 1000
+  });
+
+  return memories;
+}
+
+// Allow users to delete specific memories
+async function deleteSpecificMemory(userId: string, memoryId: string) {
+  await agentbase.deleteMemories({
+    namespace: `user_${userId}`,
+    memoryIds: [memoryId]
+  });
+}
+```
+
+### Memory Retrieval Optimization
+
+<AccordionGroup>
+  <Accordion title="Limit Retrieved Memories">
+    ```typescript
+    // Don't retrieve too many memories at once
+    const memories = await agentbase.queryMemories({
+      namespace: "user_123",
+      query: "user preferences",
+      limit: 10  // Top 10 most relevant
+    });
+
+    // Too many memories can dilute context and increase costs
+    ```
+  </Accordion>
+
+  <Accordion title="Use Specific Queries">
+    ```typescript
+    // Good: Specific query
+    const foodPrefs = await agentbase.queryMemories({
+      namespace: "user_123",
+      query: "dietary restrictions and food allergies"
+    });
+
+    // Avoid: Overly broad query
+    const everything = await agentbase.queryMemories({
+      namespace: "user_123",
+      query: "everything about the user"
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Filter by Category">
+    ```typescript
+    // Use metadata to filter memories
+    const preferences = await agentbase.queryMemories({
+      namespace: "user_123",
+      query: "user preferences",
+      filter: {
+        category: "preferences"
+      }
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Primitives
+
+### With Sessions
+
+Combine session state with long-term memory:
+
+```typescript
+// Long-term memory + session-specific state
+const result = await agentbase.runAgent({
+  message: "Continue our conversation",
+  session: sessionId,  // Session-specific conversation
+  memory: {
+    namespace: `user_${userId}`,  // Long-term user memory
+    enabled: true
+  }
+});
+
+// Session maintains conversation flow
+// Memory provides long-term context and personalization
+```
+
+Learn more: [Sessions Primitive](/primitives/essentials/sessions)
+
+### With Multi-Agent Systems
+
+Share knowledge across specialized agents:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Help me with my order",
+  memory: {
+    namespace: `customer_${customerId}`,
+    enabled: true
+  },
+  agents: [
+    {
+      name: "Order Specialist",
+      description: "Handles order questions",
+      // Accesses same customer memory
+    },
+    {
+      name: "Billing Specialist",
+      description: "Handles billing questions",
+      // Accesses same customer memory
+    }
+  ]
+});
+
+// All agents share customer memory
+```
+
+Learn more: [Multi-Agent Primitive](/primitives/essentials/multi-agents)
+
+### With RAG
+
+Combine semantic memory with document retrieval:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "What did we discuss about the Q4 strategy?",
+  memory: {
+    namespace: `team_${teamId}`,
+    enabled: true
+  },
+  datastores: [
+    {
+      id: "ds_company_docs",
+      name: "Company Documents"
+    }
+  ]
+});
+
+// Memory: Recalls specific discussions and decisions
+// RAG: Retrieves relevant documents and references
+```
+
+Learn more: [RAG Primitive](/primitives/extensions/rag)
+
+### With Prompts
+
+Guide memory usage with system prompts:
+
+```typescript
+const result = await agentbase.runAgent({
+  message: "Plan my week",
+  memory: {
+    namespace: `user_${userId}`,
+    enabled: true
+  },
+  system: `You are a personal assistant.
+
+  ALWAYS recall from memory:
+  - User's work schedule and commitments
+  - Personal preferences for meeting times
+  - Recurring tasks and habits
+  - Goals and priorities
+
+  Store in memory:
+  - New commitments mentioned
+  - Updated preferences
+  - Completed tasks and milestones`
+});
+```
+
+Learn more: [Prompts Primitive](/primitives/essentials/prompts)
+
+## Performance Considerations
+
+### Memory Retrieval Latency
+
+- **Cold Start**: First memory query in a session: ~200-500ms
+- **Warm Cache**: Subsequent queries: ~50-100ms
+- **Optimization**: Limit retrieved memories to top 5-10 most relevant
+
+```typescript
+// Efficient: Retrieve only what's needed
+const memories = await agentbase.queryMemories({
+  namespace: "user_123",
+  query: "current projects",
+  limit: 5  // Just the most relevant
+});
+
+// Less efficient: Retrieving too much
+const allMemories = await agentbase.queryMemories({
+  namespace: "user_123",
+  query: "*",
+  limit: 100  // Probably overkill
+});
+```
+
+### Token Usage
+
+Memories consume input tokens when injected into agent context:
+
+```typescript
+// Each memory retrieved adds to token count
+// 10 memories × 50 tokens each = 500 tokens
+
+// Optimize by being selective about retrieval
+memory: {
+  namespace: "user_123",
+  enabled: true,
+  maxMemories: 5  // Limit automatic retrieval
+}
+```
+
+### Storage Costs
+
+<Tip>
+**Storage Pricing**: Memory storage is included in your plan up to limits. See pricing page for details.
+</Tip>
+
+- Keep memories concise and factual
+- Delete outdated or irrelevant memories
+- Implement retention policies for automatic cleanup
+
+```typescript
+// Clean up old memories periodically
+async function cleanupOldMemories(namespace: string, daysOld: number) {
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+
+  const oldMemories = await agentbase.queryMemories({
+    namespace,
+    query: "*",
+    timeFilter: {
+      before: cutoffDate.toISOString()
+    },
+    limit: 1000
+  });
+
+  if (oldMemories.length > 0) {
+    await agentbase.deleteMemories({
+      namespace,
+      memoryIds: oldMemories.map(m => m.id)
+    });
+
+    console.log(`Deleted ${oldMemories.length} old memories`);
+  }
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Agent Not Recalling Memories">
+    **Problem**: Agent doesn't use stored memories in responses
+
+    **Solutions**:
+    - Verify memory is enabled with `enabled: true`
+    - Check namespace matches between storage and retrieval
+    - Ensure memories are relevant to current query (semantic match)
+    - Add guidance in system prompt to use memory
+    - Query memories manually to verify they exist
+
+    ```typescript
+    // Debug memory retrieval
+    const memories = await agentbase.queryMemories({
+      namespace: "user_123",
+      query: "test query",
+      limit: 10
+    });
+
+    console.log("Retrieved memories:", memories);
+
+    // If empty, memories may not be stored correctly
+    ```
+  </Accordion>
+
+  <Accordion title="Irrelevant Memories Retrieved">
+    **Problem**: Agent retrieves memories that aren't relevant
+
+    **Solutions**:
+    - Make memory content more specific and detailed
+    - Add category metadata for filtering
+    - Use more specific queries when retrieving
+    - Reduce the number of memories retrieved
+    - Delete outdated or low-quality memories
+
+    ```typescript
+    // Add category metadata for better filtering
+    await agentbase.storeMemory({
+      namespace: "user_123",
+      memories: [
+        {
+          content: "User prefers dark mode",
+          metadata: { category: "ui_preferences" }
+        }
+      ]
+    });
+
+    // Filter by category when retrieving
+    const uiMemories = await agentbase.queryMemories({
+      namespace: "user_123",
+      query: "interface preferences",
+      filter: { category: "ui_preferences" }
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Memory Namespace Confusion">
+    **Problem**: Memories leaking between users or contexts
+
+    **Solutions**:
+    - Always use unique, consistent namespace identifiers
+    - Include user ID or tenant ID in namespace
+    - Validate namespace before storage/retrieval
+    - Implement namespace access controls
+
+    ```typescript
+    // Ensure namespace consistency
+    function getMemoryNamespace(userId: string): string {
+      if (!userId) {
+        throw new Error("User ID required for memory namespace");
+      }
+      return `user_${userId}`;
+    }
+
+    // Use helper function consistently
+    const result = await agentbase.runAgent({
+      message: "Hello",
+      memory: {
+        namespace: getMemoryNamespace(userId),
+        enabled: true
+      }
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Duplicate or Conflicting Memories">
+    **Problem**: Multiple similar memories causing confusion
+
+    **Solutions**:
+    - Query existing memories before storing new ones
+    - Update existing memories instead of creating duplicates
+    - Implement deduplication logic
+    - Add timestamps to identify most recent information
+
+    ```typescript
+    // Check for existing memory before storing
+    async function updateOrCreateMemory(
+      namespace: string,
+      content: string,
+      category: string
+    ) {
+      // Check for existing
+      const existing = await agentbase.queryMemories({
+        namespace,
+        query: content,
+        filter: { category }
+      });
+
+      // Delete old versions
+      if (existing.length > 0) {
+        await agentbase.deleteMemories({
+          namespace,
+          memoryIds: existing.map(m => m.id)
+        });
+      }
+
+      // Store new version
+      await agentbase.storeMemory({
+        namespace,
+        memories: [
+          {
+            content,
+            metadata: {
+              category,
+              updatedAt: new Date().toISOString()
+            }
+          }
+        ]
+      });
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Patterns
+
+### Confidence Scoring
+
+Track confidence in stored information:
+
+```typescript
+await agentbase.storeMemory({
+  namespace: "user_123",
+  memories: [
+    {
+      content: "User mentioned interest in photography",
+      metadata: {
+        confidence: 0.8,  // Mentioned once
+        source: "chat",
+        timestamp: new Date().toISOString()
+      }
+    }
+  ]
+});
+
+// Later, increase confidence after confirmation
+await agentbase.storeMemory({
+  namespace: "user_123",
+  memories: [
+    {
+      content: "User is a professional photographer",
+      metadata: {
+        confidence: 1.0,  // Confirmed
+        source: "profile",
+        timestamp: new Date().toISOString()
+      }
+    }
+  ]
+});
+```
+
+### Hierarchical Memory
+
+Organize memories in hierarchies:
+
+```typescript
+// Organization-level memory (shared)
+await agentbase.storeMemory({
+  namespace: "org_acme",
+  memories: [
+    { content: "Company uses Slack for communication" },
+    { content: "Office hours are 9am-5pm EST" }
+  ]
+});
+
+// Team-level memory
+await agentbase.storeMemory({
+  namespace: "org_acme_team_engineering",
+  memories: [
+    { content: "Team does daily standups at 10am" },
+    { content: "Sprint planning every other Monday" }
+  ]
+});
+
+// User-level memory (most specific)
+await agentbase.storeMemory({
+  namespace: "org_acme_team_engineering_user_123",
+  memories: [
+    { content: "User leads frontend development" },
+    { content: "User mentoring 2 junior developers" }
+  ]
+});
+```
+
+### Memory Decay
+
+Implement time-based memory importance:
+
+```typescript
+async function getMemoriesWithDecay(
+  namespace: string,
+  query: string
+) {
+  const memories = await agentbase.queryMemories({
+    namespace,
+    query,
+    limit: 20
+  });
+
+  // Calculate age-based relevance
+  const now = new Date();
+  const scoredMemories = memories.map(memory => {
+    const age = now - new Date(memory.timestamp);
+    const daysSinceCreated = age / (1000 * 60 * 60 * 24);
+
+    // Decay factor: newer memories are more relevant
+    const decayFactor = Math.exp(-daysSinceCreated / 30); // 30 day half-life
+
+    return {
+      ...memory,
+      adjustedRelevance: memory.relevance * decayFactor
+    };
+  });
+
+  // Sort by adjusted relevance
+  return scoredMemories.sort(
+    (a, b) => b.adjustedRelevance - a.adjustedRelevance
+  );
+}
+```
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Sessions" icon="link" href="/primitives/essentials/sessions">
+    Maintain conversation state within a single session
+  </Card>
+
+  <Card title="RAG" icon="book" href="/primitives/extensions/rag">
+    Retrieve information from document datastores
+  </Card>
+
+  <Card title="Multi-Agent" icon="users" href="/primitives/essentials/multi-agents">
+    Share memory across specialized agents
+  </Card>
+
+  <Card title="Prompts" icon="message-bot" href="/primitives/essentials/prompts">
+    Guide agents on memory usage patterns
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/deploy/api/run-agent">
+    Complete memory API documentation
+  </Card>
+
+  <Card title="Privacy Guide" icon="shield">
+    GDPR compliance and data handling
+  </Card>
+
+  <Card title="Best Practices" icon="star">
+    Memory optimization patterns
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Memory is most powerful when it stores specific, actionable facts rather than general information. Focus on what will make future interactions more personalized and efficient.
+</Tip>

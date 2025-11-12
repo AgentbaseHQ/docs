@@ -1,0 +1,1159 @@
+---
+title: "Evals"
+description: "Systematic testing and validation to ensure consistent agent quality and behavior"
+icon: "vial"
+---
+
+> Evals (evaluations) are a primitive for testing agent behavior systematically, ensuring quality, consistency, and correctness before deploying to production.
+
+## Overview
+
+The Evals primitive provides a structured approach to testing agent capabilities, validating outputs, and measuring performance. Like unit tests for code, evals for agents ensure reliability and catch regressions before they impact users.
+
+Evals are essential for:
+
+- **Quality Assurance**: Verify agents produce correct, high-quality outputs
+- **Regression Testing**: Catch behavior changes when updating prompts or configs
+- **Performance Validation**: Ensure agents meet speed and cost targets
+- **Confidence Building**: Deploy with certainty that agents work as expected
+- **Continuous Improvement**: Track quality metrics over time
+
+<CardGroup cols={2}>
+  <Card title="Systematic Testing" icon="list-check">
+    Define test cases that cover expected behavior and edge cases
+  </Card>
+
+  <Card title="Automated Validation" icon="robot">
+    Run evals automatically in CI/CD or on schedule
+  </Card>
+
+  <Card title="Multiple Eval Types" icon="grid">
+    Unit tests, integration tests, performance tests, and quality assessments
+  </Card>
+
+  <Card title="Actionable Insights" icon="chart-line">
+    Clear pass/fail results with detailed feedback for improvements
+  </Card>
+</CardGroup>
+
+## How Evals Work
+
+### Evaluation Process
+
+Evals follow a structured testing process:
+
+1. **Test Case Definition**: Define inputs, expected outputs, and validation criteria
+2. **Execution**: Run agent with test inputs
+3. **Output Capture**: Collect agent responses
+4. **Validation**: Compare outputs against expected results or quality criteria
+5. **Scoring**: Assign pass/fail or numerical scores
+6. **Reporting**: Generate detailed test reports with insights
+
+### Eval Types
+
+Different eval types serve different purposes:
+
+- **Functional Evals**: Test core capabilities (can the agent do X?)
+- **Quality Evals**: Assess output quality (is the output good enough?)
+- **Performance Evals**: Measure speed, cost, efficiency
+- **Regression Evals**: Ensure changes don't break existing functionality
+- **Edge Case Evals**: Test behavior in unusual or problematic scenarios
+
+<Note>
+**Continuous Testing**: Evals should run regularly - on every code change, prompt update, or scheduled intervals to catch issues early.
+</Note>
+
+## Code Examples
+
+### Basic Eval Structure
+
+<CodeGroup>
+
+```typescript TypeScript
+import { Agentbase } from '@agentbase/sdk';
+
+const agentbase = new Agentbase({
+  apiKey: process.env.AGENTBASE_API_KEY
+});
+
+// Define an eval case
+interface EvalCase {
+  name: string;
+  input: string;
+  expectedBehavior: string;
+  validate: (output: string) => boolean;
+}
+
+// Create eval case
+const evalCase: EvalCase = {
+  name: "Basic Math",
+  input: "What is 15 multiplied by 23?",
+  expectedBehavior: "Should calculate and return 345",
+  validate: (output: string) => {
+    return output.includes('345');
+  }
+};
+
+// Run eval
+async function runEval(evalCase: EvalCase): Promise<boolean> {
+  const result = await agentbase.runAgent({
+    message: evalCase.input,
+    mode: "base"
+  });
+
+  const passed = evalCase.validate(result.message);
+
+  console.log(`Eval: ${evalCase.name}`);
+  console.log(`Input: ${evalCase.input}`);
+  console.log(`Output: ${result.message}`);
+  console.log(`Result: ${passed ? '✅ PASS' : '❌ FAIL'}`);
+
+  return passed;
+}
+
+// Execute
+const passed = await runEval(evalCase);
+```
+
+```python Python
+from agentbase import Agentbase
+from typing import Callable
+
+agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
+
+# Define an eval case
+class EvalCase:
+    def __init__(
+        self,
+        name: str,
+        input: str,
+        expected_behavior: str,
+        validate: Callable[[str], bool]
+    ):
+        self.name = name
+        self.input = input
+        self.expected_behavior = expected_behavior
+        self.validate = validate
+
+# Create eval case
+eval_case = EvalCase(
+    name="Basic Math",
+    input="What is 15 multiplied by 23?",
+    expected_behavior="Should calculate and return 345",
+    validate=lambda output: '345' in output
+)
+
+# Run eval
+async def run_eval(eval_case: EvalCase) -> bool:
+    result = agentbase.run_agent(
+        message=eval_case.input,
+        mode="base"
+    )
+
+    passed = eval_case.validate(result.message)
+
+    print(f"Eval: {eval_case.name}")
+    print(f"Input: {eval_case.input}")
+    print(f"Output: {result.message}")
+    print(f"Result: {'✅ PASS' if passed else '❌ FAIL'}")
+
+    return passed
+
+# Execute
+passed = await run_eval(eval_case)
+```
+
+</CodeGroup>
+
+### Eval Suite
+
+<CodeGroup>
+
+```typescript TypeScript
+// Comprehensive eval suite
+class EvalSuite {
+  private results: Map<string, boolean> = new Map();
+
+  async run(evalCases: EvalCase[]): Promise<void> {
+    console.log(`\n🧪 Running ${evalCases.length} evals...\n`);
+
+    for (const evalCase of evalCases) {
+      try {
+        const passed = await this.runSingleEval(evalCase);
+        this.results.set(evalCase.name, passed);
+      } catch (error) {
+        console.error(`Error in eval ${evalCase.name}:`, error);
+        this.results.set(evalCase.name, false);
+      }
+    }
+
+    this.printSummary();
+  }
+
+  async runSingleEval(evalCase: EvalCase): Promise<boolean> {
+    const result = await agentbase.runAgent({
+      message: evalCase.input,
+      mode: "base"
+    });
+
+    const passed = evalCase.validate(result.message);
+
+    const status = passed ? '✅ PASS' : '❌ FAIL';
+    console.log(`${status} ${evalCase.name}`);
+
+    return passed;
+  }
+
+  printSummary(): void {
+    const total = this.results.size;
+    const passed = Array.from(this.results.values()).filter(r => r).length;
+    const failed = total - passed;
+    const passRate = (passed / total) * 100;
+
+    console.log('\n' + '='.repeat(50));
+    console.log('📊 Eval Summary');
+    console.log('='.repeat(50));
+    console.log(`Total:      ${total}`);
+    console.log(`Passed:     ${passed} ✅`);
+    console.log(`Failed:     ${failed} ❌`);
+    console.log(`Pass Rate:  ${passRate.toFixed(1)}%`);
+    console.log('='.repeat(50) + '\n');
+
+    if (passRate < 100) {
+      console.log('❌ Some evals failed. Review failures above.\n');
+      process.exit(1);
+    } else {
+      console.log('✅ All evals passed!\n');
+    }
+  }
+
+  getResults() {
+    return this.results;
+  }
+}
+
+// Define eval cases
+const evalCases: EvalCase[] = [
+  {
+    name: "File Reading",
+    input: "Read the file data.csv and show the first row",
+    expectedBehavior: "Should read file and display header",
+    validate: (output) => output.toLowerCase().includes('header') || output.includes(',')
+  },
+  {
+    name: "Data Calculation",
+    input: "Calculate the sum of 123 and 456",
+    expectedBehavior: "Should return 579",
+    validate: (output) => output.includes('579')
+  },
+  {
+    name: "Error Handling",
+    input: "Read nonexistent_file.txt",
+    expectedBehavior: "Should handle missing file gracefully",
+    validate: (output) => output.toLowerCase().includes('not found') || output.toLowerCase().includes('does not exist')
+  }
+];
+
+// Run suite
+const suite = new EvalSuite();
+await suite.run(evalCases);
+```
+
+```python Python
+# Comprehensive eval suite
+class EvalSuite:
+    def __init__(self):
+        self.results = {}
+
+    async def run(self, eval_cases: list):
+        print(f"\n🧪 Running {len(eval_cases)} evals...\n")
+
+        for eval_case in eval_cases:
+            try:
+                passed = await self.run_single_eval(eval_case)
+                self.results[eval_case.name] = passed
+            except Exception as error:
+                print(f"Error in eval {eval_case.name}: {error}")
+                self.results[eval_case.name] = False
+
+        self.print_summary()
+
+    async def run_single_eval(self, eval_case) -> bool:
+        result = agentbase.run_agent(
+            message=eval_case.input,
+            mode="base"
+        )
+
+        passed = eval_case.validate(result.message)
+
+        status = '✅ PASS' if passed else '❌ FAIL'
+        print(f"{status} {eval_case.name}")
+
+        return passed
+
+    def print_summary(self):
+        total = len(self.results)
+        passed = sum(1 for r in self.results.values() if r)
+        failed = total - passed
+        pass_rate = (passed / total) * 100
+
+        print('\n' + '=' * 50)
+        print('📊 Eval Summary')
+        print('=' * 50)
+        print(f"Total:      {total}")
+        print(f"Passed:     {passed} ✅")
+        print(f"Failed:     {failed} ❌")
+        print(f"Pass Rate:  {pass_rate:.1f}%")
+        print('=' * 50 + '\n')
+
+        if pass_rate < 100:
+            print('❌ Some evals failed. Review failures above.\n')
+            exit(1)
+        else:
+            print('✅ All evals passed!\n')
+
+# Run suite
+suite = EvalSuite()
+await suite.run(eval_cases)
+```
+
+</CodeGroup>
+
+### Performance Evals
+
+<CodeGroup>
+
+```typescript TypeScript
+// Test performance metrics
+interface PerformanceEval {
+  name: string;
+  input: string;
+  maxSteps: number;
+  maxDuration: number;  // milliseconds
+  maxCost: number;      // dollars
+}
+
+async function runPerformanceEval(eval_: PerformanceEval): Promise<boolean> {
+  const startTime = Date.now();
+  let stepCount = 0;
+  let totalCost = 0;
+
+  const result = await agentbase.runAgent({
+    message: eval_.input,
+    mode: "base",
+    stream: true
+  });
+
+  for await (const event of result) {
+    if (event.type === 'agent_step') {
+      stepCount++;
+    }
+    if (event.type === 'agent_cost') {
+      totalCost += parseFloat(event.cost);
+    }
+  }
+
+  const duration = Date.now() - startTime;
+
+  const stepsPass = stepCount <= eval_.maxSteps;
+  const durationPass = duration <= eval_.maxDuration;
+  const costPass = totalCost <= eval_.maxCost;
+
+  const allPass = stepsPass && durationPass && costPass;
+
+  console.log(`\n${allPass ? '✅' : '❌'} ${eval_.name}`);
+  console.log(`  Steps: ${stepCount}/${eval_.maxSteps} ${stepsPass ? '✅' : '❌'}`);
+  console.log(`  Duration: ${duration}ms/${eval_.maxDuration}ms ${durationPass ? '✅' : '❌'}`);
+  console.log(`  Cost: $${totalCost.toFixed(4)}/$${eval_.maxCost} ${costPass ? '✅' : '❌'}`);
+
+  return allPass;
+}
+
+// Performance test cases
+const performanceEvals: PerformanceEval[] = [
+  {
+    name: "Quick Query",
+    input: "What is 2+2?",
+    maxSteps: 2,
+    maxDuration: 3000,
+    maxCost: 0.01
+  },
+  {
+    name: "File Processing",
+    input: "Read data.csv and count rows",
+    maxSteps: 5,
+    maxDuration: 10000,
+    maxCost: 0.05
+  }
+];
+
+// Run performance evals
+for (const eval_ of performanceEvals) {
+  await runPerformanceEval(eval_);
+}
+```
+
+</CodeGroup>
+
+### Quality Evals with LLM-as-Judge
+
+<CodeGroup>
+
+```typescript TypeScript
+// Use LLM to evaluate quality
+async function llmAsJudge(
+  taskDescription: string,
+  agentOutput: string,
+  criteria: string[]
+): Promise<{ score: number; feedback: string }> {
+  const evaluationPrompt = `
+Evaluate this agent response on a scale of 1-10 for each criterion.
+
+Task: ${taskDescription}
+
+Agent Response:
+${agentOutput}
+
+Evaluation Criteria:
+${criteria.map((c, i) => `${i + 1}. ${c}`).join('\n')}
+
+Provide:
+1. Score for each criterion (1-10)
+2. Overall score (average)
+3. Brief feedback explaining the scores
+
+Format as JSON:
+{
+  "scores": { "criterion1": score, "criterion2": score, ... },
+  "overallScore": average,
+  "feedback": "explanation"
+}
+  `;
+
+  const evaluation = await agentbase.runAgent({
+    message: evaluationPrompt,
+    mode: "base"
+  });
+
+  // Parse JSON from response
+  const jsonMatch = evaluation.message.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('Could not parse evaluation JSON');
+  }
+
+  return JSON.parse(jsonMatch[0]);
+}
+
+// Quality eval case
+async function runQualityEval(
+  input: string,
+  criteria: string[],
+  minScore: number = 7
+): Promise<boolean> {
+  // Get agent response
+  const result = await agentbase.runAgent({
+    message: input,
+    mode: "base"
+  });
+
+  // Evaluate quality
+  const evaluation = await llmAsJudge(input, result.message, criteria);
+
+  const passed = evaluation.overallScore >= minScore;
+
+  console.log(`\n${passed ? '✅' : '❌'} Quality Eval`);
+  console.log(`  Input: ${input}`);
+  console.log(`  Score: ${evaluation.overallScore}/10`);
+  console.log(`  Feedback: ${evaluation.feedback}`);
+
+  return passed;
+}
+
+// Example usage
+await runQualityEval(
+  "Explain how photosynthesis works",
+  [
+    "Accuracy: Is the explanation scientifically correct?",
+    "Clarity: Is it easy to understand?",
+    "Completeness: Does it cover key concepts?",
+    "Examples: Does it include helpful examples?"
+  ],
+  8.0  // Minimum score
+);
+```
+
+</CodeGroup>
+
+### Regression Testing
+
+<CodeGroup>
+
+```typescript TypeScript
+// Test that changes don't break existing functionality
+class RegressionTester {
+  private baseline: Map<string, string> = new Map();
+
+  async createBaseline(testCases: EvalCase[]): Promise<void> {
+    console.log('📸 Creating baseline...');
+
+    for (const test of testCases) {
+      const result = await agentbase.runAgent({
+        message: test.input,
+        mode: "base"
+      });
+
+      this.baseline.set(test.name, result.message);
+    }
+
+    // Save baseline to file
+    await this.saveBaseline();
+    console.log('✅ Baseline created\n');
+  }
+
+  async testRegression(testCases: EvalCase[]): Promise<void> {
+    console.log('🔍 Testing for regressions...\n');
+
+    // Load baseline
+    await this.loadBaseline();
+
+    let regressions = 0;
+
+    for (const test of testCases) {
+      const result = await agentbase.runAgent({
+        message: test.input,
+        mode: "base"
+      });
+
+      const baselineOutput = this.baseline.get(test.name);
+
+      if (!baselineOutput) {
+        console.log(`⚠️  ${test.name}: No baseline found`);
+        continue;
+      }
+
+      // Compare outputs
+      const similar = this.compareOutputs(baselineOutput, result.message);
+
+      if (!similar) {
+        regressions++;
+        console.log(`❌ REGRESSION: ${test.name}`);
+        console.log(`   Baseline: ${baselineOutput.substring(0, 100)}...`);
+        console.log(`   Current:  ${result.message.substring(0, 100)}...`);
+      } else {
+        console.log(`✅ ${test.name}`);
+      }
+    }
+
+    if (regressions > 0) {
+      console.log(`\n❌ Found ${regressions} regression(s)`);
+      process.exit(1);
+    } else {
+      console.log('\n✅ No regressions detected');
+    }
+  }
+
+  compareOutputs(baseline: string, current: string): boolean {
+    // Implement comparison logic
+    // Could use:
+    // - Exact match
+    // - Semantic similarity
+    // - Key phrase matching
+    // - LLM-based comparison
+
+    // Simple example: check if key information is present
+    const baselineKeywords = this.extractKeywords(baseline);
+    const currentKeywords = this.extractKeywords(current);
+
+    const overlap = baselineKeywords.filter(k => currentKeywords.includes(k));
+    const similarity = overlap.length / baselineKeywords.length;
+
+    return similarity > 0.8;  // 80% of keywords should match
+  }
+
+  extractKeywords(text: string): string[] {
+    // Simple keyword extraction
+    return text
+      .toLowerCase()
+      .split(/\W+/)
+      .filter(word => word.length > 4)
+      .slice(0, 20);
+  }
+
+  async saveBaseline(): Promise<void> {
+    const data = Object.fromEntries(this.baseline);
+    await fs.writeFile(
+      'eval-baseline.json',
+      JSON.stringify(data, null, 2)
+    );
+  }
+
+  async loadBaseline(): Promise<void> {
+    try {
+      const data = await fs.readFile('eval-baseline.json', 'utf-8');
+      const parsed = JSON.parse(data);
+      this.baseline = new Map(Object.entries(parsed));
+    } catch (error) {
+      console.error('Could not load baseline:', error);
+    }
+  }
+}
+
+// Usage
+const tester = new RegressionTester();
+
+// Create baseline before making changes
+await tester.createBaseline(testCases);
+
+// After making changes, test for regressions
+await tester.testRegression(testCases);
+```
+
+</CodeGroup>
+
+## Eval Patterns
+
+### Categorized Test Suite
+
+Organize evals by category:
+
+<AccordionGroup>
+  <Accordion title="Unit Tests">
+    Test individual capabilities in isolation
+
+    ```typescript
+    const unitTests = {
+      math: [
+        {
+          name: "Addition",
+          input: "Calculate 10 + 15",
+          validate: (output) => output.includes('25')
+        },
+        {
+          name: "Multiplication",
+          input: "Calculate 12 * 8",
+          validate: (output) => output.includes('96')
+        }
+      ],
+      fileOps: [
+        {
+          name: "Read File",
+          input: "Read data.txt",
+          validate: (output) => !output.includes('error')
+        },
+        {
+          name: "List Files",
+          input: "List files in current directory",
+          validate: (output) => output.includes('data.txt')
+        }
+      ]
+    };
+    ```
+  </Accordion>
+
+  <Accordion title="Integration Tests">
+    Test multi-step workflows
+
+    ```typescript
+    const integrationTests = [
+      {
+        name: "Data Pipeline",
+        input: "Load data.csv, filter for active users, calculate average age",
+        validate: (output) => {
+          return output.includes('average') &&
+                 output.match(/\d+(\.\d+)?/);  // Has a number
+        }
+      },
+      {
+        name: "Report Generation",
+        input: "Analyze sales data and create PDF report",
+        validate: (output) => {
+          return output.includes('report') &&
+                 output.includes('pdf');
+        }
+      }
+    ];
+    ```
+  </Accordion>
+
+  <Accordion title="Edge Cases">
+    Test unusual or problematic scenarios
+
+    ```typescript
+    const edgeCases = [
+      {
+        name: "Empty Input",
+        input: "",
+        validate: (output) => output.length > 0  // Should handle gracefully
+      },
+      {
+        name: "Very Long Input",
+        input: "A".repeat(10000),
+        validate: (output) => !output.includes('error')
+      },
+      {
+        name: "Special Characters",
+        input: "Process text with émojis 🎉 and spëcial çharacters",
+        validate: (output) => output.length > 0
+      }
+    ];
+    ```
+  </Accordion>
+
+  <Accordion title="Error Scenarios">
+    Test error handling
+
+    ```typescript
+    const errorScenarios = [
+      {
+        name: "Missing File",
+        input: "Read nonexistent.txt",
+        validate: (output) => {
+          return output.toLowerCase().includes('not found') ||
+                 output.toLowerCase().includes('does not exist');
+        }
+      },
+      {
+        name: "Invalid Calculation",
+        input: "Divide 10 by 0",
+        validate: (output) => {
+          return output.toLowerCase().includes('cannot') ||
+                 output.toLowerCase().includes('undefined') ||
+                 output.toLowerCase().includes('infinity');
+        }
+      }
+    ];
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### CI/CD Integration
+
+Automate evals in your deployment pipeline:
+
+```typescript
+// GitHub Actions example
+// .github/workflows/evals.yml
+
+// In your test script:
+async function runCIEvals() {
+  const suite = new EvalSuite();
+
+  const testCases = [
+    ...unitTests.math,
+    ...unitTests.fileOps,
+    ...integrationTests,
+    ...edgeCases
+  ];
+
+  await suite.run(testCases);
+
+  const results = suite.getResults();
+  const passRate = calculatePassRate(results);
+
+  // Fail CI if pass rate is below threshold
+  if (passRate < 95) {
+    console.error(`❌ Pass rate ${passRate}% is below required 95%`);
+    process.exit(1);
+  }
+
+  console.log(`✅ All evals passed (${passRate}%)`);
+}
+
+runCIEvals();
+```
+
+### Continuous Monitoring
+
+Run evals on schedule to detect production issues:
+
+```typescript
+// Scheduled eval monitoring
+async function scheduledEvals() {
+  const suite = new EvalSuite();
+
+  // Run critical production tests
+  await suite.run(productionCriticalTests);
+
+  const results = suite.getResults();
+  const passRate = calculatePassRate(results);
+
+  // Send results to monitoring
+  await sendToMonitoring({
+    timestamp: new Date(),
+    passRate,
+    results: Array.from(results.entries())
+  });
+
+  // Alert if issues detected
+  if (passRate < 100) {
+    await sendAlert({
+      severity: 'warning',
+      message: `Production evals: ${passRate}% pass rate`,
+      details: results
+    });
+  }
+}
+
+// Run every hour
+setInterval(scheduledEvals, 60 * 60 * 1000);
+```
+
+## Use Cases
+
+### 1. Pre-Deployment Validation
+
+Ensure quality before deploying changes:
+
+```typescript
+async function preDeploymentChecks() {
+  console.log('🚀 Running pre-deployment validation...\n');
+
+  // Run all eval categories
+  const categories = [
+    { name: 'Unit Tests', tests: unitTests },
+    { name: 'Integration Tests', tests: integrationTests },
+    { name: 'Performance Tests', tests: performanceTests },
+    { name: 'Regression Tests', tests: regressionTests }
+  ];
+
+  let allPassed = true;
+
+  for (const category of categories) {
+    console.log(`\n📋 ${category.name}`);
+    const suite = new EvalSuite();
+    await suite.run(category.tests);
+
+    const results = suite.getResults();
+    const passRate = calculatePassRate(results);
+
+    if (passRate < 100) {
+      allPassed = false;
+    }
+  }
+
+  if (allPassed) {
+    console.log('\n✅ All pre-deployment checks passed. Safe to deploy!');
+    return true;
+  } else {
+    console.log('\n❌ Some checks failed. Fix issues before deploying.');
+    return false;
+  }
+}
+```
+
+### 2. Prompt Engineering
+
+Test and refine prompts:
+
+```typescript
+// Compare different prompt versions
+async function comparePrompts() {
+  const prompts = [
+    "You are a helpful assistant.",
+    "You are a professional and concise assistant.",
+    "You are a friendly assistant who provides clear, detailed explanations."
+  ];
+
+  const testInputs = [
+    "Explain photosynthesis",
+    "How do I reset my password?",
+    "What is machine learning?"
+  ];
+
+  for (const prompt of prompts) {
+    console.log(`\n🔍 Testing prompt: "${prompt}"`);
+
+    let totalScore = 0;
+
+    for (const input of testInputs) {
+      const result = await agentbase.runAgent({
+        message: input,
+        system: prompt,
+        mode: "base"
+      });
+
+      const evaluation = await llmAsJudge(
+        input,
+        result.message,
+        ["Clarity", "Completeness", "Helpfulness"]
+      );
+
+      totalScore += evaluation.overallScore;
+      console.log(`  ${input}: ${evaluation.overallScore}/10`);
+    }
+
+    const avgScore = totalScore / testInputs.length;
+    console.log(`  Average Score: ${avgScore.toFixed(1)}/10`);
+  }
+}
+```
+
+### 3. Version Validation
+
+Test new versions before promotion:
+
+```typescript
+async function validateVersion(version: string) {
+  console.log(`\n🧪 Validating version: ${version}`);
+
+  const suite = new EvalSuite();
+
+  const testCases = loadTestCases();
+
+  // Run all tests against this version
+  const results = [];
+
+  for (const test of testCases) {
+    const result = await agentbase.runAgent({
+      message: test.input,
+      version: version,
+      mode: "base"
+    });
+
+    const passed = test.validate(result.message);
+    results.push(passed);
+  }
+
+  const passRate = (results.filter(r => r).length / results.length) * 100;
+
+  console.log(`\n📊 Version ${version} Results:`);
+  console.log(`  Pass Rate: ${passRate.toFixed(1)}%`);
+
+  if (passRate >= 95) {
+    console.log(`  ✅ Version ${version} is ready for production`);
+    return true;
+  } else {
+    console.log(`  ❌ Version ${version} needs improvement`);
+    return false;
+  }
+}
+```
+
+## Best Practices
+
+### Effective Test Design
+
+<AccordionGroup>
+  <Accordion title="Test Real Use Cases">
+    Base tests on actual user scenarios
+
+    ```typescript
+    // Good: Real user scenarios
+    const realWorldTests = [
+      {
+        name: "Customer Support - Order Status",
+        input: "Where is my order #12345?",
+        validate: (output) => {
+          return output.includes('order') &&
+                 output.includes('12345');
+        }
+      }
+    ];
+
+    // Avoid: Artificial test cases
+    const artificialTest = {
+      name: "Test1",
+      input: "Test input",
+      validate: (output) => true
+    };
+    ```
+  </Accordion>
+
+  <Accordion title="Make Tests Deterministic">
+    Tests should produce consistent results
+
+    ```typescript
+    // Good: Deterministic validation
+    validate: (output) => {
+      return output.includes('expected phrase') ||
+             output.match(/\d+ users/);
+    }
+
+    // Avoid: Non-deterministic validation
+    validate: (output) => {
+      return Math.random() > 0.5;  // Random results
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Cover Edge Cases">
+    Test boundary conditions and unusual inputs
+
+    ```typescript
+    const edgeCases = [
+      { input: "", name: "Empty input" },
+      { input: "A".repeat(10000), name: "Very long input" },
+      { input: "Special chars: @#$%^&*()", name: "Special characters" },
+      { input: "Тест на русском", name: "Non-English characters" }
+    ];
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Primitives
+
+### With Traces
+
+Use traces to debug failing evals:
+
+```typescript
+// Debug failing eval with traces
+async function debugFailingEval(evalCase: EvalCase) {
+  const result = await agentbase.runAgent({
+    message: evalCase.input,
+    mode: "base",
+    stream: true  // Get traces
+  });
+
+  const trace = [];
+
+  for await (const event of result) {
+    trace.push(event);
+
+    if (event.type === 'agent_error') {
+      console.log('Error in eval:', event.error);
+    }
+  }
+
+  // Analyze trace to understand failure
+  const finalMessage = trace.find(e => e.type === 'agent_message');
+  const passed = evalCase.validate(finalMessage?.content || '');
+
+  if (!passed) {
+    console.log('Eval failed. Trace:');
+    trace.forEach(e => console.log(`  [${e.type}]`, e));
+  }
+}
+```
+
+Learn more: [Traces Primitive](/primitives/essentials/traces)
+
+### With Versioning
+
+Test different versions systematically:
+
+```typescript
+// Compare eval results across versions
+async function compareVersions(testCases: EvalCase[], versions: string[]) {
+  for (const version of versions) {
+    console.log(`\nTesting version: ${version}`);
+
+    const suite = new EvalSuite();
+
+    for (const test of testCases) {
+      const result = await agentbase.runAgent({
+        message: test.input,
+        version: version,
+        mode: "base"
+      });
+
+      const passed = test.validate(result.message);
+      suite.results.set(test.name, passed);
+    }
+
+    suite.printSummary();
+  }
+}
+```
+
+Learn more: [Versioning Primitive](/primitives/essentials/versioning)
+
+## Performance Considerations
+
+### Eval Execution Time
+
+- **Simple validation**: < 100ms overhead
+- **LLM-as-judge**: 2-5 seconds per eval
+- **Parallel execution**: Run independent tests in parallel
+
+### Optimization
+
+```typescript
+// Run evals in parallel
+async function parallelEvals(testCases: EvalCase[]) {
+  const results = await Promise.all(
+    testCases.map(async (test) => {
+      const result = await agentbase.runAgent({
+        message: test.input,
+        mode: "base"
+      });
+
+      return {
+        name: test.name,
+        passed: test.validate(result.message)
+      };
+    })
+  );
+
+  return results;
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Flaky Tests">
+    **Problem**: Tests pass/fail inconsistently
+
+    **Solutions**:
+    - Make validation more flexible
+    - Account for acceptable variations
+    - Use semantic matching instead of exact matching
+
+    ```typescript
+    // More flexible validation
+    validate: (output) => {
+      // Accept variations
+      return output.includes('345') ||
+             output.includes('three hundred forty-five') ||
+             output.match(/3\s*4\s*5/);
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Tests Too Strict">
+    **Problem**: Tests fail on acceptable outputs
+
+    **Solutions**:
+    - Focus on essential criteria
+    - Allow for reasonable variations
+    - Use LLM-as-judge for nuanced evaluation
+  </Accordion>
+</AccordionGroup>
+
+## Related Primitives
+
+<CardGroup cols={2}>
+  <Card title="Traces" icon="route" href="/primitives/essentials/traces">
+    Debug failing evals with execution traces
+  </Card>
+
+  <Card title="Versioning" icon="code-branch" href="/primitives/essentials/versioning">
+    Test different versions systematically
+  </Card>
+
+  <Card title="Hooks" icon="webhook" href="/primitives/essentials/hooks">
+    Add custom validation logic
+  </Card>
+
+  <Card title="Self-Evolving" icon="seedling" href="/primitives/essentials/self-evolving">
+    Use eval results to improve agents
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+<CardGroup cols={2}>
+
+  <Card title="API Reference" icon="code" href="/api/run-agent">
+    Agent execution parameters
+  </Card>
+
+  <Card title="Best Practices" icon="star" href="/build/overview">
+    Quality assurance patterns
+  </Card>
+</CardGroup>
+
+<Tip>
+**Remember**: Evals are your safety net. Write tests for critical functionality, run them automatically, and let them catch issues before users do.
+</Tip>
