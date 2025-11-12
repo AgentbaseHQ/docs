@@ -17,11 +17,13 @@ Agentbase uses API keys to authenticate requests. All API requests must include 
     <Tip>
       Use your work email to get free credits automatically!
     </Tip>
+
   </Step>
 
-  <Step title="Access Dashboard">
-    Log in to your dashboard at [base.agentbase.sh](https://base.agentbase.sh)
-  </Step>
+
+<Step title="Access Dashboard">
+  Log in to your dashboard at [base.agentbase.sh](https://base.agentbase.sh)
+</Step>
 
   <Step title="Copy API Key">
     Find your API key in the dashboard under **Settings** or **API Keys**
@@ -43,6 +45,7 @@ Agentbase uses API keys to authenticate requests. All API requests must include 
         "mode": "base"
       }'
     ```
+
   </Tab>
 
   <Tab title="TypeScript SDK">
@@ -55,6 +58,7 @@ Agentbase uses API keys to authenticate requests. All API requests must include 
       apiKey: process.env.AGENTBASE_API_KEY
     });
     ```
+
   </Tab>
 
   <Tab title="Python SDK">
@@ -67,6 +71,7 @@ Agentbase uses API keys to authenticate requests. All API requests must include 
         api_key=os.environ.get("AGENTBASE_API_KEY")
     )
     ```
+
   </Tab>
 </Tabs>
 
@@ -91,6 +96,7 @@ Agentbase uses API keys to authenticate requests. All API requests must include 
     ```
 
     **Why:** Committing API keys to version control exposes them to anyone with repository access.
+
   </Accordion>
 
   <Accordion title="Use Environment Variables" icon="server">
@@ -112,27 +118,7 @@ Agentbase uses API keys to authenticate requests. All API requests must include 
     ```
 
     **Note:** Add `.env` to your `.gitignore` file.
-  </Accordion>
 
-  <Accordion title="Separate Keys for Environments" icon="layers">
-    Use different API keys for development, staging, and production:
-
-    ```bash
-    # Development
-    AGENTBASE_API_KEY=agb_dev_1234567890abcdef
-
-    # Staging
-    AGENTBASE_API_KEY=agb_staging_1234567890abcdef
-
-    # Production
-    AGENTBASE_API_KEY=agb_prod_1234567890abcdef
-    ```
-
-    **Benefits:**
-    - Isolate environments
-    - Track usage separately
-    - Revoke keys independently
-    - Prevent accidents
   </Accordion>
 
   <Accordion title="Rotate Keys Regularly" icon="rotate">
@@ -157,6 +143,7 @@ Agentbase uses API keys to authenticate requests. All API requests must include 
     </Steps>
 
     **Recommended schedule:** Every 90 days or when team members leave
+
   </Accordion>
 
   <Accordion title="Server-Side Only" icon="shield">
@@ -188,6 +175,7 @@ Agentbase uses API keys to authenticate requests. All API requests must include 
       res.json(result);
     });
     ```
+
   </Accordion>
 
   <Accordion title="Monitor Usage" icon="chart-line">
@@ -201,6 +189,7 @@ Agentbase uses API keys to authenticate requests. All API requests must include 
     - Sudden usage increases
     - Cost threshold exceeded
     - Failed authentication attempts
+
   </Accordion>
 </AccordionGroup>
 
@@ -248,17 +237,17 @@ Handle authentication errors gracefully:
 
 ## Common Errors
 
-| Error Code | Meaning | Solution |
-|------------|---------|----------|
-| `401 Unauthorized` | Invalid or missing API key | Check your API key is correct and properly formatted |
-| `403 Forbidden` | API key lacks permissions | Verify your account is active and has credits |
-| `429 Too Many Requests` | Rate limit exceeded | Implement backoff and retry logic |
+| Error Code              | Meaning                    | Solution                                             |
+| ----------------------- | -------------------------- | ---------------------------------------------------- |
+| `401 Unauthorized`      | Invalid or missing API key | Check your API key is correct and properly formatted |
+| `403 Forbidden`         | API key lacks permissions  | Verify your account is active and has credits        |
+| `429 Too Many Requests` | Rate limit exceeded        | Implement backoff and retry logic                    |
 
 ## Rate Limiting
 
 Agentbase implements rate limiting to ensure fair usage:
 
-- **Rate limits** are applied per API key
+- **Rate limits** are applied per account
 - **Limits vary** by account tier
 - **Headers** include rate limit information:
   ```
@@ -276,14 +265,13 @@ async function runAgentWithRetry(message: string, maxRetries = 3) {
       return await agentbase.runAgent({ message, mode: "base" });
     } catch (error) {
       if (error.status === 429) {
-        const retryAfter = error.headers['retry-after'] || Math.pow(2, i);
-        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+        const retryAfter = error.headers["retry-after"] || Math.pow(2, i);
+        await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
         continue;
       }
       throw error;
     }
   }
-  throw new Error('Max retries exceeded');
+  throw new Error("Max retries exceeded");
 }
 ```
-

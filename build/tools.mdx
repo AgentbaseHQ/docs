@@ -13,32 +13,32 @@ Agents automatically choose tools when needed:
 ```javascript
 // Agent will automatically use web browsing tools
 const research = await agentbase.runAgent({
-  message: "Find the latest pricing for our competitors"
+  message: "Find the latest pricing for our competitors",
 });
 
 // Agent will automatically create computer environment and use bash/file tools
 const development = await agentbase.runAgent({
-  message: "Create a Python script that processes CSV data"
+  message: "Create a Python script that processes CSV data",
 });
 ```
 
-## Available Tools
+## Built-in Tools
 
-Based on comprehensive API testing, here are the verified tools that Agentbase agents have access to:
+Here are the built-in tools that Agentbase agents have access to:
 
-| Category | Tool | Description |
-|----------|------|-------------|
-| **File System** | `str_replace_editor` | Create, edit, view, and manage files with persistent state across sessions |
-| | `bash` | Run shell commands with internet access and package management capabilities |
-| | `glob` | Find files using glob patterns (e.g., `*.js`, `**/*.ts`) |
-| | `grep` | Search for text patterns in files with regex support |
-| **Web Tools** | `web` (search) | Search the web for real-time information and current data |
-| | `web` (crawl) | Extract content from specific URLs and websites |
-| **Computer Environment** | `computer` | Create/resume Linux computer instances for development tasks |
-| **Thinking & Planning** | `think` | Private scratchpad for complex reasoning, planning, and maintaining context |
-| **Development Environment** | Python 3.11.2 | Execute Python code and scripts |
-| | Node.js 18.20.4 | JavaScript runtime environment |
-| | Package management | apt (Debian), pip (Python), npm (Node.js) |
+| Category                    | Tool                 | Description                                                                 |
+| --------------------------- | -------------------- | --------------------------------------------------------------------------- |
+| **File System**             | `str_replace_editor` | Create, edit, view, and manage files with persistent state across sessions  |
+|                             | `bash`               | Run shell commands with internet access and package management capabilities |
+|                             | `glob`               | Find files using glob patterns (e.g., `*.js`, `**/*.ts`)                    |
+|                             | `grep`               | Search for text patterns in files with regex support                        |
+| **Web Tools**               | `web` (search)       | Search the web for real-time information and current data                   |
+|                             | `web` (crawl)        | Extract content from specific URLs and websites                             |
+| **Computer Environment**    | `computer`           | Create/resume Linux computer instances for development tasks                |
+| **Thinking & Planning**     | `think`              | Private scratchpad for complex reasoning, planning, and maintaining context |
+| **Development Environment** | Python 3.11.2        | Execute Python code and scripts                                             |
+|                             | Node.js 18.20.4      | JavaScript runtime environment                                              |
+|                             | Package management   | apt (Debian), pip (Python), npm (Node.js)                                   |
 
 ## Example Tool Event Flow
 
@@ -48,7 +48,7 @@ When agents use tools, the API streams real-time events showing tool execution:
 // Tool execution starts
 {"type": "agent_tool_use", "content": "{\"tool\":\"web\",\"input\":\"{\\\"command\\\":\\\"search\\\",\\\"query\\\":\\\"AI developments 2025\\\"}\"}"}
 
-// Tool returns results  
+// Tool returns results
 {"type": "agent_tool_response", "content": "{\n  \"tool\": \"web\",\n  \"response\": [\n    {\n      \"url\": \"https://example.com/ai-news\",\n      \"title\": \"Latest AI Developments\"\n    }\n  ]\n}"}
 
 // Cost tracking
@@ -62,7 +62,18 @@ When agents use tools, the API streams real-time events showing tool execution:
 
 You can write custom code tools with environment variables in the Agentbase app's Tools section:
 
-<img src="/images/tools.png" alt="Custom tools interface showing code editor with environment variables" />
+<img
+  src="/images/tools.png"
+  alt="Custom tools interface showing code editor with environment variables"
+/>
+
+```typescript
+// Example custom tool usage
+const result = await agentbase.runAgent({
+  message: "Get customer data for user ID 12345",
+  tools: ["get_customer_data"], // deployed tool name on the agentbase app
+});
+```
 
 ## Key Points
 
@@ -70,5 +81,3 @@ You can write custom code tools with environment variables in the Agentbase app'
 - No manual configuration or tool specification required
 - Computer environments created when needed for stateful operations
 - All tools work together seamlessly in workflows
-
-

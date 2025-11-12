@@ -9,19 +9,22 @@ Get your first AI agent running locally in 2 minutes.
 **Start in the app:** Visit the [overview page](https://base.agentbase.sh/overview) for a guided quickstart that walks you through:
 
 1. **Choose your SDK** - TypeScript, Python, or cURL
-2. **Get your API key** - Secure authentication setup  
+2. **Get your API key** - Secure authentication setup
 3. **Copy the bootstrap command** - One-click setup
 4. **Select your agent mode** - Flash, Base, or Max
 5. **Configure add-ons** - Optional integrations
 
 The guided setup generates a ready-to-use code snippet you can paste directly into your IDE.
 
-<img src="/images/overview.png" alt="Agentbase overview page showing guided quickstart" />
+<img
+  src="/images/overview.png"
+  alt="Agentbase overview page showing guided quickstart"
+/>
 
 ## Before you begin
 
-* [Agentbase account](https://base.agentbase.sh/sign-up) with credits
-* Node.js 18+ installed
+- [Agentbase account](https://base.agentbase.sh/sign-up) with credits
+- Node.js 18+ installed
 
 <Tip>Sign up with your work email to get free credits automatically!</Tip>
 
@@ -31,12 +34,18 @@ The guided setup generates a ready-to-use code snippet you can paste directly in
 # Create your agent project
 npm create agentbase@latest
 
+# Select to create a Next.js agent chat app or a terminal chat app
+📦 Select a template:
+  1. agent-chat-nextjs (Next.js app)
+  2. terminal-chat (Terminal agent chat)
+✔ Choose template (1 or 2) (1):
+
 # Navigate and start
 cd my-agent
 npm run dev
 ```
 
-You'll be prompted to add your API key on first use.
+You'll be prompted to add your API key on first use. You can get your API key from the [overview page](https://base.agentbase.sh/overview).
 
 ## Step 2: Test capabilities
 
@@ -54,9 +63,9 @@ Try these prompts in the CLI to understand what agents can do:
 Change the mode in your `index.ts` file:
 
 ```typescript
-const params = { 
+const params = {
   message: message,
-  mode: "base" // "base", "flash", or "max"
+  mode: "base", // "base", "flash", or "max"
 };
 ```
 
@@ -67,7 +76,6 @@ const params = {
 - **Max**: Advanced reasoning for complex tasks
 
 You can also test your agents in the [Agentbase playground](https://base.agentbase.sh/playground).
-
 
 ## Need help?
 
