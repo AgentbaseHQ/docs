@@ -8,6 +8,8 @@ icon: "code"
 
 ## Installation
 
+**[View on npm →](https://www.npmjs.com/package/agentbase-sdk)**
+
 ```bash
 npm install agentbase-sdk
 # or
@@ -61,7 +63,7 @@ Run an agent directly from the root client:
 const stream = await client.runAgent({
   message: "Your task here", // required
   session: "session-id", // optional: continue conversation
-  mode: "fast", // optional: "fast" | "flash" | "max", defaults to "fast"
+  mode: "base", // optional: "base" | "flash" | "max", defaults to "base"
   system: "You are a helpful assistant", // optional: system prompt
   rules: ["Be concise", "Show examples"], // optional: array of constraints
   workflows: [ // optional: declarative workflows
@@ -145,7 +147,7 @@ Run an agent using the agent resource (accepts same parameters as `client.runAge
 const stream = await client.agent.run({
   message: "Your task here", // required
   session: "session-id", // optional
-  mode: "fast", // optional
+  mode: "base", // optional
   system: "You are a helpful assistant", // optional
   rules: ["Be concise", "Show examples"], // optional
   workflows: [...], // optional
@@ -204,7 +206,7 @@ try {
 interface RunAgentParams {
   message: string;
   session?: string;
-  mode?: "fast" | "flash" | "max";
+  mode?: "base" | "flash" | "max";
   system?: string;
   rules?: string[];
   workflows?: Workflow[];

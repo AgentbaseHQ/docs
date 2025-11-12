@@ -236,10 +236,10 @@ const results = await Promise.all([
     message: "Calculate 15% of 2000",
     mode: "flash"
   }),
-  // Standard analysis - fast mode
+  // Standard analysis - base mode
   agentbase.runAgent({
     message: "Analyze this dataset and find trends",
-    mode: "fast"
+    mode: "base"
   }),
   // Complex reasoning - max mode
   agentbase.runAgent({
@@ -260,10 +260,10 @@ async def mixed_mode_parallel():
             message="Calculate 15% of 2000",
             mode="flash"
         ),
-        # Standard analysis - fast mode
+        # Standard analysis - base mode
         agentbase.run_agent_async(
             message="Analyze this dataset and find trends",
-            mode="fast"
+            mode="base"
         ),
         # Complex reasoning - max mode
         agentbase.run_agent_async(

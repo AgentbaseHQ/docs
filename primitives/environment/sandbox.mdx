@@ -178,10 +178,10 @@ const flash = await agentbase.runAgent({
   mode: "flash"
 });
 
-// Fast mode - standard sandbox (default)
-const fast = await agentbase.runAgent({
+// Base mode - standard sandbox (default)
+const base = await agentbase.runAgent({
   message: "Analyze this data and create a chart",
-  mode: "fast"
+  mode: "base"
 });
 
 // Max mode - enhanced sandbox resources
@@ -198,10 +198,10 @@ flash = agentbase.run_agent(
     mode="flash"
 )
 
-# Fast mode - standard sandbox (default)
-fast = agentbase.run_agent(
+# Base mode - standard sandbox (default)
+base = agentbase.run_agent(
     message="Analyze this data and create a chart",
-    mode="fast"
+    mode="base"
 )
 
 # Max mode - enhanced sandbox resources
@@ -371,14 +371,14 @@ const test = await agentbase.runAgent({
 ### Resource Optimization
 
 <Tip>
-**Mode Selection**: Use `flash` mode for simple tasks, `fast` for standard workloads, and `max` only when you need advanced reasoning capabilities. This optimizes both cost and performance.
+**Mode Selection**: Use `flash` mode for simple tasks, `base` for standard workloads, and `max` only when you need advanced reasoning capabilities. This optimizes both cost and performance.
 </Tip>
 
 ```typescript
 // Optimize by choosing the right mode
 const modes = {
   simple: "flash",    // Quick calculations, simple queries
-  standard: "fast",   // Most development and analysis tasks
+  standard: "base",   // Most development and analysis tasks
   complex: "max"      // Advanced reasoning, complex workflows
 };
 
@@ -499,7 +499,7 @@ console.log(`Warm start: ${Date.now() - start2}ms`);
 Each sandbox has resource quotas:
 
 - **CPU**: Shared allocation based on mode
-- **Memory**: 2GB for flash/fast, 4GB for max mode
+- **Memory**: 2GB for flash/base, 4GB for max mode
 - **Disk**: 10GB persistent storage per session
 - **Network**: Unlimited bandwidth with rate limiting
 

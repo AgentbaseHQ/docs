@@ -28,10 +28,10 @@ description: "Run an agent with a message and receive a streaming agent response
   defaults to the Agentbase default system prompt.
 </ParamField>
 
-<ParamField body="mode" type="string" optional default="fast">
-  The mode of the agent. Can be `flash`, `fast` or `max`. Flash mode is great
-  for simple, one-off tasks. Fast mode is much faster and cheaper, with
-  comparable performance to `max` mode. The Agents API defaults to `fast`.
+<ParamField body="mode" type="string" optional default="base">
+  The mode of the agent. Can be `flash`, `base` or `max`. Flash mode is great
+  for simple, one-off tasks. Base mode is balanced and cost-effective, with
+  comparable performance to `max` mode. The Agents API defaults to `base`.
 </ParamField>
 
 <ParamField body="workflows" type="Workflow[]" optional>

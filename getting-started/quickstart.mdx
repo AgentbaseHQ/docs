@@ -6,6 +6,18 @@ icon: "rocket"
 
 Get your first AI agent running locally in 2 minutes.
 
+**Start in the app:** Visit the [overview page](https://base.agentbase.sh/overview) for a guided quickstart that walks you through:
+
+1. **Choose your SDK** - TypeScript, Python, or cURL
+2. **Get your API key** - Secure authentication setup  
+3. **Copy the bootstrap command** - One-click setup
+4. **Select your agent mode** - Flash, Base, or Max
+5. **Configure add-ons** - Optional integrations
+
+The guided setup generates a ready-to-use code snippet you can paste directly into your IDE.
+
+<img src="/images/overview.png" alt="Agentbase overview page showing guided quickstart" />
+
 ## Before you begin
 
 * [Agentbase account](https://base.agentbase.sh/sign-up) with credits
@@ -44,47 +56,18 @@ Change the mode in your `index.ts` file:
 ```typescript
 const params = { 
   message: message,
-  mode: "fast" // "fast", "flash", or "max"
+  mode: "base" // "base", "flash", or "max"
 };
 ```
 
 **Mode differences:**
 
-- **Fast**: Balanced performance (recommended)
 - **Flash**: Shows agent thinking process and steps
+- **Base**: Balanced performance (recommended)
 - **Max**: Advanced reasoning for complex tasks
 
-## Ready to integrate?
+You can also test your agents in the [Agentbase playground](https://base.agentbase.sh/playground).
 
-The CLI uses the same API your applications will use. Everything you tested here works in production.
-
-### Key integration parameters:
-
-| Parameter | Purpose | Example |
-|-----------|---------|---------|
-| `message` | The task | `"Write a Python function"` |
-| `mode` | Capability level | `"fast"`, `"flash"`, `"max"` |
-| `session` | Continue conversation | `?session=SESSION_ID` |
-
-## What's next?
-
-<CardGroup cols={2}>
-  <Card title="API Reference" icon="code" href="/api/run-agent">
-    Complete integration guide and examples
-  </Card>
-  
-  <Card title="Built-in Tools" icon="tools" href="/build/tools">
-    See all built-in tools and features
-  </Card>
-  
-  <Card title="Common Use Cases" icon="lightbulb" href="/getting-started/common-use-cases">
-    Real-world examples and patterns
-  </Card>
-  
-  <Card title="API Examples" icon="book" href="/api/example">
-    More integration patterns
-  </Card>
-</CardGroup>
 
 ## Need help?
 

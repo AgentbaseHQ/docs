@@ -107,7 +107,7 @@ const result = await agentbase.runAgent({
   message: `Send an email to john@example.com with:
     Subject: "Project Update"
     Body: "The project is on track and will be completed by Friday."`,
-  mode: "fast"
+  mode: "base"
 });
 ```
 
@@ -130,7 +130,7 @@ const result = await agentbase.runAgent({
     Your order #${customer.orderNumber} has been confirmed and will be delivered by ${customer.deliveryDate}.
 
     Thank you for your purchase!`,
-  mode: "fast"
+  mode: "base"
 });
 ```
 
@@ -149,7 +149,7 @@ const result = await agentbase.runAgent({
     - A footer with unsubscribe link
 
     Use professional styling with our brand colors.`,
-  mode: "fast"
+  mode: "base"
 });
 ```
 
@@ -164,7 +164,7 @@ const result = await agentbase.runAgent({
     Attachments: report.pdf, data.xlsx
 
     The files are in the current directory.`,
-  mode: "fast"
+  mode: "base"
 });
 ```
 
@@ -182,7 +182,7 @@ const result = await agentbase.runAgent({
     4. Summarize each email
 
     Return as JSON.`,
-  mode: "fast"
+  mode: "base"
 });
 
 const emails = JSON.parse(result.content);
@@ -200,7 +200,7 @@ const result = await agentbase.runAgent({
     - Expected delivery date
 
     Return as JSON.`,
-  mode: "fast"
+  mode: "base"
 });
 
 const orderData = JSON.parse(result.content);
@@ -224,7 +224,7 @@ async function processCustomerEmails() {
       5. Mark as read
 
       For complex issues, mark for manual review.`,
-    mode: "fast"
+    mode: "base"
   });
 
   return result.content;
@@ -262,7 +262,7 @@ async function nurtureLead(lead: Lead) {
       - Sound natural and helpful
 
       Send to ${lead.email}.`,
-    mode: "fast"
+    mode: "base"
   });
 
   return result;
@@ -291,7 +291,7 @@ async function sendWeeklyReport() {
       - Areas for improvement
 
       Make it visually appealing with HTML formatting.`,
-    mode: "fast"
+    mode: "base"
   });
 
   return result;
@@ -322,7 +322,7 @@ async function processWorkflowEmails() {
       If subject contains "URGENT":
         - Send SMS alert to on-call team
         - Create high-priority ticket`,
-    mode: "fast"
+    mode: "base"
   });
 
   return result.content;
@@ -357,7 +357,7 @@ async function sendNewsletter(subscribers: Subscriber[], content: any) {
         - Content matching preferences
         - Recommended articles
         - Unsubscribe link`,
-      mode: "fast"
+      mode: "base"
     });
 
     // Rate limit
@@ -403,7 +403,7 @@ async function sendOrderConfirmation(order: Order) {
       - Order tracking link
       - Customer support contact
       - Thank you message`,
-    mode: "fast"
+    mode: "base"
   });
 
   return result;
@@ -422,13 +422,13 @@ async function sendOrderConfirmation(order: Order) {
       message: `Send email to ${user.email}:
         Hi ${user.name},
         Based on your interest in ${user.interests[0]}, ...`,
-      mode: "fast"
+      mode: "base"
     });
 
     // ❌ Bad: Generic
     const result = await agentbase.runAgent({
       message: "Send email to all users: Dear Customer, ...",
-      mode: "fast"
+      mode: "base"
     });
     ```
   </Accordion>
@@ -448,7 +448,7 @@ async function sendOrderConfirmation(order: Order) {
 
       return await agentbase.runAgent({
         message: `Send email to ${to}: ${content}`,
-        mode: "fast"
+        mode: "base"
       });
     }
     ```
@@ -463,7 +463,7 @@ async function sendOrderConfirmation(order: Order) {
         try {
           const result = await agentbase.runAgent({
             message: `Send email to ${email}: ${content}`,
-            mode: "fast"
+            mode: "base"
           });
 
           return result;
@@ -505,7 +505,7 @@ async function sendOrderConfirmation(order: Order) {
 
         await agentbase.runAgent({
           message: `Send email to ${email}: ${content}`,
-          mode: "fast"
+          mode: "base"
         });
       }
     }
@@ -524,7 +524,7 @@ async function sendOrderConfirmation(order: Order) {
           ${content}
 
           Include unsubscribe link at bottom: ${unsubscribeLink}`,
-        mode: "fast"
+        mode: "base"
       });
 
       return result;

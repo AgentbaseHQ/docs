@@ -6,25 +6,11 @@ icon: "hammer"
 
 Build production-ready AI agents with simple APIs. Agentbase handles infrastructure so you can focus on what your agents do.
 
-## How to Build an Agent
-
-<CardGroup cols={3}>
-  <Card title="Build" icon="hammer">
-    Create agents with system prompts, custom tools, and rules
-  </Card>
-
-  <Card title="Deploy" icon="rocket">
-    Run agents in production with automatic scaling
-  </Card>
-
-  <Card title="Optimize" icon="chart-line">
-    Monitor performance and improve with traces and evals
-  </Card>
-</CardGroup>
+We designed Agentbase to make creating AI agents stupidly easy. You can start with the bootstrap commands or SDK, and begin by giving your agent a system prompt and a set of rules. Each agent comes with built-in primitives, so you don't need to set up a new environment. It already runs on a persistent computer with browser access, web search, MCP, and other capabilities.
 
 ## What You Can Build
 
-Agentbase agents can handle a wide variety of tasks with built-in capabilities:
+People build both internal agents (for automating internal workflows) and external agents (for customer-facing applications). Agentbase agents can handle a wide variety of tasks with built-in capabilities:
 
 <AccordionGroup>
   <Accordion title="Code & Development" icon="code">
@@ -80,48 +66,17 @@ Agentbase agents can handle a wide variety of tasks with built-in capabilities:
   </Accordion>
 </AccordionGroup>
 
-## Quick Start
 
-<Steps>
-  <Step title="Create Your Agent">
-    ```bash
-    npm create agentbase@latest
-    cd my-agent
-    npm run dev
-    ```
-  </Step>
-
-  <Step title="Test Capabilities">
-    Try a prompt to see what agents can do:
-    ```
-    > Create a Python function to calculate fibonacci numbers
-    ```
-  </Step>
-
-  <Step title="Customize Your Agent">
-    Add custom tools, system prompts, and rules to match your needs
-  </Step>
-</Steps>
+Most developers start by defining their agent's behavior with a **system prompt** that sets personality and expertise, then add **rules** for constraints and compliance. Each agent automatically gets access to built-in **primitives** like web browsing, file systems, and tools - no setup required. Instead of configuring and setting up your own infrastructure, you can utilize ours as a managed service. As they build, they'll create custom tools and functions, use primitives like data stores and MCP, and evaluate agents with traces.
 
 ## Core Concepts
 
-<CardGroup cols={2}>
-  <Card title="Agent Primitives" icon="cube" href="/primitives/overview">
-    Understand the building blocks: environments, tools, states, sessions, and more
-  </Card>
-
-  <Card title="Agent Modes" icon="gauge" href="/build/agent-modes">
-    Choose between Flash, Fast, and Max modes based on task complexity
-  </Card>
-
-  <Card title="System Prompts" icon="message" href="/build/system-prompts">
-    Guide how agents approach tasks and make decisions
-  </Card>
-
-  <Card title="Custom Tools" icon="wrench" href="/primitives/essentials/custom-tools">
-    Extend agent capabilities with your own tools and APIs
-  </Card>
-</CardGroup>
+| Concept | Description | Link |
+|---------|-------------|------|
+| **Agent Primitives** | Understand the building blocks: environments, tools, states, sessions, and more | [Learn more →](/primitives/overview) |
+| **Agent Modes** | Choose between Flash, Base, and Max modes based on task complexity | [Learn more →](/getting-started/agent-modes) |
+| **System Prompts** | Guide how agents approach tasks and make decisions | [Learn more →](/build/system-prompts) |
+| **Custom Tools** | Extend agent capabilities with your own tools and APIs | [Learn more →](/primitives/essentials/custom-tools) |
 
 ## Architecture
 
@@ -179,22 +134,3 @@ Build sophisticated agents using Agentbase primitives - the building blocks that
   See all 35+ primitives and learn how they work together →
 </Card>
 
-## Next Steps
-
-<CardGroup cols={2}>
-  <Card title="Quick Start Guide" icon="rocket" href="/build/quickstart">
-    Get your first agent running in 2 minutes
-  </Card>
-
-  <Card title="Common Use Cases" icon="lightbulb" href="/build/use-cases">
-    See real-world examples and patterns
-  </Card>
-
-  <Card title="Agent Primitives" icon="cubes" href="/primitives/overview">
-    Deep dive into agent building blocks
-  </Card>
-
-  <Card title="Deploy to Production" icon="cloud" href="/deploy/overview">
-    Learn how to deploy agents in production
-  </Card>
-</CardGroup>

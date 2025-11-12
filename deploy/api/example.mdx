@@ -43,14 +43,14 @@ curl -X POST "https://api.agentbase.sh" \
 
 ## Agent Modes
 
-### Fast Mode (Balanced Performance)
+### Base Mode (Balanced Performance)
 ```bash
 curl -X POST "https://api.agentbase.sh" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
     "message": "Generate code examples",
-    "mode": "fast"
+    "mode": "base"
   }'
 ```
 
@@ -184,7 +184,7 @@ async function callAgent(message) {
       },
       body: JSON.stringify({
         message: message,
-        mode: 'fast'
+        mode: 'base'
       })
     });
     
@@ -211,7 +211,7 @@ class AgentbaseClient:
         self.session_id = None
         self.base_url = 'https://api.agentbase.sh'
     
-    def send_message(self, message, mode='fast'):
+    def send_message(self, message, mode='base'):
         url = self.base_url
         if self.session_id:
             url += f'?session={self.session_id}'

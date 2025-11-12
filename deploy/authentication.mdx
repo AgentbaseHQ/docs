@@ -40,7 +40,7 @@ Agentbase uses API keys to authenticate requests. All API requests must include 
       -H "Content-Type: application/json" \
       -d '{
         "message": "Hello, world!",
-        "mode": "fast"
+        "mode": "base"
       }'
     ```
   </Tab>
@@ -183,7 +183,7 @@ Agentbase uses API keys to authenticate requests. All API requests must include 
     app.post('/api/agent', async (req, res) => {
       const result = await agentbase.runAgent({
         message: req.body.message,
-        mode: "fast"
+        mode: "base"
       });
       res.json(result);
     });
@@ -214,7 +214,7 @@ Handle authentication errors gracefully:
     try {
       const result = await agentbase.runAgent({
         message: "Hello",
-        mode: "fast"
+        mode: "base"
       });
     } catch (error) {
       if (error.status === 401) {
@@ -233,7 +233,7 @@ Handle authentication errors gracefully:
     try:
         result = client.run_agent(
             message="Hello",
-            mode="fast"
+            mode="base"
         )
     except AgentbaseError as e:
         if e.status_code == 401:
@@ -273,7 +273,7 @@ Agentbase implements rate limiting to ensure fair usage:
 async function runAgentWithRetry(message: string, maxRetries = 3) {
   for (let i = 0; i < maxRetries; i++) {
     try {
-      return await agentbase.runAgent({ message, mode: "fast" });
+      return await agentbase.runAgent({ message, mode: "base" });
     } catch (error) {
       if (error.status === 429) {
         const retryAfter = error.headers['retry-after'] || Math.pow(2, i);

@@ -74,7 +74,7 @@ const agentbase = new Agentbase({
 
 const result = await agentbase.runAgent({
   message: "Analyze data.csv and create a summary report",
-  mode: "fast"
+  mode: "base"
 });
 
 console.log(result.content);
@@ -87,7 +87,7 @@ client = Agentbase(api_key=os.environ.get("AGENTBASE_API_KEY"))
 
 result = client.run_agent(
     message="Analyze data.csv and create a summary report",
-    mode="fast"
+    mode="base"
 )
 
 print(result.content)
@@ -99,7 +99,7 @@ curl -X POST https://api.agentbase.sh/run-agent \
   -H "Content-Type: application/json" \
   -d '{
     "message": "Analyze data.csv and create a summary report",
-    "mode": "fast"
+    "mode": "base"
   }'
 ```
 </CodeGroup>
@@ -205,7 +205,7 @@ Agentbase agents handle a wide variety of tasks:
     ```typescript
     const result = await agentbase.runAgent({
       message: "Create a REST API with authentication and user management",
-      mode: "fast"
+      mode: "base"
     });
     ```
   </Tab>
@@ -221,7 +221,7 @@ Agentbase agents handle a wide variety of tasks:
     ```typescript
     const result = await agentbase.runAgent({
       message: "Research our top 3 competitors and create a comparison report",
-      mode: "fast"
+      mode: "base"
     });
     ```
   </Tab>
@@ -237,7 +237,7 @@ Agentbase agents handle a wide variety of tasks:
     ```typescript
     const result = await agentbase.runAgent({
       message: "Monitor competitor pricing and alert if prices change",
-      mode: "fast"
+      mode: "base"
     });
     ```
   </Tab>
@@ -253,7 +253,7 @@ Agentbase agents handle a wide variety of tasks:
     ```typescript
     const result = await agentbase.runAgent({
       message: "Process these CSV files and generate a summary report",
-      mode: "fast"
+      mode: "base"
     });
     ```
   </Tab>
@@ -270,7 +270,7 @@ Simple, predictable pricing that scales with value:
 | Mode | Cost per Step | Best For |
 |------|---------------|----------|
 | **Flash** | $0.01 | Simple tasks, quick responses |
-| **Fast** | $0.05 | Most production use cases |
+| **Base** | $0.05 | Most production use cases |
 | **Max** | $0.20 | Complex reasoning, critical tasks |
 
 <Tip>
@@ -290,11 +290,11 @@ Launch your agents with confidence:
     Complete API documentation with examples
   </Card>
 
-  <Card title="TypeScript SDK" icon="js" href="/deploy/sdk/typescript">
+  <Card title="TypeScript SDK" icon="js" href="/resources/sdk/typescript">
     Type-safe integration for Node.js apps
   </Card>
 
-  <Card title="Python SDK" icon="python" href="/deploy/sdk/python">
+  <Card title="Python SDK" icon="python" href="/resources/sdk/python">
     Native Python client library
   </Card>
 

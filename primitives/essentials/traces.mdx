@@ -81,7 +81,7 @@ const agentbase = new Agentbase({
 // Enable streaming to receive traces
 const result = await agentbase.runAgent({
   message: "Analyze this data and create a report",
-  mode: "fast",
+  mode: "base",
   stream: true  // Enable trace streaming
 });
 
@@ -130,7 +130,7 @@ agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
 # Enable streaming to receive traces
 result = agentbase.run_agent(
     message="Analyze this data and create a report",
-    mode="fast",
+    mode="base",
     stream=True  # Enable trace streaming
 )
 
@@ -179,7 +179,7 @@ class TraceAnalyzer {
 
     const result = await agentbase.runAgent({
       message,
-      mode: "fast",
+      mode: "base",
       stream: true
     });
 
@@ -264,7 +264,7 @@ class TraceAnalyzer:
 
         result = agentbase.run_agent(
             message=message,
-            mode="fast",
+            mode="base",
             stream=True
         )
 
@@ -319,7 +319,7 @@ print(f"Analysis: {analysis}")
 async function focusedTracing(message: string, focusOn: string[]) {
   const result = await agentbase.runAgent({
     message,
-    mode: "fast",
+    mode: "base",
     stream: true
   });
 
@@ -371,7 +371,7 @@ const errors = await focusedTracing(
 async function trackProgress(message: string, onProgress: (progress: number) => void) {
   const result = await agentbase.runAgent({
     message,
-    mode: "fast",
+    mode: "base",
     stream: true
   });
 
@@ -411,7 +411,7 @@ await trackProgress(
 async def track_progress(message: str, on_progress: callable):
     result = agentbase.run_agent(
         message=message,
-        mode="fast",
+        mode="base",
         stream=True
     )
 
@@ -542,7 +542,7 @@ Understand why agents make specific decisions:
     async function debugToolChoice(message: string) {
       const result = await agentbase.runAgent({
         message,
-        mode: "fast",
+        mode: "base",
         stream: true
       });
 
@@ -581,7 +581,7 @@ Understand why agents make specific decisions:
     async function traceError(message: string) {
       const result = await agentbase.runAgent({
         message,
-        mode: "fast",
+        mode: "base",
         stream: true
       });
 
@@ -633,7 +633,7 @@ class PerformanceProfiler {
   async profileExecution(message: string) {
     const result = await agentbase.runAgent({
       message,
-      mode: "fast",
+      mode: "base",
       stream: true
     });
 
@@ -754,7 +754,7 @@ class ProductionMonitor {
     try {
       const result = await agentbase.runAgent({
         message,
-        mode: "fast",
+        mode: "base",
         stream: true
       });
 
@@ -866,7 +866,7 @@ async function analyzePatterns(messages: string[]) {
   for (const message of messages) {
     const result = await agentbase.runAgent({
       message,
-      mode: "fast",
+      mode: "base",
       stream: true
     });
 

@@ -40,17 +40,10 @@ Based on comprehensive API testing, here are the verified tools that Agentbase a
 | | Node.js 18.20.4 | JavaScript runtime environment |
 | | Package management | apt (Debian), pip (Python), npm (Node.js) |
 
-## Tool Events & Responses
+## Example Tool Event Flow
 
 When agents use tools, the API streams real-time events showing tool execution:
 
-### Tool Execution Events
-- **`agent_tool_use`** - Shows which tool is being called and with what parameters
-- **`agent_tool_response`** - Returns the result from the tool execution
-- **`agent_cost`** - Tracks the cost of each tool operation
-- **`agent_step`** - Indicates completion of each step in the workflow
-
-### Example Tool Event Flow
 ```json
 // Tool execution starts
 {"type": "agent_tool_use", "content": "{\"tool\":\"web\",\"input\":\"{\\\"command\\\":\\\"search\\\",\\\"query\\\":\\\"AI developments 2025\\\"}\"}"}
@@ -65,6 +58,11 @@ When agents use tools, the API streams real-time events showing tool execution:
 {"type": "agent_step", "session": "abc123", "stepNumber": 1}
 ```
 
+## Custom Tools
+
+You can write custom code tools with environment variables in the Agentbase app's Tools section:
+
+<img src="/images/tools.png" alt="Custom tools interface showing code editor with environment variables" />
 
 ## Key Points
 
@@ -73,19 +71,4 @@ When agents use tools, the API streams real-time events showing tool execution:
 - Computer environments created when needed for stateful operations
 - All tools work together seamlessly in workflows
 
-## What's Next?
-
-<CardGroup cols={3}>
-  <Card title="MCP Integration" icon="plug" href="/build/model-context-protocol">
-    Connect external tools and services
-  </Card>
-  
-  <Card title="System Prompts" icon="user" href="/build/system-prompts">
-    Guide how agents approach tasks
-  </Card>
-  
-  <Card title="Computer Environment" icon="desktop" href="/build/agent-computer">
-    Technical details about the execution environment
-  </Card>
-</CardGroup>
 

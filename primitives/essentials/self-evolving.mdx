@@ -206,7 +206,7 @@ async function trackPerformance(session: string) {
   const result = await agentbase.runAgent({
     message: "Optimize database query performance",
     session,
-    mode: "fast"
+    mode: "base"
   });
 
   // Record outcome
@@ -234,7 +234,7 @@ async def track_performance(session: str):
     result = agentbase.run_agent(
         message="Optimize database query performance",
         session=session,
-        mode="fast"
+        mode="base"
     )
 
     # Record outcome

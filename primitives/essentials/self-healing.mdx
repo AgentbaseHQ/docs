@@ -81,7 +81,7 @@ const agentbase = new Agentbase({
 // Agent automatically recovers from errors
 const result = await agentbase.runAgent({
   message: "Download data from https://api.example.com/data and save it",
-  mode: "fast"
+  mode: "base"
 });
 
 // If API is temporarily unavailable, agent will:
@@ -99,7 +99,7 @@ agentbase = Agentbase(api_key=os.environ['AGENTBASE_API_KEY'])
 # Agent automatically recovers from errors
 result = agentbase.run_agent(
     message="Download data from https://api.example.com/data and save it",
-    mode="fast"
+    mode="base"
 )
 
 # If API is temporarily unavailable, agent will:
@@ -119,7 +119,7 @@ result = agentbase.run_agent(
 // Agent automatically handles missing directories and permissions
 const result = await agentbase.runAgent({
   message: "Save report to /data/reports/2025/january/report.pdf",
-  mode: "fast"
+  mode: "base"
 });
 
 // Self-healing process:
@@ -134,7 +134,7 @@ const result = await agentbase.runAgent({
 # Agent automatically handles missing directories and permissions
 result = agentbase.run_agent(
     message="Save report to /data/reports/2025/january/report.pdf",
-    mode="fast"
+    mode="base"
 )
 
 # Self-healing process:
@@ -155,7 +155,7 @@ result = agentbase.run_agent(
 // Agent handles rate limiting intelligently
 const result = await agentbase.runAgent({
   message: "Fetch user data for IDs 1-1000 from the API",
-  mode: "fast",
+  mode: "base",
   mcpServers: [{
     serverName: 'api',
     serverUrl: 'https://api.company.com/mcp'
@@ -175,7 +175,7 @@ const result = await agentbase.runAgent({
 # Agent handles rate limiting intelligently
 result = agentbase.run_agent(
     message="Fetch user data for IDs 1-1000 from the API",
-    mode="fast",
+    mode="base",
     mcp_servers=[{
         'serverName': 'api',
         'serverUrl': 'https://api.company.com/mcp'
@@ -201,7 +201,7 @@ result = agentbase.run_agent(
 // Agent can fix and retry code execution
 const result = await agentbase.runAgent({
   message: "Create a Python script to analyze data.csv and show statistics",
-  mode: "fast"
+  mode: "base"
 });
 
 // Self-healing for code errors:
@@ -217,7 +217,7 @@ const result = await agentbase.runAgent({
 # Agent can fix and retry code execution
 result = agentbase.run_agent(
     message="Create a Python script to analyze data.csv and show statistics",
-    mode="fast"
+    mode="base"
 )
 
 # Self-healing for code errors:
@@ -241,7 +241,7 @@ Agents use intelligent retry strategies automatically:
 // Agent implements exponential backoff automatically
 const result = await agentbase.runAgent({
   message: "Scrape data from a website that may be temporarily down",
-  mode: "fast"
+  mode: "base"
 });
 
 // Automatic retry pattern:
@@ -261,7 +261,7 @@ Agents detect when a service is consistently failing:
 // Agent recognizes repeated failures and adapts strategy
 const result = await agentbase.runAgent({
   message: "Process data using external API, fallback to local processing if API is down",
-  mode: "fast"
+  mode: "base"
 });
 
 // Circuit breaker logic:
@@ -281,7 +281,7 @@ Agents provide partial results when complete success isn't possible:
 // Agent delivers what it can despite errors
 const result = await agentbase.runAgent({
   message: "Download and process data from 10 different sources",
-  mode: "fast"
+  mode: "base"
 });
 
 // Graceful degradation:
@@ -312,7 +312,7 @@ Handle failures in ETL workflows:
 
         Handle any network errors, rate limits, or timeouts automatically.
       `,
-      mode: "fast"
+      mode: "base"
     });
 
     // Agent automatically handles:
@@ -337,7 +337,7 @@ Handle failures in ETL workflows:
           - Handle rate limits by waiting
           - Extract main content even if page structure varies
         `,
-        mode: "fast"
+        mode: "base"
       });
 
       // Self-healing handles:
@@ -368,7 +368,7 @@ async function deploymentAutomation() {
 
       If any step fails, diagnose and retry. If tests fail, show which tests failed.
     `,
-    mode: "fast"
+    mode: "base"
   });
 
   // Self-healing handles:
@@ -396,7 +396,7 @@ async function batchProcessing(fileList: string[]) {
       Track progress and handle errors gracefully.
       If a file fails, log it and continue with others.
     `,
-    mode: "fast"
+    mode: "base"
   });
 
   // Self-healing ensures:
@@ -420,7 +420,7 @@ async function weatherDataAggregation() {
       Aggregate the data and calculate average temperatures.
       Handle API failures gracefully - use data from available APIs.
     `,
-    mode: "fast",
+    mode: "base",
     mcpServers: [
       { serverName: 'weather-api-1', serverUrl: 'https://api1.weather.com/mcp' },
       { serverName: 'weather-api-2', serverUrl: 'https://api2.weather.com/mcp' },
@@ -450,7 +450,7 @@ async function databaseMigration() {
       3. Verify data integrity
       4. If anything fails, rollback to backup
     `,
-    mode: "fast"
+    mode: "base"
   });
 
   // Self-healing handles:
@@ -480,13 +480,13 @@ async function databaseMigration() {
         - 401 errors: Report authentication failure (don't retry)
         - 500 errors: Retry with backoff
       `,
-      mode: "fast"
+      mode: "base"
     });
 
     // Avoid: Vague instructions
     const vague = await agentbase.runAgent({
       message: "Download data from API and handle errors",
-      mode: "fast"
+      mode: "base"
     });
     ```
   </Accordion>
@@ -502,7 +502,7 @@ async function databaseMigration() {
         - Data validation errors: Skip invalid items, don't retry
         - Authentication errors: Fail immediately, don't retry
       `,
-      mode: "fast"
+      mode: "base"
     });
     ```
   </Accordion>
@@ -517,7 +517,7 @@ async function databaseMigration() {
         If fewer than 15 succeed, report error.
         Always return data from successful sources.
       `,
-      mode: "fast"
+      mode: "base"
     });
     ```
   </Accordion>
@@ -533,7 +533,7 @@ async function databaseMigration() {
         - Log when recovery succeeds
         - Report summary of all recovery events
       `,
-      mode: "fast",
+      mode: "base",
       stream: true
     });
 
@@ -578,7 +578,7 @@ const result = await agentbase.runAgent({
     - Missing directories (create them)
     - File format errors (convert format)
   `,
-  mode: "fast"
+  mode: "base"
 });
 ```
 
@@ -596,7 +596,7 @@ const result = await agentbase.runAgent({
     - Test circuit recovery every 60 seconds
     - Close circuit after 3 consecutive successes
   `,
-  mode: "fast"
+  mode: "base"
 });
 ```
 
@@ -610,7 +610,7 @@ Monitor self-healing behavior through traces:
 // Track error recovery in traces
 const result = await agentbase.runAgent({
   message: "Download data with automatic retry on failure",
-  mode: "fast",
+  mode: "base",
   stream: true
 });
 
@@ -638,7 +638,7 @@ Execute custom logic during error recovery:
 // Hook into recovery process
 const result = await agentbase.runAgent({
   message: "Process data with error recovery",
-  mode: "fast",
+  mode: "base",
   hooks: {
     onError: async (error) => {
       // Log to external system
@@ -665,7 +665,7 @@ describe('Self-Healing', () => {
     // Simulate flaky network
     const result = await agentbase.runAgent({
       message: "Download data from unreliable API",
-      mode: "fast"
+      mode: "base"
     });
 
     // Verify recovery succeeded
@@ -676,7 +676,7 @@ describe('Self-Healing', () => {
   it('should handle rate limits gracefully', async () => {
     const result = await agentbase.runAgent({
       message: "Make 1000 API requests",
-      mode: "fast"
+      mode: "base"
     });
 
     // Should succeed despite rate limits
@@ -708,7 +708,7 @@ const result = await agentbase.runAgent({
     - Max retries: 3
     - After 3 failures, use cached data if available
   `,
-  mode: "fast"
+  mode: "base"
 });
 ```
 
@@ -733,7 +733,7 @@ const result = await agentbase.runAgent({
     - Limit retries to 3 attempts max
     - Use exponential backoff to avoid overwhelming services
   `,
-  mode: "fast"
+  mode: "base"
 });
 ```
 
@@ -753,7 +753,7 @@ const result = await agentbase.runAgent({
         - If all retries fail, report error and stop
         - Don't retry on 404 or 401 errors
       `,
-      mode: "fast"
+      mode: "base"
     });
     ```
   </Accordion>
@@ -771,7 +771,7 @@ const result = await agentbase.runAgent({
         - Total max retry time: 10 seconds
         - After 10 seconds, fail and report
       `,
-      mode: "fast"
+      mode: "base"
     });
     ```
   </Accordion>
@@ -790,7 +790,7 @@ const result = await agentbase.runAgent({
         - If FileNotFoundError: create missing directories
         - Retry after fixing each error
       `,
-      mode: "fast"
+      mode: "base"
     });
     ```
   </Accordion>

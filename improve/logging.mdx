@@ -65,7 +65,7 @@ async function loggedRunAgent(message: string, options: any = {}) {
   logger.info('Agent request started', {
     requestId,
     message: truncate(message, 200),
-    mode: options.mode || 'fast',
+    mode: options.mode || 'base',
     session: options.session,
     userId: options.userId
   });

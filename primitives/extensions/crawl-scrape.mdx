@@ -68,7 +68,7 @@ Agents use the built-in `web` tool with crawl mode to systematically extract dat
     // Scrape product information
     const result = await agentbase.runAgent({
       message: "Go to example.com/products and extract all product names and prices",
-      mode: "fast"
+      mode: "base"
     });
 
     console.log('Extracted data:', result.content);
@@ -84,7 +84,7 @@ Agents use the built-in `web` tool with crawl mode to systematically extract dat
     # Scrape product information
     result = client.run_agent(
         message="Go to example.com/products and extract all product names and prices",
-        mode="fast"
+        mode="base"
     )
 
     print("Extracted data:", result.content)
@@ -98,7 +98,7 @@ Agents use the built-in `web` tool with crawl mode to systematically extract dat
       -H "Content-Type: application/json" \
       -d '{
         "message": "Go to example.com/products and extract all product names and prices",
-        "mode": "fast"
+        "mode": "base"
       }'
     ```
   </Tab>
@@ -114,7 +114,7 @@ const result = await agentbase.runAgent({
     - Author names
     - Publication dates
     - Follow pagination to get all articles from pages 1-5`,
-  mode: "fast"
+  mode: "base"
 });
 ```
 
@@ -134,7 +134,7 @@ const result = await agentbase.runAgent({
         }
       ]
     }`,
-  mode: "fast"
+  mode: "base"
 });
 
 const data = JSON.parse(result.content);
@@ -156,7 +156,7 @@ async function monitorCompetitors(competitors: string[]) {
           - Key features
           - Any promotional banners
           - Last updated date`,
-        mode: "fast"
+        mode: "base"
       });
     })
   );
@@ -190,7 +190,7 @@ async function extractLeads(directoryUrl: string) {
       - Website URL
 
       Follow pagination to get all listings. Return as CSV format.`,
-    mode: "fast"
+    mode: "base"
   });
 
   // Save to file
@@ -217,7 +217,7 @@ async function aggregateNews(topics: string[]) {
         - URL
 
         Get the 10 most recent articles.`,
-      mode: "fast"
+      mode: "base"
     });
 
     articles.push({
@@ -301,7 +301,7 @@ async function aggregateJobs(searchTerms: string[]) {
           - Job URL
 
           Return as JSON array. Get the first 20 results.`,
-        mode: "fast"
+        mode: "base"
       });
 
       allJobs.push(...JSON.parse(result.content));
@@ -327,7 +327,7 @@ async function collectReviews(productUrl: string) {
       - Verified purchase (if shown)
 
       Follow pagination to get all reviews. Return as JSON.`,
-    mode: "fast"
+    mode: "base"
   });
 
   const reviews = JSON.parse(result.content);
@@ -341,7 +341,7 @@ async function collectReviews(productUrl: string) {
       - Overall sentiment
 
       Reviews: ${JSON.stringify(reviews.slice(0, 50))}`,
-    mode: "fast"
+    mode: "base"
   });
 
   return {
@@ -361,7 +361,7 @@ async function collectReviews(productUrl: string) {
     // ✅ Good: Mention respecting robots.txt
     const result = await agentbase.runAgent({
       message: "Crawl example.com (respecting robots.txt) and extract product data",
-      mode: "fast"
+      mode: "base"
     });
     ```
 
@@ -379,7 +379,7 @@ async function collectReviews(productUrl: string) {
       for (const url of urls) {
         const result = await agentbase.runAgent({
           message: `Extract data from ${url}`,
-          mode: "fast"
+          mode: "base"
         });
 
         results.push(result);
@@ -403,7 +403,7 @@ async function collectReviews(productUrl: string) {
       try {
         const result = await agentbase.runAgent({
           message: `Extract data from ${url}. If the page is not found or blocked, return an error message.`,
-          mode: "fast"
+          mode: "base"
         });
 
         return {
@@ -441,13 +441,13 @@ async function collectReviews(productUrl: string) {
             }
           ]
         }`,
-      mode: "fast"
+      mode: "base"
     });
 
     // ❌ Bad: Vague format
     const result = await agentbase.runAgent({
       message: "Get product data",
-      mode: "fast"
+      mode: "base"
     });
     ```
   </Accordion>
@@ -474,7 +474,7 @@ async function collectReviews(productUrl: string) {
       // Scrape if not cached
       const result = await agentbase.runAgent({
         message: `Extract data from ${url}`,
-        mode: "fast"
+        mode: "base"
       });
 
       // Cache result
@@ -520,7 +520,7 @@ async function scrapeInParallel(urls: string[], concurrency: number = 5) {
       batch.map(url =>
         agentbase.runAgent({
           message: `Extract data from ${url}`,
-          mode: "fast"
+          mode: "base"
         })
       )
     );
@@ -554,7 +554,7 @@ async function crawlSitemap(startUrl: string, maxDepth: number = 3) {
         1. Extract main content
         2. Find all internal links
         3. Return both as JSON`,
-      mode: "fast"
+      mode: "base"
     });
 
     results.push({

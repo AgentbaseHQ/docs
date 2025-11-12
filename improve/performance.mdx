@@ -59,7 +59,7 @@ Different modes offer different performance characteristics:
     **Typical response time:** 1-3 seconds
   </Tab>
 
-  <Tab title="Fast Mode">
+  <Tab title="Base Mode">
     **Performance:** Balanced
     **Cost:** $0.05 per step
     **Best for:**
@@ -72,7 +72,7 @@ Different modes offer different performance characteristics:
     // Balanced performance
     const result = await agentbase.runAgent({
       message: "Analyze this CSV and create a summary",
-      mode: "fast"
+      mode: "base"
     });
     ```
 
@@ -109,7 +109,7 @@ Clear, specific prompts reduce unnecessary steps:
 // ❌ May require multiple clarification steps
 const result = await agentbase.runAgent({
   message: "Check the website",
-  mode: "fast"
+  mode: "base"
 });
 // Potential steps: 5-8
 // Time: 8-15 seconds
@@ -119,7 +119,7 @@ const result = await agentbase.runAgent({
 // ✅ Clear instructions, fewer steps
 const result = await agentbase.runAgent({
   message: "Visit example.com and extract the pricing table from the /deploy/pricing page",
-  mode: "fast"
+  mode: "base"
 });
 // Potential steps: 2-3
 // Time: 4-6 seconds
@@ -139,7 +139,7 @@ Enable streaming to show progress and reduce perceived latency:
 ```typescript
 const stream = await agentbase.runAgent({
   message: "Process this large dataset",
-  mode: "fast",
+  mode: "base",
   stream: true
 });
 
@@ -217,14 +217,14 @@ Reuse sessions when context is relevant:
 // First request creates session
 const result1 = await agentbase.runAgent({
   message: "Analyze data.csv",
-  mode: "fast"
+  mode: "base"
 });
 
 // Subsequent requests reuse context
 const result2 = await agentbase.runAgent({
   message: "Now calculate the average",
   session: result1.session,
-  mode: "fast"
+  mode: "base"
 });
 ```
 
@@ -246,23 +246,23 @@ Run independent tasks in parallel:
 // ❌ Sequential - slow
 const result1 = await agentbase.runAgent({
   message: "Analyze file1.csv",
-  mode: "fast"
+  mode: "base"
 });
 const result2 = await agentbase.runAgent({
   message: "Analyze file2.csv",
-  mode: "fast"
+  mode: "base"
 });
 // Total time: 8-12 seconds
 
-// ✅ Parallel - fast
+// ✅ Parallel - base
 const [result1, result2] = await Promise.all([
   agentbase.runAgent({
     message: "Analyze file1.csv",
-    mode: "fast"
+    mode: "base"
   }),
   agentbase.runAgent({
     message: "Analyze file2.csv",
-    mode: "fast"
+    mode: "base"
   })
 ]);
 // Total time: 4-6 seconds
@@ -345,10 +345,10 @@ Typical performance by task type:
 | Task Type | Mode | Avg Steps | Avg Time | Example |
 |-----------|------|-----------|----------|---------|
 | Simple query | Flash | 1-2 | 1-3s | "What's the date?" |
-| Data lookup | Flash/Fast | 2-3 | 2-5s | "Find user by ID" |
-| File processing | Fast | 3-5 | 4-8s | "Parse CSV file" |
-| Web scraping | Fast | 4-6 | 6-12s | "Extract pricing data" |
-| Code generation | Fast/Max | 5-8 | 8-15s | "Create REST API" |
+| Data lookup | Flash/Base | 2-3 | 2-5s | "Find user by ID" |
+| File processing | Base | 3-5 | 4-8s | "Parse CSV file" |
+| Web scraping | Base | 4-6 | 6-12s | "Extract pricing data" |
+| Code generation | Base/Max | 5-8 | 8-15s | "Create REST API" |
 | Complex analysis | Max | 8-15 | 15-30s | "Design architecture" |
 
 ## Common Performance Issues
@@ -411,7 +411,7 @@ Typical performance by task type:
   </Card>
 
   <Card title="Agent Modes" icon="gauge" href="/build/agent-modes">
-    Learn more about Flash, Fast, and Max modes
+    Learn more about Flash, Base, and Max modes
   </Card>
 
   <Card title="System Prompts" icon="message" href="/build/system-prompts">

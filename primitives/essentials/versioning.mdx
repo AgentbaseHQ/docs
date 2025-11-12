@@ -82,7 +82,7 @@ const v1 = await agentbase.createVersion({
   description: "Initial customer support agent",
   config: {
     system: "You are a friendly customer support specialist.",
-    mode: "fast",
+    mode: "base",
     rules: [
       "Always be polite and professional",
       "Verify user identity before sharing account details"
@@ -110,7 +110,7 @@ v1 = agentbase.create_version(
     description="Initial customer support agent",
     config={
         'system': "You are a friendly customer support specialist.",
-        'mode': "fast",
+        'mode': "base",
         'rules': [
             "Always be polite and professional",
             "Verify user identity before sharing account details"
@@ -148,7 +148,7 @@ const v2 = await agentbase.createVersion({
     - Provide step-by-step solutions
     - Always verify identity before sharing account details`,
 
-    mode: "fast",
+    mode: "base",
     rules: [
       "Always be polite, professional, and empathetic",
       "Verify user identity before sharing account details",
@@ -184,7 +184,7 @@ v2 = agentbase.create_version(
         - Provide step-by-step solutions
         - Always verify identity before sharing account details""",
 
-        'mode': "fast",
+        'mode': "base",
         'rules': [
             "Always be polite, professional, and empathetic",
             "Verify user identity before sharing account details",

@@ -40,7 +40,7 @@ Agentbase makes deploying AI agents to production simple and reliable. No infras
       -H "Content-Type: application/json" \
       -d '{
         "message": "Analyze this data and create a report",
-        "mode": "fast"
+        "mode": "base"
       }'
     ```
 
@@ -69,7 +69,7 @@ Agentbase makes deploying AI agents to production simple and reliable. No infras
 
     const result = await agentbase.runAgent({
       message: "Analyze this data and create a report",
-      mode: "fast"
+      mode: "base"
     });
     ```
 
@@ -96,7 +96,7 @@ Agentbase makes deploying AI agents to production simple and reliable. No infras
 
     result = client.run_agent(
         message="Analyze this data and create a report",
-        mode="fast"
+        mode="base"
     )
     ```
 
@@ -146,7 +146,7 @@ Agentbase makes deploying AI agents to production simple and reliable. No infras
     try {
       const result = await agentbase.runAgent({
         message: userInput,
-        mode: "fast"
+        mode: "base"
       });
     } catch (error) {
       if (error.status === 429) {
@@ -196,7 +196,7 @@ Agentbase makes deploying AI agents to production simple and reliable. No infras
     app.post('/api/analyze', async (req, res) => {
       const result = await agentbase.runAgent({
         message: `Analyze: ${req.body.data}`,
-        mode: "fast"
+        mode: "base"
       });
       res.json(result);
     });
@@ -224,7 +224,7 @@ Agentbase makes deploying AI agents to production simple and reliable. No infras
       const result = await agentbase.runAgent({
         message: req.body.message,
         session: session,
-        mode: "fast"
+        mode: "base"
       });
 
       await saveUserSession(userId, result.session);
@@ -285,7 +285,7 @@ Agentbase makes deploying AI agents to production simple and reliable. No infras
 
       const stream = await agentbase.runAgent({
         message: req.query.message,
-        mode: "fast",
+        mode: "base",
         stream: true
       });
 

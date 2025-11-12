@@ -28,20 +28,14 @@
     "name": "Get Free Credits",
     "url": "https://base.agentbase.sh/sign-up"
   },
-  "banner": {
-    "content": "🎉 Agentbase is now in public beta! Try it free with work email signup.",
-    "ctaText": "Get Started",
-    "url": "https://base.agentbase.sh/sign-up"
-  },
   "navigation": {
     "groups": [
       {
         "group": "Getting Started",
         "tag": "NEW",
         "pages": [
-          "build/quickstart",
-          "getting-started/libraries",
-          "build/agent-modes",
+          "getting-started/quickstart",
+          "getting-started/agent-modes",
           "deploy/pricing"
         ]
       },
@@ -51,12 +45,7 @@
           "build/overview",
           "build/system-prompts",
           "build/rules",
-          {
-            "group": "SDKs",
-            "pages": [
-              "build/sdk/react"
-            ]
-          }
+          "build/tools"
         ]
       },
       {
@@ -64,14 +53,7 @@
         "pages": [
           "deploy/overview",
           "deploy/cost-tracking",
-          "deploy/authentication",
-          {
-            "group": "SDKs",
-            "pages": [
-              "deploy/sdk/typescript",
-              "deploy/sdk/python"
-            ]
-          }
+          "deploy/authentication"
         ]
       },
       {
@@ -166,11 +148,20 @@
       {
         "group": "Resources",
         "pages": [
-          "contact-support"
+          "contact-support",
+          {
+            "group": "SDKs",
+            "pages": [
+              "resources/sdk/react",
+              "resources/sdk/typescript",
+              "resources/sdk/python"
+            ]
+          }
         ]
       }
     ]
   },
+  "css": "styles.css",
   "contextual": {
     "options": [
       "copy",

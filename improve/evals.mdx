@@ -41,7 +41,7 @@ describe('Agent File Operations', () => {
   it('should read CSV files', async () => {
     const result = await agentbase.runAgent({
       message: "Read data.csv and return the first row",
-      mode: "fast"
+      mode: "base"
     });
 
     expect(result.content).toContain('header1,header2');
@@ -51,7 +51,7 @@ describe('Agent File Operations', () => {
   it('should handle missing files gracefully', async () => {
     const result = await agentbase.runAgent({
       message: "Read nonexistent.csv",
-      mode: "fast"
+      mode: "base"
     });
 
     expect(result.content).toMatch(/not found|does not exist/i);
@@ -62,7 +62,7 @@ describe('Agent File Operations', () => {
 
     const result = await agentbase.runAgent({
       message: `Create a file named test.txt with content: ${content}`,
-      mode: "fast"
+      mode: "base"
     });
 
     expect(result.success).toBe(true);
@@ -81,7 +81,7 @@ describe('Agent Workflows', () => {
     // Step 1: Upload and process data
     const upload = await agentbase.runAgent({
       message: "Create data.json with sample e-commerce data",
-      mode: "fast"
+      mode: "base"
     });
 
     expect(upload.success).toBe(true);
@@ -90,7 +90,7 @@ describe('Agent Workflows', () => {
     const analyze = await agentbase.runAgent({
       message: "Analyze data.json and calculate total revenue",
       session: upload.session,
-      mode: "fast"
+      mode: "base"
     });
 
     expect(analyze.content).toMatch(/total.*revenue/i);
@@ -100,7 +100,7 @@ describe('Agent Workflows', () => {
     const report = await agentbase.runAgent({
       message: "Create a summary report",
       session: analyze.session,
-      mode: "fast"
+      mode: "base"
     });
 
     expect(report.content).toContain('Summary');
@@ -147,7 +147,7 @@ describe('Agent Performance', () => {
 
     const result = await agentbase.runAgent({
       message: "Read sample.csv and count rows",
-      mode: "fast",
+      mode: "base",
       stream: true
     });
 
@@ -172,7 +172,7 @@ describe('Agent Output Quality', () => {
   it('should generate valid JSON', async () => {
     const result = await agentbase.runAgent({
       message: "Create a JSON object with user data: name=John, age=30",
-      mode: "fast"
+      mode: "base"
     });
 
     // Extract JSON from response
@@ -187,7 +187,7 @@ describe('Agent Output Quality', () => {
   it('should provide accurate calculations', async () => {
     const result = await agentbase.runAgent({
       message: "Calculate the sum of numbers from 1 to 100",
-      mode: "fast"
+      mode: "base"
     });
 
     expect(result.content).toContain('5050');
@@ -196,7 +196,7 @@ describe('Agent Output Quality', () => {
   it('should follow formatting instructions', async () => {
     const result = await agentbase.runAgent({
       message: "List 3 fruits in markdown format",
-      mode: "fast"
+      mode: "base"
     });
 
     // Check for markdown list format
@@ -230,7 +230,7 @@ Provide scores and brief explanations in JSON format:
   "overallScore": average,
   "explanation": "brief explanation"
 }`,
-    mode: "fast"
+    mode: "base"
   });
 
   return JSON.parse(evaluation.content);
@@ -240,7 +240,7 @@ describe('Agent Quality (LLM-as-Judge)', () => {
   it('should generate helpful code explanations', async () => {
     const result = await agentbase.runAgent({
       message: "Explain how a binary search algorithm works",
-      mode: "fast"
+      mode: "base"
     });
 
     const evaluation = await evaluateWithLLM(
@@ -341,7 +341,7 @@ const evals: EvalCase[] = [
   {
     name: 'File Read',
     message: 'Read data.csv and return first row',
-    mode: 'fast',
+    mode: 'base',
     validate: async (result) => ({
       passed: result.content.includes('header'),
       message: 'Should contain header row'
@@ -470,7 +470,7 @@ setInterval(continuousEvals, 24 * 60 * 60 * 1000);
         passRate: calculatePassRate(results),
         metadata: {
           version: '1.0',
-          mode: 'fast'
+          mode: 'base'
         }
       });
 

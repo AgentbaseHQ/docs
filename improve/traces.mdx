@@ -28,7 +28,7 @@ Traces capture the complete execution history of an agent task:
     ```typescript
     const result = await agentbase.runAgent({
       message: "Debug this issue",
-      mode: "fast",
+      mode: "base",
       stream: true
     });
 
@@ -384,7 +384,7 @@ class TraceLogger {
 const logger = new TraceLogger();
 const summary = await logger.logAgentRun(
   "Analyze this data",
-  "fast"
+  "base"
 );
 
 console.log('Summary:', summary);

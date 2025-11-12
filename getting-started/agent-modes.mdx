@@ -1,6 +1,6 @@
 ---
-title: "Agent Mode"
-description: "Understanding Fast, Flash, and Max modes for optimized performance and cost"
+title: "Agent Modes"
+description: "Understanding Base, Flash, and Max modes for optimized performance and cost"
 icon: "gauge"
 ---
 
@@ -9,14 +9,14 @@ icon: "gauge"
 | Mode | Cost per Step | Best For |
 |:-----|:--------------|:---------|
 | Flash | $0.01 | Simple tasks, quick responses |
-| Fast | $0.05 | Most tasks, balanced performance |
+| Base | $0.05 | Most tasks, balanced performance |
 | Max | $0.20 | Complex reasoning, multi-step workflows |
 
 <CardGroup cols={3}>
   <Card title="Flash Mode" color="#f59e0b">
     $0.01 per step - Simple tasks, quick responses
   </Card>
-  <Card title="Fast Mode" color="#10b981">
+  <Card title="Base Mode" color="#10b981">
     $0.05 per step - Most tasks, balanced performance
   </Card>
   <Card title="Max Mode" color="#8b5cf6">
@@ -28,17 +28,6 @@ Agentbase offers three distinct agent modes that optimize performance and cost t
 
 
 
-## What's Next?
-
-<CardGroup cols={2}>
-  <Card title="Python SDK" icon="python" href="/sdk/python-sdk">
-    Use Agentbase with Python
-  </Card>
-  
-  <Card title="TypeScript SDK" icon="code" href="/sdk/typescript-sdk">
-    Use Agentbase with TypeScript/JavaScript
-  </Card>
-</CardGroup>
 
 <Note>
 Mode selection is automatically optimized based on task complexity, but you can override the default behavior by specifying your preferred mode.

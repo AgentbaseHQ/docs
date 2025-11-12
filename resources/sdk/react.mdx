@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       message,
       session,
       system,
-      mode = "fast",
+      mode = "base",
       rules,
       mcpServers,
       agents,
@@ -123,7 +123,7 @@ export default function Chat() {
   const { messages, send, stop, clear, isRunning, error, session } = useAgent({
     api: "/api/agent",
     system: "You are a helpful AI assistant. Be concise and friendly.",
-    mode: "fast",
+    mode: "base",
     onError: (error) => {
       console.error("Agent error:", error);
     },
@@ -232,8 +232,8 @@ interface UseAgentOptions {
   // Optional: System prompt for the agent
   system?: string;
 
-  // Optional: Agent mode (default: "fast")
-  mode?: "flash" | "fast" | "max";
+  // Optional: Agent mode (default: "base")
+  mode?: "flash" | "base" | "max";
 
   // Optional: Rules for the agent
   rules?: string[];
@@ -352,7 +352,7 @@ function AdvancedChat() {
   const { messages, send, stop, clear, isRunning, error, session } = useAgent({
     api: "/api/agent",
     system: "You are a helpful assistant.",
-    mode: "fast",
+    mode: "base",
     onError: (error) => console.error("Error:", error),
   });
 
@@ -434,7 +434,7 @@ function MultiAgentChat() {
   const { messages, send, isRunning } = useAgent({
     api: "/api/agent",
     system: "You classify products and route to specialized agents.",
-    mode: "fast",
+    mode: "base",
     agents: [
       {
         name: "Personal Care Agent",
