@@ -8,8 +8,6 @@ icon: "code"
 
 ## Installation
 
-**[View on npm →](https://www.npmjs.com/package/agentbase-sdk)**
-
 ```bash
 npm install agentbase-sdk
 # or
@@ -19,20 +17,20 @@ yarn add agentbase-sdk
 ## Quick Start
 
 ```typescript
-import { Agentbase } from 'agentbase-sdk';
+import { Agentbase } from "agentbase-sdk";
 
 const client = new Agentbase({
-  apiKey: 'your-api-key'
+  apiKey: "your-api-key",
 });
 
 // Run an agent (root-level method)
 const response = await client.runAgent({
-  message: "Hello, analyze this data for me"
+  message: "Hello, analyze this data for me",
 });
 
 // Or use the agent resource
 const response2 = await client.agent.run({
-  message: "Hello, analyze this data for me"
+  message: "Hello, analyze this data for me",
 });
 
 // Handle streaming response
@@ -45,9 +43,9 @@ for await (const event of response) {
 
 ```typescript
 const client = new Agentbase({
-  apiKey: 'your-api-key',
-  baseURL: 'https://api.agentbase.sh', // optional
-  timeout: 30000 // optional, in milliseconds
+  apiKey: "your-api-key",
+  baseURL: "https://api.agentbase.sh", // optional
+  timeout: 30000, // optional, in milliseconds
 });
 ```
 
@@ -63,10 +61,11 @@ Run an agent directly from the root client:
 const stream = await client.runAgent({
   message: "Your task here", // required
   session: "session-id", // optional: continue conversation
-  mode: "base", // optional: "base" | "flash" | "max", defaults to "base"
+  mode: "fast", // optional: "fast" | "flash" | "max", defaults to "fast"
   system: "You are a helpful assistant", // optional: system prompt
   rules: ["Be concise", "Show examples"], // optional: array of constraints
-  workflows: [ // optional: declarative workflows
+  workflows: [
+    // optional: declarative workflows
     {
       id: "workflow_1",
       name: "example_workflow",
@@ -78,48 +77,55 @@ const stream = await client.runAgent({
           description: "What this step should accomplish",
           depends_on: [],
           optional: false, // optional
-          retry_policy: { // optional
+          retry_policy: {
+            // optional
             max_attempts: 3,
-            backoff: "exponential"
+            backoff: "exponential",
           },
-          output_schema: { // optional
+          output_schema: {
+            // optional
             type: "object",
             properties: {
-              result: { type: "string" }
-            }
-          }
-        }
-      ]
-    }
+              result: { type: "string" },
+            },
+          },
+        },
+      ],
+    },
   ],
-  mcpServers: [ // optional: MCP server configs
+  mcp_servers: [
+    // optional: MCP server configs
     {
       serverName: "my-api",
-      serverUrl: "https://api.example.com/mcp"
-    }
+      serverUrl: "https://api.example.com/mcp",
+    },
   ],
   background: false, // optional: run agent asynchronously, defaults to false
-  callback: { // optional: use with background: true
+  callback: {
+    // optional: use with background: true
     url: "https://your-server.com/webhook",
     headers: {
-      Authorization: "Bearer your-token"
-    }
+      Authorization: "Bearer your-token",
+    },
   },
-  datastores: [ // optional: data sources for the agent
+  datastores: [
+    // optional: data sources for the agent
     {
       id: "ds_1234567890abcdef",
-      name: "my-datastore"
-    }
+      name: "my-datastore",
+    },
   ],
-  queries: [ // optional: custom datastore queries
+  queries: [
+    // optional: custom datastore queries
     {
       name: "getUserById",
       description: "Fetch user details by their ID",
-      query: "SELECT * FROM users WHERE id = ?"
-    }
+      query: "SELECT * FROM users WHERE id = ?",
+    },
   ],
   streaming_tokens: false, // optional: stream tokens, defaults to false
-  final_output: { // optional: structured final output
+  final_output: {
+    // optional: structured final output
     name: "task_summary",
     strict: true,
     schema: {
@@ -128,12 +134,12 @@ const stream = await client.runAgent({
         summary: { type: "string" },
         outcome: {
           type: "string",
-          enum: ["success", "partial_success", "failure"]
-        }
+          enum: ["success", "partial_success", "failure"],
+        },
       },
-      required: ["summary", "outcome"]
-    }
-  }
+      required: ["summary", "outcome"],
+    },
+  },
 });
 ```
 
@@ -147,11 +153,11 @@ Run an agent using the agent resource (accepts same parameters as `client.runAge
 const stream = await client.agent.run({
   message: "Your task here", // required
   session: "session-id", // optional
-  mode: "base", // optional
+  mode: "fast", // optional
   system: "You are a helpful assistant", // optional
   rules: ["Be concise", "Show examples"], // optional
   workflows: [...], // optional
-  mcpServers: [...], // optional
+  mcp_servers: [...], // optional
   background: false, // optional
   callback: {...}, // optional
   datastores: [...], // optional
@@ -169,7 +175,7 @@ Retrieve messages from an agent session:
 
 ```typescript
 const messages = await client.messages.get({
-  session: "session-id"
+  session: "session-id",
 });
 ```
 
@@ -179,7 +185,7 @@ Clear all messages from an agent session:
 
 ```typescript
 const result = await client.messages.clear({
-  session: "session-id"
+  session: "session-id",
 });
 ```
 
@@ -188,14 +194,14 @@ const result = await client.messages.clear({
 ```typescript
 try {
   const response = await client.runAgent({
-    message: "Your task"
+    message: "Your task",
   });
 } catch (error) {
   if (error instanceof AgentbaseError) {
-    console.error('API Error:', error.message);
-    console.error('Status:', error.status);
+    console.error("API Error:", error.message);
+    console.error("Status:", error.status);
   } else {
-    console.error('Unexpected error:', error);
+    console.error("Unexpected error:", error);
   }
 }
 ```
@@ -206,11 +212,11 @@ try {
 interface RunAgentParams {
   message: string;
   session?: string;
-  mode?: "base" | "flash" | "max";
+  mode?: "fast" | "flash" | "max";
   system?: string;
   rules?: string[];
   workflows?: Workflow[];
-  mcpServers?: MCPServer[];
+  mcp_servers?: MCPServer[];
   background?: boolean;
   callback?: CallbackConfig;
   datastores?: Datastore[];
@@ -281,12 +287,12 @@ interface AgentEvent {
 
 ```typescript
 const chat = await client.runAgent({
-  message: "What's the weather like today?"
+  message: "What's the weather like today?",
 });
 
 for await (const event of chat) {
-  if (event.type === 'agent_message') {
-    console.log('Agent:', event.content);
+  if (event.type === "agent_message") {
+    console.log("Agent:", event.content);
   }
 }
 ```
@@ -298,7 +304,7 @@ let sessionId: string | undefined;
 
 // First message
 const response1 = await client.runAgent({
-  message: "Hello, I'm working on a React project"
+  message: "Hello, I'm working on a React project",
 });
 
 for await (const event of response1) {
@@ -308,7 +314,7 @@ for await (const event of response1) {
 // Continue conversation
 const response2 = await client.agent.run({
   message: "Can you help me with state management?",
-  session: sessionId
+  session: sessionId,
 });
 ```
 
@@ -318,12 +324,12 @@ const response2 = await client.agent.run({
 let totalCost = 0;
 
 const response = await client.runAgent({
-  message: "Analyze this dataset"
+  message: "Analyze this dataset",
 });
 
 for await (const event of response) {
-  if (event.type === 'agent_cost') {
-    totalCost += parseFloat(event.cost || '0');
+  if (event.type === "agent_cost") {
+    totalCost += parseFloat(event.cost || "0");
     console.log(`Current cost: $${event.cost}`);
     console.log(`Total spent: $${totalCost}`);
   }
@@ -339,14 +345,14 @@ for await (const event of response) {
 ## What's Next?
 
 <CardGroup cols={3}>
-  <Card title="Python SDK" icon="python" href="/resources/sdk/python">
+  <Card title="Python SDK" icon="python" href="/sdk/python-sdk">
     Use Agentbase with Python
   </Card>
-  
+
   <Card title="API Reference" icon="code" href="/api/run-agent">
     Complete API documentation
   </Card>
-  
+
   <Card title="Examples" icon="lightbulb" href="/api/example">
     See more integration examples
   </Card>

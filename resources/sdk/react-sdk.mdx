@@ -1,24 +1,17 @@
 ---
 title: "React SDK"
-description: "React hooks for building conversational AI interfaces with Agentbase. Simple, powerful, and focused."
+description: "Official React SDK for building agent interfaces with Agentbase"
 icon: "react"
 ---
 
-> React hooks for building conversational AI interfaces with Agentbase. Simple, powerful, and focused.
-
-## Features
-
-- **Simple API** - Clean hook with just what you need: send, stop, clear
-- **Streaming Support** - Real-time streaming of agent responses  
-- **Multi-Agent Flows** - Support for agent handoffs and transfers
-- **Session Management** - Automatic session tracking across conversations
-- **TypeScript** - Full TypeScript support with type definitions
-- **Server-Side** - Keep your API keys secure on the server
+> The official React SDK for building interactive agent interfaces with hooks and components.
 
 ## Installation
 
 ```bash
-npm install @agentbase-sdk/react agentbase-sdk
+npm install @agentbase-sdk/react
+# or
+yarn add @agentbase-sdk/react
 ```
 
 ## Quick Start
@@ -47,11 +40,11 @@ export async function POST(req: NextRequest) {
       message,
       session,
       system,
-      mode = "base",
+      mode = "fast",
       rules,
-      mcpServers,
+      mcp_servers,
       agents,
-      streamingTokens = false,
+      streaming_tokens = false,
     } = body;
 
     // Validate required fields
@@ -63,13 +56,13 @@ export async function POST(req: NextRequest) {
     const params: any = {
       message,
       mode,
-      streamingTokens,
+      streaming_tokens,
     };
 
     if (session) params.session = session;
     if (system) params.system = system;
     if (rules) params.rules = rules;
-    if (mcpServers) params.mcp_servers = mcpServers;
+    if (mcp_servers) params.mcp_servers = mcp_servers;
     if (agents) params.agents = agents;
 
     // Create a TransformStream to convert async iterator to ReadableStream
@@ -112,7 +105,7 @@ export async function POST(req: NextRequest) {
 
 ### 2. Use the useAgent Hook in Your Component
 
-```jsx
+```typescript
 "use client";
 
 import { useAgent } from "@agentbase-sdk/react";
@@ -123,13 +116,13 @@ export default function Chat() {
   const { messages, send, stop, clear, isRunning, error, session } = useAgent({
     api: "/api/agent",
     system: "You are a helpful AI assistant. Be concise and friendly.",
-    mode: "base",
+    mode: "fast",
     onError: (error) => {
       console.error("Agent error:", error);
     },
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isRunning) return;
 
@@ -215,6 +208,7 @@ export default function Chat() {
     </div>
   );
 }
+```
 
 ## API Reference
 
@@ -232,8 +226,8 @@ interface UseAgentOptions {
   // Optional: System prompt for the agent
   system?: string;
 
-  // Optional: Agent mode (default: "base")
-  mode?: "flash" | "base" | "max";
+  // Optional: Agent mode (default: "fast")
+  mode?: "flash" | "fast" | "max";
 
   // Optional: Rules for the agent
   rules?: string[];
@@ -288,262 +282,155 @@ interface UseAgentReturn {
 }
 ```
 
-## Examples
+### Message Types
 
-### Basic Chat
-
-```jsx
-"use client";
-
-import { useAgent } from "@agentbase-sdk/react";
-import { useState } from "react";
-
-function BasicChat() {
-  const [input, setInput] = useState("");
-  const { messages, send, isRunning } = useAgent({
-    api: "/api/agent",
-    system: "You are a helpful assistant.",
-  });
-
-  return (
-    <div>
-      {messages.map((msg, idx) => (
-        <div key={idx}>
-          <strong>{msg.role}:</strong>
-          {msg.content.map((item, i) => (
-            <div key={i}>
-              {item.type === "text" && <span>{item.text}</span>}
-            </div>
-          ))}
-        </div>
-      ))}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!input.trim() || isRunning) return;
-          send(input);
-          setInput("");
-        }}
-      >
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={isRunning}
-        />
-        <button type="submit" disabled={isRunning || !input.trim()}>
-          Send
-        </button>
-      </form>
-    </div>
-  );
-}
-```
-
-### Advanced Features
-
-```jsx
-"use client";
-
-import { useAgent } from "@agentbase-sdk/react";
-import { useState } from "react";
-
-function AdvancedChat() {
-  const [input, setInput] = useState("");
-  const { messages, send, stop, clear, isRunning, error, session } = useAgent({
-    api: "/api/agent",
-    system: "You are a helpful assistant.",
-    mode: "base",
-    onError: (error) => console.error("Error:", error),
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!input.trim() || isRunning) return;
-    send(input);
-    setInput("");
-  };
-
-  return (
-    <div>
-      {/* Session Info */}
-      {session && <div>Session: {session.substring(0, 8)}...</div>}
-
-      {/* Error Display */}
-      {error && <div style={{ color: "red" }}>Error: {error.message}</div>}
-
-      {/* Messages */}
-      <div>
-        {messages.map((msg, idx) => (
-          <div key={idx}>
-            <strong>{msg.role}:</strong>
-            {msg.content.map((item, i) => (
-              <div key={i}>
-                {item.type === "text" && <div>{item.text}</div>}
-                {item.type === "thinking" && (
-                  <div style={{ fontStyle: "italic", opacity: 0.7 }}>
-                    💭 {item.text}
-                  </div>
-                )}
-                {item.type === "tool_use" && (
-                  <div>
-                    <strong>🔧 Tool:</strong>
-                    <pre>{item.text}</pre>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-
-      {/* Controls */}
-      <div>
-        <button onClick={clear} disabled={messages.length === 0}>
-          Clear
-        </button>
-        {isRunning && <button onClick={stop}>Stop</button>}
-      </div>
-
-      {/* Input */}
-      <form onSubmit={handleSubmit}>
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={isRunning}
-          placeholder="Type your message..."
-        />
-        <button type="submit" disabled={isRunning || !input.trim()}>
-          Send
-        </button>
-      </form>
-    </div>
-  );
-}
-```
-
-### Multi-Agent Flow
-
-```jsx
-"use client";
-
-import { useAgent } from "@agentbase-sdk/react";
-import { useState } from "react";
-
-function MultiAgentChat() {
-  const [input, setInput] = useState("");
-  const { messages, send, isRunning } = useAgent({
-    api: "/api/agent",
-    system: "You classify products and route to specialized agents.",
-    mode: "base",
-    agents: [
-      {
-        name: "Personal Care Agent",
-        description: "Handles personal care products",
-      },
-      {
-        name: "Cosmetics Agent",
-        description: "Handles makeup and cosmetics",
-      },
-    ],
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!input.trim() || isRunning) return;
-    send(input);
-    setInput("");
-  };
-
-  return (
-    <div>
-      {messages.map((msg, idx) => (
-        <div key={idx}>
-          <strong>{msg.role}:</strong>
-          {msg.content.map((item, i) => (
-            <div key={i}>
-              {item.type === "text" && <div>{item.text}</div>}
-              {item.type === "transfer" && (
-                <div style={{ background: "#f0f0f0", padding: "8px" }}>
-                  🔄 Transferred to: <strong>{item.agent}</strong>
-                  {item.context && <div>Context: {item.context}</div>}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      ))}
-      <form onSubmit={handleSubmit}>
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={isRunning}
-          placeholder="Type your message..."
-        />
-        <button type="submit" disabled={isRunning || !input.trim()}>
-          Send
-        </button>
-      </form>
-    </div>
-  );
-}
-```
-
-## Message Structure
-
-Messages have the following structure:
+The hook handles various message types from the agent:
 
 ```typescript
 interface Message {
   role: "user" | "assistant";
-  content: MessageContent;
-  createdAt: Date;
+  content: ContentItem[];
 }
 
-type MessageContent = MessageContentItem[];
-
-interface MessageContentItem {
-  type: "text" | "thinking" | "tool_use" | "tool_response" | "transfer";
-  text: string;
-  agent?: string; // For transfer events
-  context?: string; // For transfer events
-}
+type ContentItem =
+  | { type: "text"; text: string }
+  | { type: "thinking"; text: string }
+  | { type: "tool_use"; text: string }
+  | { type: "tool_response"; text: string }
+  | { type: "transfer"; agent: string; context?: string };
 ```
 
-## TypeScript Support
+## Examples
 
-The library is written in TypeScript and includes full type definitions. All types are exported:
+### Basic Chat Interface
 
 ```typescript
-import type {
-  UseAgentOptions,
-  UseAgentReturn,
-  Message,
-  MessageContent,
-  MessageContentItem,
-  AgentResponse,
-} from "@agentbase-sdk/react";
+"use client";
+
+import { useAgent } from "@agentbase-sdk/react";
+import { useState } from "react";
+
+export default function BasicChat() {
+  const [input, setInput] = useState("");
+  const { messages, send, isRunning } = useAgent({
+    api: "/api/agent",
+  });
+
+  return (
+    <div>
+      <div>
+        {messages.map((msg, i) => (
+          <div key={i}>
+            <strong>{msg.role}:</strong>
+            {msg.content.map((item, j) => (
+              <span key={j}>{item.type === "text" && item.text}</span>
+            ))}
+          </div>
+        ))}
+      </div>
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        send(input);
+        setInput("");
+      }}>
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          disabled={isRunning}
+        />
+        <button type="submit" disabled={isRunning}>Send</button>
+      </form>
+    </div>
+  );
+}
 ```
 
-## Additional Resources
+### With System Prompt and Rules
 
-<CardGroup cols={2}>
-  <Card title="NPM Package" icon="npm" href="https://www.npmjs.com/package/@agentbase-sdk/react">
-    View the package on NPM
+```typescript
+const { messages, send } = useAgent({
+  api: "/api/agent",
+  system: "You are a coding assistant specializing in React.",
+  mode: "max",
+  rules: [
+    "Always explain your code changes",
+    "Use TypeScript when possible",
+    "Follow React best practices"
+  ],
+});
+```
+
+### Multi-Agent Handoffs
+
+```typescript
+const { messages, send } = useAgent({
+  api: "/api/agent",
+  system: "You are a customer support agent.",
+  agents: [
+    {
+      name: "technical_support",
+      description: "Handles technical issues and debugging"
+    },
+    {
+      name: "billing_support",
+      description: "Handles billing and payment questions"
+    }
+  ],
+});
+```
+
+### With Error Handling
+
+```typescript
+const { messages, send, error } = useAgent({
+  api: "/api/agent",
+  onError: (error) => {
+    console.error("Agent error:", error);
+    // Custom error handling logic
+  },
+});
+
+// Display errors in UI
+{error && (
+  <div className="error">
+    Error: {error.message}
+  </div>
+)}
+```
+
+### Session Persistence
+
+```typescript
+const { session, messages } = useAgent({
+  api: "/api/agent",
+});
+
+// Session ID is automatically managed
+// Use it to track conversations
+useEffect(() => {
+  if (session) {
+    console.log("Current session:", session);
+  }
+}, [session]);
+```
+
+## Resources
+
+- **GitHub Repository**: [@agentbase-sdk/react](https://github.com/AgentbaseHQ/agentbase-sdk)
+- **NPM Package**: [@agentbase-sdk/react](https://www.npmjs.com/package/@agentbase-sdk/react)
+
+## What's Next?
+
+<CardGroup cols={3}>
+  <Card title="TypeScript SDK" icon="code" href="/sdk/typescript-sdk">
+    Server-side TypeScript integration
   </Card>
 
-  <Card title="API Reference" icon="code" href="/deploy/api/run-agent">
+  <Card title="Python SDK" icon="python" href="/sdk/python-sdk">
+    Use Agentbase with Python
+  </Card>
+
+  <Card title="API Reference" icon="code" href="/api/run-agent">
     Complete API documentation
   </Card>
-
-  <Card title="Use Cases" icon="lightbulb" href="/build/use-cases">
-    Implementation examples and use cases
-  </Card>
-
-  <Card title="TypeScript SDK" icon="code" href="/resources/sdk/typescript">
-    TypeScript SDK for backend integration
-  </Card>
 </CardGroup>
-
-<Tip>
-**Pro Tip**: Use React DevTools to inspect the SDK's state and debug your chat implementations. The SDK exposes helpful debugging information in development mode.
-</Tip>
