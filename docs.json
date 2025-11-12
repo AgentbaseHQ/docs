@@ -59,10 +59,7 @@
       {
         "group": "Improve",
         "pages": [
-          "improve/performance",
-          "improve/traces",
-          "improve/evals",
-          "improve/logging"
+          "improve/traces"
         ]
       },
       {
@@ -89,13 +86,10 @@
               "primitives/essentials/parallelization",
               "primitives/essentials/context-management",
               "primitives/essentials/persistence",
-              "primitives/essentials/self-healing",
-              "primitives/essentials/self-evolving",
               "primitives/essentials/background",
               "primitives/essentials/versioning",
               "primitives/essentials/hooks",
-              "primitives/essentials/traces",
-              "primitives/essentials/evals"
+              "primitives/essentials/traces"
             ]
           },
           {
@@ -104,21 +98,14 @@
               "primitives/extensions/memory",
               "primitives/extensions/workflow",
               "primitives/extensions/orchestration",
-              "primitives/extensions/voice",
               "primitives/extensions/mcp",
-              "primitives/extensions/rag",
               "primitives/extensions/web-search",
               "primitives/extensions/crawl-scrape",
-              "primitives/extensions/email",
-              "primitives/extensions/ocr",
               "primitives/extensions/integrations",
               "primitives/extensions/data-connectors",
               "primitives/extensions/tasks",
-              "primitives/extensions/skills",
               "primitives/extensions/trigger",
-              "primitives/extensions/scheduling",
-              "primitives/extensions/authentication",
-              "primitives/extensions/interface"
+              "primitives/extensions/scheduling"
             ]
           }
         ]
